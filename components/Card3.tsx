@@ -43,7 +43,7 @@ export default function Card1() {
       <CardContent>
         <Input
           type="text"
-          placeholder="Enter Output Monero Address"
+          placeholder="Enter Ethereum Output Address"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
