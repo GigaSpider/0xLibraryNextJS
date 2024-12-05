@@ -3,7 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -11,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Contract, BrowserProvider, getAddress } from "ethers";
 import MAIN_ABI from "@/components/Card2/MAIN_ABI.json";
 import SUBCONTRACT_ABI from "@/components/Card2/SUBCONTRACT_ABI.json";
@@ -38,7 +37,8 @@ export default function Card1() {
 
   const [input, setInput] = useState("");
   const [depositAddress, setDepositAddress] = useState("");
-  const [account, setAccount] = useState(null);
+  const [moneroTransactionID, setMoneroTransactionID] = useState("");
+  // const [account, setAccount] = useState(null);
 
   async function isMoneroAddress(address: string): Promise<boolean> {
     const validLength = address.length === 95 || address.length === 106;
@@ -58,6 +58,7 @@ export default function Card1() {
           console.log("Requesting MetaMask connection...");
           const accounts = (await window.ethereum.request({
             method: "eth_requestAccounts",
+            params: [{ chainId: "0xAA36A7" }],
           })) as string[] | undefined;
 
           if (!accounts || accounts.length === 0) {
@@ -73,14 +74,18 @@ export default function Card1() {
           const signer = await provider.getSigner();
 
           const contractABI = MAIN_ABI.abi;
-          console.log(contractABI);
-          const contractAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+          const contractAddress = "0x8a9B4Eb7F9efdD25cc422e8B1f2D8b9F1F3b5a89";
 
           const MASTER: Contract = new Contract(
             contractAddress,
             contractABI,
             signer,
           );
+
+          const gasEstimate =
+            await MASTER.createDepositAddress.estimateGas(input);
+
+          console.log("Gas estimate:", gasEstimate);
 
           console.log("Connecting to contract");
 
@@ -99,9 +104,13 @@ export default function Card1() {
           }
 
           const { hashedAddress } = await response.json();
-          console.log("Hashed Monero Address:", hashedAddress);
 
-          const tx = await MASTER_SIGNED.CreateDepositAddress(hashedAddress);
+          const hashedAddressString: string = hashedAddress as string;
+          console.log("Hashed Monero Address:", hashedAddressString);
+
+          const tx = await MASTER.createDepositAddress(hashedAddressString, {
+            gasLimit: 500000, // Adjusted dynamically if needed
+          });
           console.log("Transaction sent:", tx);
 
           const receipt = await tx.wait();
@@ -113,11 +122,7 @@ export default function Card1() {
 
           console.log("Subcontract Address:", subcontractAddress);
 
-          const SUBCONTRACT = new Contract(
-            subcontractAddress,
-            SUBCONTRACT_ABI,
-            signer,
-          );
+          setDepositAddress(subcontractAddress);
         } catch (error) {
           console.error("An error occurred:", error);
         }
@@ -134,6 +139,56 @@ export default function Card1() {
       });
     }
   }
+
+  useEffect(() => {
+    const listenToSubcontractEvents = async () => {
+      if (!depositAddress) {
+        console.log(
+          "Waiting for a valid deposit address to activate the listener.",
+        );
+        return; // Exit early if no deposit address
+      }
+
+      try {
+        const provider = new BrowserProvider(window.ethereum!);
+        const signer = await provider.getSigner();
+
+        const SUBCONTRACT = new Contract(
+          depositAddress,
+          SUBCONTRACT_ABI.abi,
+          signer,
+        );
+
+        console.log("Listening to SUBCONTRACT_SIGNED events...");
+
+        const SUBCONTRACT_SIGNED = SUBCONTRACT.connect(signer) as Contract;
+
+        SUBCONTRACT_SIGNED.on("ConfirmSwapSuccess", (TxID: string) => {
+          console.log(
+            `Swap completed successfully, Monero transaction: ${TxID}`,
+          );
+          setMoneroTransactionID(TxID);
+        });
+
+        SUBCONTRACT_SIGNED.on("ConfirmSwapFailure", () => {
+          console.log("Swap failed, refunding ethereum");
+        });
+
+        // Clean up listener when the component unmounts
+        return () => {
+          SUBCONTRACT.removeAllListeners("SUBCONTRACT_SIGNED");
+        };
+      } catch (error) {
+        console.error("Error setting up event listener:", error);
+      }
+    };
+
+    listenToSubcontractEvents();
+  }, [depositAddress]);
+
+  useEffect(() => {
+    console.log(moneroTransactionID);
+  }, [moneroTransactionID]);
 
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
