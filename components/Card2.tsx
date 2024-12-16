@@ -6,12 +6,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Contract, BrowserProvider, getAddress } from "ethers";
+import { Contract, BrowserProvider, Interface, getAddress, Log } from "ethers";
 import MAIN_ABI from "@/components/Card2/MAIN_ABI.json";
 import SUBCONTRACT_ABI from "@/components/Card2/SUBCONTRACT_ABI.json";
 
@@ -32,13 +36,21 @@ declare global {
   }
 }
 
-export default function Card1() {
+export default function Card2() {
   const { toast } = useToast();
 
   const [input, setInput] = useState("");
   const [depositAddress, setDepositAddress] = useState("");
+  const [quantityEthInput, setQuantityEthInput] = useState("");
+  const [ethQuantity, setEthQuantity] = useState(0);
+  const [xmrQuantity, setXmrQuantity] = useState(0);
+  const [depositAddressEtherscan, setDepositAddressEtherscan] = useState("");
   const [moneroTransactionID, setMoneroTransactionID] = useState("");
   // const [account, setAccount] = useState(null);
+  //
+  const contractAddress = process.env.SWAP_MASTER_ADDRESS as string;
+
+  console.log(contractAddress);
 
   async function isMoneroAddress(address: string): Promise<boolean> {
     const validLength = address.length === 95 || address.length === 106;
@@ -74,7 +86,6 @@ export default function Card1() {
           const signer = await provider.getSigner();
 
           const contractABI = MAIN_ABI.abi;
-          const contractAddress = "0x8a9B4Eb7F9efdD25cc422e8B1f2D8b9F1F3b5a89";
 
           const MASTER: Contract = new Contract(
             contractAddress,
@@ -108,13 +119,44 @@ export default function Card1() {
           const hashedAddressString: string = hashedAddress as string;
           console.log("Hashed Monero Address:", hashedAddressString);
 
-          const tx = await MASTER.createDepositAddress(hashedAddressString, {
-            gasLimit: 500000, // Adjusted dynamically if needed
-          });
+          const tx = await MASTER_SIGNED.createDepositAddress(
+            hashedAddressString,
+            {
+              gasLimit: 500000, // Adjusted dynamically if needed
+            },
+          );
           console.log("Transaction sent:", tx);
 
           const receipt = await tx.wait();
           console.log("Transaction confirmed:", receipt);
+
+          const iface = new Interface(MAIN_ABI.abi);
+
+          console.log("checkpoint 1");
+
+          receipt.logs.forEach((log: Log) => {
+            try {
+              const parsedLog = iface.parseLog(log)!;
+
+              // Check if this is the 'depositAddressCreated' event
+              if (parsedLog.name === "depositAddressCreated") {
+                // parsedLog.args now contains the event arguments
+                const sender = parsedLog.args.caller;
+                const clone = parsedLog.args.depositAddress;
+                const hashedMoneroAddress = parsedLog.args.hashedMoneroAddress;
+                const ethToXmrRate = parsedLog.args.ethToXmrRate;
+
+                console.log("Sender:", sender);
+                console.log("Clone:", clone);
+                console.log("hashedMoneroAddress:", hashedMoneroAddress);
+                console.log("ethToXmrRate:", ethToXmrRate.toString());
+              }
+            } catch (err) {
+              console.log("Error parsing the logs", err);
+            }
+          });
+
+          console.log("checkpoint 2");
 
           const subcontractAddress = getAddress(
             receipt.logs[0].topics[2].slice(-40),
@@ -141,6 +183,9 @@ export default function Card1() {
   }
 
   useEffect(() => {
+    setDepositAddressEtherscan(
+      `https://sepolia.etherscan.io/address/${depositAddress}`,
+    );
     const listenToSubcontractEvents = async () => {
       if (!depositAddress) {
         console.log(
@@ -190,7 +235,54 @@ export default function Card1() {
     console.log(moneroTransactionID);
   }, [moneroTransactionID]);
 
-  return (
+  useEffect(() => {
+    const inputAsNumber = Number(quantityEthInput);
+    setEthQuantity(inputAsNumber);
+
+    setXmrQuantity(inputAsNumber);
+  }, [quantityEthInput]);
+
+  return depositAddress ? (
+    <Card className="border-violet-500 h-[350px] w-[350px]">
+      <CardHeader>
+        <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
+        <CardDescription>Deposit Ethereum</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button variant="outline">
+          <Link
+            href={depositAddressEtherscan}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on Etherscan
+          </Link>
+        </Button>
+        <Badge>{depositAddress}</Badge>
+        <Input
+          type="text"
+          placeholder="quantity of eth to deposit "
+          value={quantityEthInput}
+          onChange={(e) => setQuantityEthInput(e.target.value)}
+        />
+        <br />
+        <div className="flex h-5 items-center">
+          {ethQuantity}
+          <Separator orientation="vertical" />
+          {xmrQuantity}
+        </div>
+        <br />
+        <Button
+          variant="secondary"
+          type="submit"
+          onClick={CreateEthereumDepositContract}
+        >
+          Create Ethereum Deposit Contract
+        </Button>
+      </CardContent>
+      <CardFooter></CardFooter>
+    </Card>
+  ) : (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
         <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
