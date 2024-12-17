@@ -16,8 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Contract, BrowserProvider, Interface, getAddress, Log } from "ethers";
-import MAIN_ABI from "@/components/Card2/MAIN_ABI.json";
-import SUBCONTRACT_ABI from "@/components/Card2/SUBCONTRACT_ABI.json";
+import MASTER from "@/components/Contracts/MASTER.json";
+import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 
 interface EthereumProvider {
   isMetaMask?: boolean;
@@ -27,6 +27,14 @@ interface EthereumProvider {
     event: string,
     callback: (...args: unknown[]) => void,
   ) => void;
+}
+
+interface ContractState {
+  depositAddress: string;
+  ethQuantity: number;
+  xmrQuantity: number;
+  moneroAddress: string;
+  transactionID: string;
 }
 
 // Extend the Window interface
@@ -40,6 +48,13 @@ export default function Card2() {
   const { toast } = useToast();
 
   const [input, setInput] = useState("");
+  const [contractState, setContractState] = useState<ContractState>({
+    depositAddress: "",
+    ethQuantity: 0,
+    xmrQuantity: 0,
+    moneroAddress: "",
+    transactionID: "",
+  });
   const [depositAddress, setDepositAddress] = useState("");
   const [quantityEthInput, setQuantityEthInput] = useState("");
   const [ethQuantity, setEthQuantity] = useState(0);
@@ -48,9 +63,6 @@ export default function Card2() {
   const [moneroTransactionID, setMoneroTransactionID] = useState("");
   // const [account, setAccount] = useState(null);
   //
-  const contractAddress = process.env.SWAP_MASTER_ADDRESS as string;
-
-  console.log(contractAddress);
 
   async function isMoneroAddress(address: string): Promise<boolean> {
     const validLength = address.length === 95 || address.length === 106;
@@ -85,22 +97,26 @@ export default function Card2() {
 
           const signer = await provider.getSigner();
 
-          const contractABI = MAIN_ABI.abi;
+          const contractABI = MASTER.abi;
 
-          const MASTER: Contract = new Contract(
+          const contractAddress = process.env.MASTER_ADDRESS!;
+
+          console.log("Master contract address: ", contractAddress);
+
+          const MASTER_UNSIGNED: Contract = new Contract(
             contractAddress,
             contractABI,
             signer,
           );
 
           const gasEstimate =
-            await MASTER.createDepositAddress.estimateGas(input);
+            await MASTER_UNSIGNED.CreateXmrEthContract.estimateGas(input);
 
           console.log("Gas estimate:", gasEstimate);
 
           console.log("Connecting to contract");
 
-          const MASTER_SIGNED = MASTER.connect(signer) as Contract;
+          const MASTER_SIGNED = MASTER_UNSIGNED.connect(signer) as Contract;
 
           console.log("Calling contract function...");
 
@@ -119,7 +135,7 @@ export default function Card2() {
           const hashedAddressString: string = hashedAddress as string;
           console.log("Hashed Monero Address:", hashedAddressString);
 
-          const tx = await MASTER_SIGNED.createDepositAddress(
+          const tx = await MASTER_SIGNED.CreateEthXmrContract(
             hashedAddressString,
             {
               gasLimit: 500000, // Adjusted dynamically if needed
@@ -130,7 +146,7 @@ export default function Card2() {
           const receipt = await tx.wait();
           console.log("Transaction confirmed:", receipt);
 
-          const iface = new Interface(MAIN_ABI.abi);
+          const iface = new Interface(contractABI);
 
           console.log("checkpoint 1");
 
@@ -198,30 +214,30 @@ export default function Card2() {
         const provider = new BrowserProvider(window.ethereum!);
         const signer = await provider.getSigner();
 
-        const SUBCONTRACT = new Contract(
+        const ETH_XMR_UNSIGNED = new Contract(
           depositAddress,
-          SUBCONTRACT_ABI.abi,
+          ETH_XMR.abi,
           signer,
         );
 
         console.log("Listening to SUBCONTRACT_SIGNED events...");
 
-        const SUBCONTRACT_SIGNED = SUBCONTRACT.connect(signer) as Contract;
+        const ETH_XMR_SIGNED = ETH_XMR_UNSIGNED.connect(signer) as Contract;
 
-        SUBCONTRACT_SIGNED.on("ConfirmSwapSuccess", (TxID: string) => {
+        ETH_XMR_SIGNED.on("ConfirmSwapSuccess", (TxID: string) => {
           console.log(
             `Swap completed successfully, Monero transaction: ${TxID}`,
           );
           setMoneroTransactionID(TxID);
         });
 
-        SUBCONTRACT_SIGNED.on("ConfirmSwapFailure", () => {
+        ETH_XMR_SIGNED.on("ConfirmSwapFailure", () => {
           console.log("Swap failed, refunding ethereum");
         });
 
         // Clean up listener when the component unmounts
         return () => {
-          SUBCONTRACT.removeAllListeners("SUBCONTRACT_SIGNED");
+          ETH_XMR_SIGNED.removeAllListeners("SUBCONTRACT_SIGNED");
         };
       } catch (error) {
         console.error("Error setting up event listener:", error);
