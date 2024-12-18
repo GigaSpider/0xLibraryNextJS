@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Contract, BrowserProvider, Interface, getAddress, Log } from "ethers";
+import { useSwapStore } from "@/hooks/store";
 import MASTER from "@/components/Contracts/MASTER.json";
 import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 
@@ -29,14 +30,6 @@ interface EthereumProvider {
   ) => void;
 }
 
-interface ContractState {
-  depositAddress: string;
-  ethQuantity: number;
-  xmrQuantity: number;
-  moneroAddress: string;
-  transactionID: string;
-}
-
 // Extend the Window interface
 declare global {
   interface Window {
@@ -48,19 +41,22 @@ export default function Card2() {
   const { toast } = useToast();
 
   const [input, setInput] = useState("");
-  const [contractState, setContractState] = useState<ContractState>({
-    depositAddress: "",
-    ethQuantity: 0,
-    xmrQuantity: 0,
-    moneroAddress: "",
-    transactionID: "",
-  });
-  const [depositAddress, setDepositAddress] = useState("");
-  const [quantityEthInput, setQuantityEthInput] = useState("");
-  const [ethQuantity, setEthQuantity] = useState(0);
-  const [xmrQuantity, setXmrQuantity] = useState(0);
-  const [depositAddressEtherscan, setDepositAddressEtherscan] = useState("");
-  const [moneroTransactionID, setMoneroTransactionID] = useState("");
+
+  const ETH_XMR_ADDRESS = useSwapStore((state) => state.ETH_XMR_ADDRESS);
+
+  // const [contractState, setContractState] = useState<ContractState>({
+  //   depositAddress: "",
+  //   ethQuantity: 0,
+  //   xmrQuantity: 0,
+  //   moneroAddress: "",
+  //   transactionID: "",
+  // });
+  // const [depositAddress, setDepositAddress] = useState("");
+  // const [quantityEthInput, setQuantityEthInput] = useState("");
+  // const [ethQuantity, setEthQuantity] = useState(0);
+  // const [xmrQuantity, setXmrQuantity] = useState(0);
+  // const [depositAddressEtherscan, setDepositAddressEtherscan] = useState("");
+  // const [moneroTransactionID, setMoneroTransactionID] = useState("");
   // const [account, setAccount] = useState(null);
   //
 
@@ -174,13 +170,11 @@ export default function Card2() {
 
           console.log("checkpoint 2");
 
-          const subcontractAddress = getAddress(
+          const ETH_XMR_ADDRESS = getAddress(
             receipt.logs[0].topics[2].slice(-40),
           );
 
-          console.log("Subcontract Address:", subcontractAddress);
-
-          setDepositAddress(subcontractAddress);
+          console.log("Subcontract Address:", ETH_XMR_ADDRESS);
         } catch (error) {
           console.error("An error occurred:", error);
         }
