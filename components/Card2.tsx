@@ -11,12 +11,14 @@ import {
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Contract, BrowserProvider, Interface, getAddress, Log } from "ethers";
 import { useSwapStore } from "@/hooks/store";
+import { useEthXmrContractListener } from "@/hooks/listeners";
+import { isMoneroAddress } from "./utils";
 import MASTER from "@/components/Contracts/MASTER.json";
 import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 
@@ -42,33 +44,16 @@ export default function Card2() {
 
   const [input, setInput] = useState("");
 
-  const ETH_XMR_ADDRESS = useSwapStore((state) => state.ETH_XMR_ADDRESS);
-
-  // const [contractState, setContractState] = useState<ContractState>({
-  //   depositAddress: "",
-  //   ethQuantity: 0,
-  //   xmrQuantity: 0,
-  //   moneroAddress: "",
-  //   transactionID: "",
-  // });
-  // const [depositAddress, setDepositAddress] = useState("");
-  // const [quantityEthInput, setQuantityEthInput] = useState("");
-  // const [ethQuantity, setEthQuantity] = useState(0);
-  // const [xmrQuantity, setXmrQuantity] = useState(0);
-  // const [depositAddressEtherscan, setDepositAddressEtherscan] = useState("");
-  // const [moneroTransactionID, setMoneroTransactionID] = useState("");
-  // const [account, setAccount] = useState(null);
-  //
-
-  async function isMoneroAddress(address: string): Promise<boolean> {
-    const validLength = address.length === 95 || address.length === 106;
-    const validPrefix = address.startsWith("4") || address.startsWith("8");
-    const base58Regex =
-      /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
-    const validCharacters = base58Regex.test(address);
-
-    return validLength && validPrefix && validCharacters;
-  }
+  const {
+    signer,
+    provider,
+    ETH_XMR_ADDRESS,
+    ETH_XMR_ETHERSCAN_LINK,
+    XMR_TXID,
+    update_ETH_XMR_ADDRESS,
+    update_signer,
+    update_provider,
+  } = useSwapStore();
 
   async function CreateEthereumDepositContract() {
     if (await isMoneroAddress(input)) {
@@ -89,9 +74,13 @@ export default function Card2() {
           const userAccount = accounts[0];
           console.log("Connected account:", userAccount);
 
-          const provider = new BrowserProvider(window.ethereum);
+          const getprovider = new BrowserProvider(window.ethereum);
 
-          const signer = await provider.getSigner();
+          update_provider(getprovider);
+
+          const getSigner = await provider!.getSigner();
+
+          update_signer(getSigner);
 
           const contractABI = MASTER.abi;
 
@@ -170,9 +159,9 @@ export default function Card2() {
 
           console.log("checkpoint 2");
 
-          const ETH_XMR_ADDRESS = getAddress(
-            receipt.logs[0].topics[2].slice(-40),
-          );
+          const address = getAddress(receipt.logs[0].topics[2].slice(-40));
+
+          update_ETH_XMR_ADDRESS(address);
 
           console.log("Subcontract Address:", ETH_XMR_ADDRESS);
         } catch (error) {
@@ -192,67 +181,13 @@ export default function Card2() {
     }
   }
 
-  useEffect(() => {
-    setDepositAddressEtherscan(
-      `https://sepolia.etherscan.io/address/${depositAddress}`,
-    );
-    const listenToSubcontractEvents = async () => {
-      if (!depositAddress) {
-        console.log(
-          "Waiting for a valid deposit address to activate the listener.",
-        );
-        return; // Exit early if no deposit address
-      }
-
-      try {
-        const provider = new BrowserProvider(window.ethereum!);
-        const signer = await provider.getSigner();
-
-        const ETH_XMR_UNSIGNED = new Contract(
-          depositAddress,
-          ETH_XMR.abi,
-          signer,
-        );
-
-        console.log("Listening to SUBCONTRACT_SIGNED events...");
-
-        const ETH_XMR_SIGNED = ETH_XMR_UNSIGNED.connect(signer) as Contract;
-
-        ETH_XMR_SIGNED.on("ConfirmSwapSuccess", (TxID: string) => {
-          console.log(
-            `Swap completed successfully, Monero transaction: ${TxID}`,
-          );
-          setMoneroTransactionID(TxID);
-        });
-
-        ETH_XMR_SIGNED.on("ConfirmSwapFailure", () => {
-          console.log("Swap failed, refunding ethereum");
-        });
-
-        // Clean up listener when the component unmounts
-        return () => {
-          ETH_XMR_SIGNED.removeAllListeners("SUBCONTRACT_SIGNED");
-        };
-      } catch (error) {
-        console.error("Error setting up event listener:", error);
-      }
-    };
-
-    listenToSubcontractEvents();
-  }, [depositAddress]);
+  useEthXmrContractListener();
 
   useEffect(() => {
-    console.log(moneroTransactionID);
-  }, [moneroTransactionID]);
+    console.log(XMR_TXID);
+  }, [XMR_TXID]);
 
-  useEffect(() => {
-    const inputAsNumber = Number(quantityEthInput);
-    setEthQuantity(inputAsNumber);
-
-    setXmrQuantity(inputAsNumber);
-  }, [quantityEthInput]);
-
-  return depositAddress ? (
+  return ETH_XMR_ADDRESS ? (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
         <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
@@ -261,14 +196,13 @@ export default function Card2() {
       <CardContent>
         <Button variant="outline">
           <Link
-            href={depositAddressEtherscan}
+            href={ETH_XMR_ETHERSCAN_LINK}
             target="_blank"
             rel="noopener noreferrer"
           >
             View on Etherscan
           </Link>
         </Button>
-        <Badge>{depositAddress}</Badge>
         <Input
           type="text"
           placeholder="quantity of eth to deposit "
