@@ -2,12 +2,10 @@ import { useEffect } from "react";
 import { Contract } from "ethers";
 import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 import XMR_ETH from "@/components/Contracts/XMR_ETH.json";
-import { useSwapStore } from "@/hooks/store";
+import { useSwapStore } from "@/hooks/store/store";
 
 export function useEthXmrContractListener() {
-  const ETH_XMR_ADDRESS = useSwapStore((state) => state.ETH_XMR_ADDRESS);
-  const provider = useSwapStore((state) => state.provider);
-  const update_XMR_TXID = useSwapStore((state) => state.update_XMR_TXID);
+  const { ETH_XMR_ADDRESS, provider, update_XMR_TXID } = useSwapStore();
 
   useEffect(() => {
     if (!ETH_XMR_ADDRESS) return;
@@ -34,8 +32,7 @@ export function useEthXmrContractListener() {
 }
 
 export function useXmrEthContractListener() {
-  const XMR_ETH_ADDRESS = useSwapStore((state) => state.XMR_ETH_ADDRESS);
-  const provider = useSwapStore((state) => state.provider);
+  const { XMR_ETH_ADDRESS, provider } = useSwapStore();
 
   useEffect(() => {
     if (!XMR_ETH_ADDRESS) return;

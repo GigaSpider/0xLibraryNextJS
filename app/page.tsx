@@ -4,7 +4,7 @@ import Card1 from "@/components/Card1";
 import Card2 from "@/components/Card2";
 import Card3 from "@/components/Card3";
 import ContractInfo from "@/components/DisplayContract";
-import { useSwapStore } from "@/hooks/store";
+import { useSwapStore } from "@/hooks/store/store";
 
 export default function Home() {
   const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();

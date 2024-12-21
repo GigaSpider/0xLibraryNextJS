@@ -9,9 +9,12 @@ type State = {
   ETH_XMR_ETHERSCAN_LINK: string;
   XMR_ETH_ETHERSCAN_LINK: string;
   XMR_ETH_ADDRESS: string;
+  XMR_DEPOSIT_ADDRESS: string;
   XMR_TXID: string;
+  EXCHANGE_RATE: number | null;
   provider: BrowserProvider | null;
   signer: Signer | null;
+  is_connected: boolean;
 };
 
 type Action = {
@@ -20,6 +23,11 @@ type Action = {
   update_provider: (provider: State["provider"]) => void;
   update_signer: (signer: State["signer"]) => void;
   update_XMR_TXID: (XMR_TXID: State["XMR_TXID"]) => void;
+  update_EXCHANGE_RATE: (EXCHANGE_RATE: State["EXCHANGE_RATE"]) => void;
+  update_XMR_DEPOSIT_ADDRESS: (
+    XMR_DEPOSIT_ADDRESS: State["XMR_DEPOSIT_ADDRESS"],
+  ) => void;
+  update_is_connected: (is_connected: State["is_connected"]) => void;
 };
 
 export const useSwapStore = create<State & Action>((set, get) => ({
@@ -29,10 +37,15 @@ export const useSwapStore = create<State & Action>((set, get) => ({
   XMR_ETH_ADDRESS: "",
   ETH_XMR_ETHERSCAN_LINK: "",
   XMR_ETH_ETHERSCAN_LINK: "",
+  XMR_DEPOSIT_ADDRESS: "",
   XMR_TXID: "",
+  EXCHANGE_RATE: null,
   ETH_XMR_CONTRACT: null,
   provider: null,
   signer: null,
+  is_connected: false,
+  update_is_connected: (is_connected) =>
+    set(() => ({ is_connected: is_connected })),
   update_provider: (provider) => set(() => ({ provider: provider })),
   update_signer: (signer) => set(() => ({ signer: signer })),
   update_ETH_XMR_ADDRESS: (ETH_XMR_ADDRESS) => {
@@ -51,7 +64,7 @@ export const useSwapStore = create<State & Action>((set, get) => ({
 
     set(() => ({
       ETH_XMR_ADDRESS,
-      ETH_XMR_ETHERSCAN_LINK: `https://sepolia.etherscan.com/address/${ETH_XMR_ADDRESS}`,
+      ETH_XMR_ETHERSCAN_LINK: `https://sepolia.etherscan.io/address/${ETH_XMR_ADDRESS}`,
       ETH_XMR_CONTRACT: contract,
     }));
   },
@@ -61,4 +74,9 @@ export const useSwapStore = create<State & Action>((set, get) => ({
       XMR_ETH_ETHERSCAN_LINK: `https://sepolia.etherscan.com/address/${XMR_ETH_ADDRESS}`,
     })),
   update_XMR_TXID: (XMR_TXID) => set(() => ({ XMR_TXID: XMR_TXID })),
+  update_EXCHANGE_RATE: (EXCHANGE_RATE) =>
+    set(() => ({ EXCHANGE_RATE: EXCHANGE_RATE })),
+  update_XMR_DEPOSIT_ADDRESS: (XMR_DEPOSIT_ADDRESS) => () => ({
+    XMR_DEPOSIT_ADDRESS: XMR_DEPOSIT_ADDRESS,
+  }),
 }));
