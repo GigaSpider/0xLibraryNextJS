@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { BrowserProvider } from "ethers";
-import { useSwapStore } from "@/hooks/store/store";
+import { useSwapStore } from "@/hooks/store/zustand";
 
 interface EthereumProvider {
   request: (args: { method: string; params?: any[] }) => Promise<any>;

@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { useSwapStore } from "@/hooks/store/store";
+import { useSwapStore } from "@/hooks/store/zustand";
 
 export default function SwapCompleted() {
   const { XMR_TXID } = useSwapStore();

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Contract } from "ethers";
 import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 import XMR_ETH from "@/components/Contracts/XMR_ETH.json";
-import { useSwapStore } from "@/hooks/store/store";
+import { useSwapStore } from "@/hooks/store/zustand";
 
 export function useEthXmrContractListener() {
   const { ETH_XMR_ADDRESS, provider, update_XMR_TXID } = useSwapStore();

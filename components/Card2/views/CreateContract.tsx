@@ -8,15 +8,37 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Interface, Log, Contract, getAddress } from "ethers";
+import { Interface, Log, Contract, isAddress } from "ethers";
 import { useSwapStore } from "@/hooks/store/zustand";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { isMoneroAddress } from "@/components/utils";
 import { useState } from "react";
 import MASTER from "@/components/Contracts/MASTER.json";
 import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
+
+// Define schemas for both forms
+const createContractSchema = z.object({
+  moneroAddress: z.string(),
+});
+
+const connectContractSchema = z.object({
+  contractAddress: z.string(),
+});
+
+type CreateContractForm = z.infer<typeof createContractSchema>;
+type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function CreateContract() {
   const { toast } = useToast();
@@ -28,31 +50,39 @@ export default function CreateContract() {
     update_EXCHANGE_RATE,
   } = useSwapStore();
   const { connect } = useMetaMask();
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleContractCreation() {
-    if (!(await isMoneroAddress(input))) {
+  // Create form instances
+  const createForm = useForm<CreateContractForm>({
+    resolver: zodResolver(createContractSchema),
+    defaultValues: {
+      moneroAddress: "",
+    },
+  });
+
+  const connectForm = useForm<ConnectContractForm>({
+    resolver: zodResolver(connectContractSchema),
+    defaultValues: {
+      contractAddress: "",
+    },
+  });
+
+  async function onCreateSubmit(data: CreateContractForm) {
+    if (!(await isMoneroAddress(data.moneroAddress))) {
       toast({
-        title: "Invalid Monero Address",
-        description: "Please enter a valid address for your withdrawal.",
+        title: "Not a Monero Address",
+        description: "Please enter a valid Monero address",
         variant: "destructive",
       });
       return;
     }
-
     setIsLoading(true);
     try {
-      // Connect first and wait for it to complete
       await connect();
-      // Add a small delay to allow state to update
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const currentProvider = provider;
       const currentSigner = signer;
-
-      console.log(provider);
-      console.log(signer);
 
       if (!currentProvider || !currentSigner) {
         throw new Error("Provider or signer not available");
@@ -61,7 +91,7 @@ export default function CreateContract() {
       const response = await fetch("/api/encrypt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moneroAddress: input }),
+        body: JSON.stringify({ moneroAddress: data.moneroAddress }),
       });
 
       if (!response.ok) {
@@ -129,53 +159,94 @@ export default function CreateContract() {
     }
   }
 
+  async function onConnectSubmit(data: ConnectContractForm) {
+    if (!isAddress(data.contractAddress)) {
+      toast({
+        title: "Not a Smart Contract",
+        description: "Please enter a valid Ethereum Address",
+        variant: "destructive",
+      });
+      return;
+    }
+    console.log("Connecting to contract:", data.contractAddress);
+    // Your contract connection logic here
+  }
+
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
         <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Input
-          type="text"
-          placeholder="Enter Monero Output Address"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-        />
-        <Button
-          variant="secondary"
-          type="submit"
-          onClick={handleContractCreation}
-          disabled={isLoading || !input}
-          className="w-full"
-        >
-          {isLoading
-            ? "Creating Contract..."
-            : is_connected
-              ? "Create Ethereum Deposit Contract"
-              : "Connect Wallet & Create Contract"}
-        </Button>
+        <Form {...createForm}>
+          <form
+            onSubmit={createForm.handleSubmit(onCreateSubmit)}
+            className="space-y-4"
+          >
+            <FormField
+              control={createForm.control}
+              name="moneroAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter Monero Output Address"
+                      {...field}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              variant="secondary"
+              type="submit"
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading
+                ? "Creating Contract..."
+                : is_connected
+                  ? "Create Ethereum Deposit Contract"
+                  : "Connect Wallet & Create Contract"}
+            </Button>
+          </form>
+        </Form>
+
         <br />
-        <Input
-          type="text"
-          placeholder="Enter Existing Swap Contract"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-        />
-        <Button
-          variant="secondary"
-          type="submit"
-          onClick={handleContractCreation}
-          disabled={isLoading || !input}
-          className="w-full"
-        >
-          {isLoading
-            ? "Creating Contract..."
-            : is_connected
-              ? "Enter Existing Deposit Contract"
-              : "Enter Existing Deposit Contract"}
-        </Button>
+
+        <Form {...connectForm}>
+          <form
+            onSubmit={connectForm.handleSubmit(onConnectSubmit)}
+            className="space-y-4"
+          >
+            <FormField
+              control={connectForm.control}
+              name="contractAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter Existing Swap Contract"
+                      {...field}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              variant="secondary"
+              type="submit"
+              disabled={isLoading}
+              className="w-full"
+            >
+              Enter Existing Deposit Contract
+            </Button>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter />
     </Card>

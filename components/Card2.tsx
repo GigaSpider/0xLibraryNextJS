@@ -3,7 +3,7 @@
 import ContractInteraction from "@/components/Card2/views/ContractInteraction";
 import CreateContract from "./Card2/views/CreateContract";
 import SwapCompleted from "./Card2/views/SwapCompleted";
-import { useSwapStore } from "@/hooks/store/store";
+import { useSwapStore } from "@/hooks/store/zustand";
 import { useEthXmrContractListener } from "@/hooks/listeners";
 
 export default function Card2() {

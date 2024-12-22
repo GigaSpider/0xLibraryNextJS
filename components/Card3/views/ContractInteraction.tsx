@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useSwapStore } from "@/hooks/store/store";
+import { useSwapStore } from "@/hooks/store/zustand";
 
 export default function ContractInteraction() {
   const { XMR_ETH_ETHERSCAN_LINK } = useSwapStore();
