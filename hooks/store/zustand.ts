@@ -64,19 +64,20 @@ export const useSwapStore = create<State & Action>((set, get) => ({
 
     set(() => ({
       ETH_XMR_ADDRESS,
-      ETH_XMR_ETHERSCAN_LINK: `https://sepolia.etherscan.io/address/${ETH_XMR_ADDRESS}`,
+      ETH_XMR_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${ETH_XMR_ADDRESS}`,
       ETH_XMR_CONTRACT: contract,
     }));
   },
   update_XMR_ETH_ADDRESS: (XMR_ETH_ADDRESS) =>
     set(() => ({
       XMR_ETH_ADDRESS: XMR_ETH_ADDRESS,
-      XMR_ETH_ETHERSCAN_LINK: `https://sepolia.etherscan.com/address/${XMR_ETH_ADDRESS}`,
+      XMR_ETH_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${XMR_ETH_ADDRESS}`,
     })),
   update_XMR_TXID: (XMR_TXID) => set(() => ({ XMR_TXID: XMR_TXID })),
   update_EXCHANGE_RATE: (EXCHANGE_RATE) =>
     set(() => ({ EXCHANGE_RATE: EXCHANGE_RATE })),
-  update_XMR_DEPOSIT_ADDRESS: (XMR_DEPOSIT_ADDRESS) => () => ({
-    XMR_DEPOSIT_ADDRESS: XMR_DEPOSIT_ADDRESS,
-  }),
+  update_XMR_DEPOSIT_ADDRESS: (XMR_DEPOSIT_ADDRESS) =>
+    set(() => ({
+      XMR_DEPOSIT_ADDRESS: XMR_DEPOSIT_ADDRESS,
+    })),
 }));

@@ -1,26 +1,26 @@
+import { useSwapStore } from "@/hooks/store/zustand";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
   CardDescription,
+  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useSwapStore } from "@/hooks/store/zustand";
 
-export default function ContractInteraction() {
+export default function AwaitingUpdate() {
   const { XMR_ETH_ETHERSCAN_LINK, XMR_DEPOSIT_ADDRESS } = useSwapStore();
 
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap XMR ➡️ ETH</CardTitle>
-        <CardDescription>XMR/ETH Contract Interaction</CardDescription>
+        <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
+        <CardDescription>Awaiting Monero Deposit Address</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full">
           <Link
             href={XMR_ETH_ETHERSCAN_LINK}
             target="_blank"
@@ -29,10 +29,8 @@ export default function ContractInteraction() {
             View on Etherscan
           </Link>
         </Button>
-        <br />
-        Deposit Monero At this Address {XMR_DEPOSIT_ADDRESS}
+        {XMR_DEPOSIT_ADDRESS as string}
       </CardContent>
-      <CardFooter></CardFooter>
     </Card>
   );
 }

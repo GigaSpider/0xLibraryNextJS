@@ -42,13 +42,8 @@ type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function CreateContract() {
   const { toast } = useToast();
-  const {
-    signer,
-    provider,
-    is_connected,
-    update_ETH_XMR_ADDRESS,
-    update_EXCHANGE_RATE,
-  } = useSwapStore();
+  const { is_connected, update_ETH_XMR_ADDRESS, update_EXCHANGE_RATE } =
+    useSwapStore();
   const { connect } = useMetaMask();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -78,11 +73,12 @@ export default function CreateContract() {
     }
     setIsLoading(true);
     try {
-      await connect();
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Only call connect once
+      const { provider: currentProvider, signer: currentSigner } =
+        await connect();
 
-      const currentProvider = provider;
-      const currentSigner = signer;
+      console.log("provider: ", currentProvider);
+      console.log("signer: ", currentSigner);
 
       if (!currentProvider || !currentSigner) {
         throw new Error("Provider or signer not available");
@@ -99,11 +95,18 @@ export default function CreateContract() {
       }
 
       const { hashedAddress } = await response.json();
+      console.log(hashedAddress);
       const contractAddress = process.env.NEXT_PUBLIC_MASTER_ADDRESS!;
       console.log("Contract Address ", contractAddress);
-      const contract = new Contract(contractAddress, MASTER.abi, signer);
+      const contract = new Contract(contractAddress, MASTER.abi, currentSigner);
 
-      const tx = await contract.CreateEthXmrContract(hashedAddress);
+      // await contract.CreateEthXmrContract.staticCall(hashedAddress, {
+      //   gasLimit: 500000,
+      // });
+
+      const tx = await contract.CreateEthXmrContract(hashedAddress, {
+        gasLimit: 500000,
+      });
       const receipt = await tx.wait();
 
       const iface = new Interface(MASTER.abi);

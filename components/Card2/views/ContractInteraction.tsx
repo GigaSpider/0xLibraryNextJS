@@ -32,18 +32,21 @@ export default function ContractInteraction() {
   // Update calculations when inputs change
   useEffect(() => {
     if (xmrAmount && EXCHANGE_RATE != null) {
-      const ethRequired = Number(xmrAmount) / EXCHANGE_RATE;
+      // Convert BigInt to number for calculations
+      const exchangeRateNumber = Number(EXCHANGE_RATE.toString());
+      const ethRequired = Number(usdAmount) / exchangeRateNumber;
       setEthAmount(ethRequired.toFixed(6));
-      setUsdAmount((Number(xmrAmount) * 100).toFixed(2)); // Example USD rate
+      setUsdAmount((Number(xmrAmount) * 100).toFixed(2));
     } else if (usdAmount) {
-      const xmr = Number(usdAmount) / 100; // Example USD rate
+      const exchangeRateNumber = Number((EXCHANGE_RATE as number).toString());
+      const xmr = Number(usdAmount) / 100;
       setXmrAmount(xmr.toFixed(6));
-      setEthAmount((xmr / (EXCHANGE_RATE as number)).toFixed(6));
+      setEthAmount((xmr / exchangeRateNumber).toFixed(6));
     }
   }, [xmrAmount, usdAmount, EXCHANGE_RATE]);
 
   async function handleDeposit() {
-    if (!signer || provider) return;
+    if (!signer || !provider) return;
 
     setIsLoading(true);
 
@@ -56,6 +59,8 @@ export default function ContractInteraction() {
       await tx.wait();
     } catch (error) {
       console.error("Deposit failed", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
