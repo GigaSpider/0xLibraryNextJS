@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Interface, Log, Contract, isAddress } from "ethers";
 import { useSwapStore } from "@/hooks/store/zustand";
+import { useEventStore, Event } from "@/hooks/store/eventStore";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -26,7 +27,6 @@ import { z } from "zod";
 import { isMoneroAddress } from "@/components/utils";
 import { useState } from "react";
 import MASTER from "@/components/Contracts/MASTER.json";
-import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 
 // Define schemas for both forms
 const createContractSchema = z.object({
@@ -42,8 +42,13 @@ type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function CreateContract() {
   const { toast } = useToast();
-  const { is_connected, update_ETH_XMR_ADDRESS, update_EXCHANGE_RATE } =
-    useSwapStore();
+  const {
+    is_connected,
+    update_ETH_XMR_ADDRESS,
+    update_EXCHANGE_RATE,
+    MASTER_ADDRESS,
+  } = useSwapStore();
+  const { events, add_event } = useEventStore();
   const { connect } = useMetaMask();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -96,7 +101,7 @@ export default function CreateContract() {
 
       const { hashedAddress } = await response.json();
       console.log(hashedAddress);
-      const contractAddress = process.env.NEXT_PUBLIC_MASTER_ADDRESS!;
+      const contractAddress = MASTER_ADDRESS;
       console.log("Contract Address ", contractAddress);
       const contract = new Contract(contractAddress, MASTER.abi, currentSigner);
 
@@ -129,6 +134,18 @@ export default function CreateContract() {
             console.log("hashedMoneroAddress:", encryptedMoneroAddress);
             console.log("ethToXmrRate:", ethToXmrRate.toString());
 
+            console.log(
+              "checkpoint, should see an empty event array: ",
+              events,
+            );
+
+            const event: Event = {
+              event: "new ETH/XMR swap contract",
+              timestamp: Date.now(),
+            };
+            add_event(event);
+
+            console.log(events);
             update_ETH_XMR_ADDRESS(address);
             update_EXCHANGE_RATE(ethToXmrRate);
           } else {

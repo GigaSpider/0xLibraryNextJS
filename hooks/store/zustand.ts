@@ -8,6 +8,7 @@ type State = {
   ETH_XMR_CONTRACT: Contract | null;
   ETH_XMR_ETHERSCAN_LINK: string;
   XMR_ETH_ETHERSCAN_LINK: string;
+  MASTER_ETHERSCAN_LINK: string;
   XMR_ETH_ADDRESS: string;
   XMR_DEPOSIT_ADDRESS: string;
   XMR_TXID: string;
@@ -31,8 +32,8 @@ type Action = {
 };
 
 export const useSwapStore = create<State & Action>((set, get) => ({
-  // Added 'get' here
-  MASTER_ADDRESS: process.env.MASTER_ADDRESS!,
+  MASTER_ADDRESS: process.env.NEXT_PUBLIC_MASTER_ADDRESS!,
+  MASTER_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${process.env.NEXT_PUBLIC_MASTER_ADDRESS}`,
   ETH_XMR_ADDRESS: "",
   XMR_ETH_ADDRESS: "",
   ETH_XMR_ETHERSCAN_LINK: "",

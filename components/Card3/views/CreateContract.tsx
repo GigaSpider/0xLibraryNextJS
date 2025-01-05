@@ -16,15 +16,17 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Contract, Interface, Log, getAddress, isAddress } from "ethers";
+import { Contract, Interface, Log, isAddress } from "ethers";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useSwapStore } from "@/hooks/store/zustand";
+import { useEventStore, Event } from "@/hooks/store/eventStore";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import MASTER from "@/components/Contracts/MASTER.json";
+import ETH_XMR from "@/components/Contracts/ETH_XMR.json";
 
 const createContractSchema = z.object({
   ethereumAddress: z.string(),
@@ -41,8 +43,10 @@ export default function CreateContract() {
   const { toast } = useToast();
   const { is_connected, update_XMR_ETH_ADDRESS, update_EXCHANGE_RATE } =
     useSwapStore();
+  const { add_event } = useEventStore();
   const { connect } = useMetaMask();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreateLoading, setIsCreateLoading] = useState(false);
+  const [isConnectLoading, setIsConnectLoading] = useState(false);
 
   // Create form instances
   const createForm = useForm<CreateContractForm>({
@@ -68,7 +72,7 @@ export default function CreateContract() {
       });
       return;
     }
-    setIsLoading(true);
+    setIsCreateLoading(true);
     try {
       // Only call connect once
       const { provider: currentProvider, signer: currentSigner } =
@@ -105,6 +109,13 @@ export default function CreateContract() {
             console.log("Contract Address:", address);
             console.log("withdrawing to: ", withdrawalAddress);
 
+            const event: Event = {
+              event: "new XMR/ETH swap contract",
+              timestamp: Date.now(),
+            };
+
+            add_event(event);
+
             update_XMR_ETH_ADDRESS(address);
             update_EXCHANGE_RATE(3500);
           } else {
@@ -134,7 +145,7 @@ export default function CreateContract() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsCreateLoading(false);
     }
   }
 
@@ -148,6 +159,43 @@ export default function CreateContract() {
       return;
     }
     console.log("Connecting to contract:", data.contractAddress);
+
+    setIsConnectLoading(true);
+
+    try {
+      console.log("connection checkpoint");
+      // Only call connect once
+      const { provider: currentProvider, signer: currentSigner } =
+        await connect();
+
+      console.log("provider: ", currentProvider);
+      console.log("signer: ", currentSigner);
+
+      if (!currentProvider || !currentSigner) {
+        throw new Error("Provider or signer not available");
+      }
+
+      const bytecode = await currentProvider.getCode(data.contractAddress);
+
+      console.log(bytecode);
+
+      if (bytecode != ETH_XMR.bytecode) {
+        console.log("doesnt match");
+      }
+
+      console.log("bytecode matches");
+    } catch (error) {
+      console.error("Contract connection failed:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Contract connection failed",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnectLoading(false);
+    }
+
     // Your contract connection logic here
   }
 
@@ -171,7 +219,7 @@ export default function CreateContract() {
                     <Input
                       placeholder="Enter Ethereum Output Address"
                       {...field}
-                      disabled={isLoading}
+                      disabled={isCreateLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -181,11 +229,11 @@ export default function CreateContract() {
             <Button
               variant="secondary"
               type="submit"
-              disabled={isLoading}
+              disabled={isConnectLoading}
               className="w-full"
             >
-              {isLoading
-                ? "Creating Contract..."
+              {isConnectLoading
+                ? "Connecting to Contract..."
                 : is_connected
                   ? "Create Monero Deposit Contract"
                   : "Connect Wallet & Create Contract"}
@@ -209,7 +257,7 @@ export default function CreateContract() {
                     <Input
                       placeholder="Enter Existing Swap Contract"
                       {...field}
-                      disabled={isLoading}
+                      disabled={isConnectLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -219,7 +267,7 @@ export default function CreateContract() {
             <Button
               variant="secondary"
               type="submit"
-              disabled={isLoading}
+              disabled={isConnectLoading}
               className="w-full"
             >
               Enter Existing Deposit Contract

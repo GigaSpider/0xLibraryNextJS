@@ -9,20 +9,12 @@ import { useSwapStore } from "@/hooks/store/zustand";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import { parseEther } from "ethers";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function ContractInteraction() {
   useMetaMask();
-  const {
-    ETH_XMR_ADDRESS,
-    ETH_XMR_ETHERSCAN_LINK,
-    EXCHANGE_RATE,
-    XMR_TXID,
-    signer,
-    provider,
-  } = useSwapStore();
+  const { ETH_XMR_ADDRESS, EXCHANGE_RATE, signer, provider } = useSwapStore();
 
   const [xmrAmount, setXmrAmount] = useState("");
   const [usdAmount, setUsdAmount] = useState("");
@@ -68,9 +60,7 @@ export default function ContractInteraction() {
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
         <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
-        <CardDescription>
-          Calculate and send ETH to receive XMR.
-        </CardDescription>
+        <CardDescription>Send ETH to smart contract.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -106,25 +96,7 @@ export default function ContractInteraction() {
           >
             {isLoading ? "Sending..." : "Send ETH"}
           </Button>
-
-          <Button variant="outline" className="w-full">
-            <Link
-              href={ETH_XMR_ETHERSCAN_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View on Etherscan
-            </Link>
-          </Button>
         </div>
-
-        {XMR_TXID ? (
-          <div>Xmr Transfer ID: {XMR_TXID}</div>
-        ) : (
-          <div className="text-sm text-muted-foreground">
-            Listening for XMR transfer confirmation...
-          </div>
-        )}
       </CardContent>
     </Card>
   );
