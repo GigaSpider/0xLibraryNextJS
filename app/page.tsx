@@ -8,6 +8,7 @@ import { useSwapStore } from "@/hooks/store/zustand";
 
 export default function Home() {
   const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();
+  console.log("testing");
   console.log("Contract Address:", process.env.CONTRACT_ADDRESS);
   console.log("Public Address:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
   return (
