@@ -10,6 +10,12 @@ export default function Home() {
   const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();
   return (
     <div className="min-h-screen">
+      {/* Version display on top left */}
+      <div className="fixed top-2 left-2 z-50">
+        {process.env.NEXT_PUBLIC_VERSION}
+      </div>
+
+      {/* Contract info on top right */}
       <div className="fixed top-2 right-2 w-auto z-50 space-y-1">
         {MASTER_ADDRESS && (
           <div className="flex items-center gap-2">
@@ -30,6 +36,7 @@ export default function Home() {
           </div>
         )}
       </div>
+
       <div className="flex justify-center items-center space-x-6 h-screen">
         <Card1 />
         <Card2 />
