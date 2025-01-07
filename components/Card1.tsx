@@ -42,7 +42,7 @@ export default function Card1() {
               </TableHeader>
               <TableBody>
                 {sorted.map((event) => (
-                  <TableRow key={event.event}>
+                  <TableRow key={event.timestamp}>
                     <TableCell className="font-medium">{event.event}</TableCell>
                     <TableCell className="text-right">
                       {event.timestamp}

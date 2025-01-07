@@ -180,7 +180,8 @@ export default function CreateContract() {
   }
 
   async function onConnectSubmit(data: ConnectContractForm) {
-    if (!isAddress(data.contractAddress)) {
+    const address = data.contractAddress;
+    if (!isAddress(address)) {
       toast({
         title: "Not a Smart Contract",
         description: "Please enter a valid Ethereum Address",
@@ -189,7 +190,52 @@ export default function CreateContract() {
       return;
     }
     console.log("Connecting to contract:", data.contractAddress);
-    // Your contract connection logic here
+
+    try {
+      const { provider: currentProvider, signer: currentSigner } =
+        await connect();
+
+      console.log("provider: ", currentProvider);
+      console.log("signer: ", currentSigner);
+
+      if (!currentProvider || !currentSigner) {
+        throw new Error("Provider or signer not available");
+      }
+
+      const contractAddress = MASTER_ADDRESS;
+      console.log("Contract Address ", contractAddress);
+      const contract = new Contract(contractAddress, MASTER.abi, currentSigner);
+
+      const result = await contract.ETH_XMR_CONTRACTS(address);
+
+      if (!isAddress(result)) {
+        toast({
+          title: "Error",
+          description: "Contract connection failed",
+          variant: "destructive",
+        });
+        const event: Event = {
+          event: "Contract connection failure",
+          timestamp: Date.now(),
+        };
+        add_event(event);
+      } else if (isAddress(result)) {
+        const event: Event = {
+          event: `Contract connection to contract ${result}`,
+          timestamp: Date.now(),
+        };
+        add_event(event);
+        update_ETH_XMR_ADDRESS(result);
+      }
+    } catch (error) {
+      console.error("Contract creation failed:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Contract connection failed",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
