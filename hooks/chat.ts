@@ -1,84 +1,66 @@
-import { useChatStore, Message, Channel } from "./store/chatStore";
+"use client";
+
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useChatStore } from "./store/chatStore";
 import { useEffect } from "react";
-import Pusher from "pusher-js";
 
-// Create a single Pusher instance
-const pusherClient = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-  forceTLS: true, // Add this
-});
-
-export function useChat() {
+export function useChatHook() {
   const {
-    messages,
     set_MAIN_messages,
     set_BUSINESS_messages,
-    set_MISOGYNY_messages,
-    set_RACISM_messages,
+    set_POLITICS_messages,
+    set_CRYPTOCURRENCY_messages,
   } = useChatStore();
 
+  const MAIN_messages = useQuery(api.functions.chat.getMessages, {
+    channelId: "MAIN",
+  });
+  console.log(MAIN_messages);
+  const BUSINESS_messages = useQuery(api.functions.chat.getMessages, {
+    channelId: "BUSINESS",
+  });
+  const POLITICS_messages = useQuery(api.functions.chat.getMessages, {
+    channelId: "POLITICS",
+  });
+  const CRYPTOCURRENCY_messages = useQuery(api.functions.chat.getMessages, {
+    channelId: "CRYPTOCURRENCY",
+  });
+
   useEffect(() => {
-    // Subscribe to channels
-    const channels = {
-      main: pusherClient.subscribe("main"),
-      business: pusherClient.subscribe("business"),
-      racism: pusherClient.subscribe("racism"),
-      misogyny: pusherClient.subscribe("misogyny"),
-    };
-
-    // Bind events
-    channels.main.bind("message", (message: Message) => {
-      set_MAIN_messages(message);
-    });
-
-    channels.business.bind("message", (message: Message) => {
-      set_BUSINESS_messages(message);
-    });
-
-    channels.racism.bind("message", (message: Message) => {
-      set_RACISM_messages(message);
-    });
-
-    channels.misogyny.bind("message", (message: Message) => {
-      set_MISOGYNY_messages(message);
-    });
-
-    // Cleanup
-    return () => {
-      channels.main.unbind_all();
-      channels.business.unbind_all();
-      channels.racism.unbind_all();
-      channels.misogyny.unbind_all();
-
-      pusherClient.unsubscribe("main");
-      pusherClient.unsubscribe("business");
-      pusherClient.unsubscribe("racism");
-      pusherClient.unsubscribe("misogyny");
-    };
+    if (MAIN_messages) set_MAIN_messages(MAIN_messages);
+    if (BUSINESS_messages) set_BUSINESS_messages(BUSINESS_messages);
+    if (POLITICS_messages) set_POLITICS_messages(POLITICS_messages);
+    if (CRYPTOCURRENCY_messages)
+      set_CRYPTOCURRENCY_messages(CRYPTOCURRENCY_messages);
   }, [
+    MAIN_messages,
+    BUSINESS_messages,
+    POLITICS_messages,
+    CRYPTOCURRENCY_messages,
     set_MAIN_messages,
     set_BUSINESS_messages,
-    set_MISOGYNY_messages,
-    set_RACISM_messages,
+    set_POLITICS_messages,
+    set_CRYPTOCURRENCY_messages,
   ]);
+}
 
-  async function sendMessage(channel: Channel, message: Message) {
-    if (!message) return;
+export function useSendMessage() {
+  const sendMessageMutation = useMutation(api.functions.chat.sendMessage);
+
+  async function sendMessage(message: {
+    channelId: string;
+    author: string;
+    text: string;
+  }) {
+    if (!message || !message.text.trim()) return;
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel, message }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
+      await sendMessageMutation(message);
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Failed to send message:", error);
     }
   }
 
-  return { messages, sendMessage };
+  return { sendMessage };
 }

@@ -8,8 +8,9 @@ import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import Main from "@/components/Chatbox/channels/Main";
 import Business from "@/components/Chatbox/channels/Business";
-import Mysogyny from "./channels/Misogyny";
-import Racism from "./channels/Racism";
+import Politics from "./channels/Politics";
+import Cryptocurrency from "./channels/Cryptocurrency";
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -31,10 +32,10 @@ export default function Chatbox() {
         return <Main />;
       case Channel.BUSINESS:
         return <Business />;
-      case Channel.MISOGYNY:
-        return <Mysogyny />;
-      case Channel.RACISM:
-        return <Racism />;
+      case Channel.POLITICS:
+        return <Politics />;
+      case Channel.CRYPTOCURRENCY:
+        return <Cryptocurrency />;
     }
   };
 
@@ -125,17 +126,17 @@ export default function Chatbox() {
                     <div>
                       <Button
                         variant="ghost"
-                        onClick={() => setChannel(Channel.RACISM)}
+                        onClick={() => setChannel(Channel.POLITICS)}
                       >
-                        #racism
+                        #politics
                       </Button>
                     </div>
                     <div>
                       <Button
                         variant="ghost"
-                        onClick={() => setChannel(Channel.MISOGYNY)}
+                        onClick={() => setChannel(Channel.CRYPTOCURRENCY)}
                       >
-                        #misogyny
+                        #crypto
                       </Button>
                     </div>
                   </ResizablePanel>

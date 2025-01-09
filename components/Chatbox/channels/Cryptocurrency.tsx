@@ -1,34 +1,34 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useChatStore, Message, Channel } from "@/hooks/store/chatStore";
-import { useChat } from "@/hooks/chat";
+import { useChatStore } from "@/hooks/store/chatStore";
+import { useChatHook, useSendMessage } from "@/hooks/chat";
 import { useState } from "react";
 
-export default function Racism() {
+export default function Cryptocurrency() {
   const [input, setInput] = useState("");
-  const { RACISM_messages, username } = useChatStore();
-  const { sendMessage } = useChat();
+  const { CRYPTOCURRENCY_messages, username } = useChatStore();
+  useChatHook();
+  const { sendMessage } = useSendMessage();
 
   const handleSend = () => {
     if (input.trim()) {
-      const message: Message = {
-        user_id: "anonymous",
-        sender: username,
-        message: input,
-        time: Date.now(),
+      const message = {
+        channelId: "CRYPTOCURRENCY",
+        author: username,
+        text: input,
       };
-      sendMessage(Channel.RACISM, message);
+      sendMessage(message);
       setInput("");
     }
   };
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 overflow-y-auto">
-        #Racism
-        {RACISM_messages.map((msg) => (
-          <div key={msg.time} className="p-2">
-            <strong>{msg.sender}:</strong> {msg.message}
+        #Main
+        {CRYPTOCURRENCY_messages.map((msg) => (
+          <div key={msg.timestamp} className="p-2">
+            <strong>{msg.author}:</strong> {msg.text}
           </div>
         ))}
       </ScrollArea>
