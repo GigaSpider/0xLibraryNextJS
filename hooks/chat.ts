@@ -1,40 +1,83 @@
-import { useChatStore, Message } from "./store/chatStore";
+import { useChatStore, Message, Channel } from "./store/chatStore";
 import { useEffect } from "react";
 import Pusher from "pusher-js";
 
-const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+// Create a single Pusher instance
+const pusherClient = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
   cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+  forceTLS: true, // Add this
 });
 
 export function useChat() {
-  const { messages, set_messages } = useChatStore();
+  const {
+    messages,
+    set_MAIN_messages,
+    set_BUSINESS_messages,
+    set_MISOGYNY_messages,
+    set_RACISM_messages,
+  } = useChatStore();
 
   useEffect(() => {
-    const channel = pusher.subscribe("chat");
+    // Subscribe to channels
+    const channels = {
+      main: pusherClient.subscribe("main"),
+      business: pusherClient.subscribe("business"),
+      racism: pusherClient.subscribe("racism"),
+      misogyny: pusherClient.subscribe("misogyny"),
+    };
 
-    channel.bind("message", (response: { data: Message | Message[] }) => {
-      console.log("new message: ", response);
-
-      const newMessages = response.data; // Extract the actual message(s) from the `data` property
-
-      set_messages(newMessages); // Pass the extracted messages to your `set_messages` function
+    // Bind events
+    channels.main.bind("message", (message: Message) => {
+      set_MAIN_messages(message);
     });
 
-    return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
-    };
-  }, [set_messages]);
+    channels.business.bind("message", (message: Message) => {
+      set_BUSINESS_messages(message);
+    });
 
-  // Send message through an API route
-  async function sendMessage(message: Message) {
+    channels.racism.bind("message", (message: Message) => {
+      set_RACISM_messages(message);
+    });
+
+    channels.misogyny.bind("message", (message: Message) => {
+      set_MISOGYNY_messages(message);
+    });
+
+    // Cleanup
+    return () => {
+      channels.main.unbind_all();
+      channels.business.unbind_all();
+      channels.racism.unbind_all();
+      channels.misogyny.unbind_all();
+
+      pusherClient.unsubscribe("main");
+      pusherClient.unsubscribe("business");
+      pusherClient.unsubscribe("racism");
+      pusherClient.unsubscribe("misogyny");
+    };
+  }, [
+    set_MAIN_messages,
+    set_BUSINESS_messages,
+    set_MISOGYNY_messages,
+    set_RACISM_messages,
+  ]);
+
+  async function sendMessage(channel: Channel, message: Message) {
     if (!message) return;
 
-    await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    });
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel, message }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   }
 
   return { messages, sendMessage };

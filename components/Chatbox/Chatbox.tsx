@@ -1,61 +1,160 @@
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+"use client";
+
+import { Rnd } from "react-rnd";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useChatStore, Message } from "@/hooks/store/chatStore";
-import { useChat } from "@/hooks/chat";
-import { useState } from "react";
+import { Channel, useChatStore } from "@/hooks/store/chatStore";
+import React, { useState } from "react";
+import { Separator } from "@/components/ui/separator";
+import Main from "@/components/Chatbox/channels/Main";
+import Business from "@/components/Chatbox/channels/Business";
+import Mysogyny from "./channels/Misogyny";
+import Racism from "./channels/Racism";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 export default function Chatbox() {
-  const { messages } = useChatStore(); // Access the messages from the store
-  const { sendMessage } = useChat(); // Access sendMessage to handle sending
-  const [input, setInput] = useState("");
+  const { set_username } = useChatStore();
 
-  const handleSend = () => {
-    if (input.trim()) {
-      const message: Message = {
-        user_id: "anonymous",
-        sender: "anonymous",
-        message: input,
-        time: Date.now(),
-      };
-      sendMessage(message); // Send the message
-      setInput(""); // Clear the input field
+  const [usernameInput, setUsernameInput] = useState("");
+  const [size, setSize] = useState({ width: 300, height: 300 });
+  const [position, setPosition] = useState({ x: -300, y: -300 });
+  const [isOpen, setIsOpen] = useState(false);
+  const [channel, setChannel] = useState(Channel.MAIN);
+
+  const renderChannel = () => {
+    switch (channel) {
+      case Channel.MAIN:
+        return <Main />;
+      case Channel.BUSINESS:
+        return <Business />;
+      case Channel.MISOGYNY:
+        return <Mysogyny />;
+      case Channel.RACISM:
+        return <Racism />;
     }
   };
 
   return (
-    <Collapsible>
-      <CollapsibleTrigger>Trollbox ^</CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="flex flex-col h-[300px] border border-gray-300 p-4 overflow-hidden">
-          <div className="flex-1 overflow-y-auto mb-4">
-            {messages.map((msg) => (
-              <div key={msg.time} className="mb-2">
-                <strong>{msg.sender}:</strong> {msg.message}
+    <div className="fixed bottom-5 right-5 z-[1000]">
+      {isOpen && (
+        <>
+          <Rnd
+            default={{
+              width: 300,
+              height: 300,
+              x: -300,
+              y: -300,
+            }}
+            size={{ width: size.width, height: size.height }}
+            position={position}
+            enableResizing={{
+              top: true,
+              right: false,
+              bottom: false,
+              left: true,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: true,
+            }}
+            disableDragging={true}
+            minWidth={200}
+            minHeight={200}
+            onResize={(e, direction, ref, delta, position) => {
+              setSize({
+                width: parseInt(ref.style.width),
+                height: parseInt(ref.style.height),
+              });
+              setPosition(position);
+            }}
+            onDrag={(e, d) => {
+              setPosition({ x: d.x, y: d.y });
+            }}
+          >
+            <div className="flex flex-col h-full w-full border border-violet-500">
+              <div className="relative h-10">
+                <Input
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      set_username(usernameInput.trim());
+                      setUsernameInput(""); // Optional: clear input after setting
+                    }
+                  }}
+                  placeholder="Enter username(Optional)"
+                  className="absolute left-1 top-2 z-[1002]"
+                />
+                <Button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute right-1 top-2 z-[1002]"
+                  variant="ghost"
+                >
+                  ⌄ Hide Trollbox
+                </Button>
+                <Separator className="absolute bottom-0 w-full" />
               </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <Input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 p-2 border border-gray-300 rounded-md"
-            />
-            <Button
-              onClick={handleSend}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-              Send
-            </Button>
-          </div>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+
+              <div className="flex-1 overflow-hidden">
+                <ResizablePanelGroup
+                  direction="horizontal"
+                  className="h-full rounded-lg border"
+                >
+                  <ResizablePanel defaultSize={25} minSize={20}>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setChannel(Channel.MAIN)}
+                      >
+                        #main
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setChannel(Channel.BUSINESS)}
+                      >
+                        #business
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setChannel(Channel.RACISM)}
+                      >
+                        #racism
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setChannel(Channel.MISOGYNY)}
+                      >
+                        #misogyny
+                      </Button>
+                    </div>
+                  </ResizablePanel>
+                  <ResizableHandle />
+                  <ResizablePanel defaultSize={75}>
+                    {renderChannel()}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </div>
+            </div>
+          </Rnd>
+        </>
+      )}
+
+      {!isOpen && (
+        <Button onClick={() => setIsOpen(true)} variant="ghost">
+          ^Trollbox (Not Available in India)
+        </Button>
+      )}
+    </div>
   );
 }
