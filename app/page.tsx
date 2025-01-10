@@ -24,7 +24,10 @@ export default function Home() {
         {MASTER_ADDRESS && (
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" />
-            <EnhancedContractInfo address={MASTER_ADDRESS} label="Master" />
+            <EnhancedContractInfo
+              address={MASTER_ADDRESS}
+              label="Master Contract"
+            />
           </div>
         )}
         {ETH_XMR_ADDRESS && (
