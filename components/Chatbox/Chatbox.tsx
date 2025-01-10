@@ -10,6 +10,17 @@ import Main from "@/components/Chatbox/channels/Main";
 import Business from "@/components/Chatbox/channels/Business";
 import Politics from "./channels/Politics";
 import Cryptocurrency from "./channels/Cryptocurrency";
+import { Label } from "@/components/ui/label";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 import {
   ResizableHandle,
@@ -76,27 +87,57 @@ export default function Chatbox() {
               setPosition({ x: d.x, y: d.y });
             }}
           >
-            <div className="flex flex-col h-full w-full border border-violet-500">
+            <div className="flex flex-col h-full w-full border border-violet-500 bg-black">
               <div className="relative h-10">
-                <Input
-                  value={usernameInput}
-                  onChange={(e) => setUsernameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      set_username(usernameInput.trim());
-                      setUsernameInput(""); // Optional: clear input after setting
-                    }
-                  }}
-                  placeholder="Enter username(Optional)"
-                  className="absolute left-1 top-2 z-[1002]"
-                />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost">Set Username</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] border-violet-500">
+                    <DialogHeader>
+                      <DialogTitle>Set Username</DialogTitle>
+                      <DialogDescription>
+                        Optionally set a username, will default to anonymous
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="username" className="text-right">
+                          Username
+                        </Label>
+                        <Input
+                          value={usernameInput}
+                          onChange={(e) => setUsernameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              set_username(usernameInput.trim());
+                              setUsernameInput(""); // Optional: clear input after setting
+                            }
+                          }}
+                          className="w-[250px]"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        onClick={() => {
+                          set_username(usernameInput.trim());
+                          setUsernameInput("");
+                        }}
+                      >
+                        Update
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Button
                   onClick={() => setIsOpen(false)}
-                  className="absolute right-1 top-2 z-[1002]"
+                  className="absolute right-1 z-[1002]"
                   variant="ghost"
                 >
-                  ⌄ Hide Trollbox
+                  Hide Trollbox
                 </Button>
                 <Separator className="absolute bottom-0 w-full" />
               </div>

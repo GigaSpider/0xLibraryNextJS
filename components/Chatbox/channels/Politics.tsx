@@ -25,7 +25,6 @@ export default function Politics() {
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 overflow-y-auto">
-        #Main
         {POLITICS_messages.map((msg) => (
           <div key={msg.timestamp} className="p-2">
             <strong>{msg.author}:</strong> {msg.text}
