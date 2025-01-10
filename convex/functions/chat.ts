@@ -5,10 +5,18 @@ export const getChannels = query(async ({ db }) => {
 });
 
 export const getMessages = query(
-  async ({ db }, { channelId }: { channelId: string }) => {
+  async (
+    { db },
+    { channelId, lastTimestamp }: { channelId: string; lastTimestamp: number },
+  ) => {
     const messages = await db
       .query("messages")
-      .filter((q) => q.eq(q.field("channelId"), channelId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("channelId"), channelId),
+          q.gt(q.field("timestamp"), lastTimestamp),
+        ),
+      )
       .order("asc")
       .collect();
     return messages;
