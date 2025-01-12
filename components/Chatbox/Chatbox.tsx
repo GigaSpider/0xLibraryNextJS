@@ -51,7 +51,7 @@ export default function Chatbox() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-[1000]">
+    <div className="fixed bottom-0 right-0 z-[1000]">
       {isOpen && (
         <>
           <Rnd
@@ -87,7 +87,8 @@ export default function Chatbox() {
               setPosition({ x: d.x, y: d.y });
             }}
           >
-            <div className="flex flex-col h-full w-full border border-violet-500 bg-black">
+            <div className="flex flex-col h-full w-full border border-violet-500 bg-black relative">
+              <div className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize z-[1001] border-l-2 border-t-2 border-white/30" />
               <div className="relative h-10">
                 <Dialog>
                   <DialogTrigger asChild>
