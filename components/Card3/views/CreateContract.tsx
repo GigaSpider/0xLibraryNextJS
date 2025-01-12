@@ -202,7 +202,7 @@ export default function CreateContract() {
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap XMR ➡️ ETH</CardTitle>
+        <CardTitle className="text-center">Swap XMR ➡️ USDC</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...createForm}>

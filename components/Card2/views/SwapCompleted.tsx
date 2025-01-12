@@ -16,7 +16,7 @@ export default function SwapCompleted() {
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
+        <CardTitle className="text-center">Swap USDC ➡️ XMR</CardTitle>
         <CardDescription>Swap Completed!</CardDescription>
       </CardHeader>
       <CardContent>{XMR_TXID}</CardContent>

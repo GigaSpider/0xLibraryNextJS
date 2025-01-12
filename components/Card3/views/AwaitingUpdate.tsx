@@ -22,7 +22,7 @@ export default function AwaitingUpdate() {
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap ETH ➡️ XMR</CardTitle>
+        <CardTitle className="text-center">SWAP XMR ➡️ USDC</CardTitle>
       </CardHeader>
       <CardContent>
         Awaiting Monero Deposit Address from the blockchain, please wait{dots}

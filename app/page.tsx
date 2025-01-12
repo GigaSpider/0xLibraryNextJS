@@ -3,6 +3,7 @@
 import Card1 from "@/components/Card1";
 import Card2 from "@/components/Card2";
 import Card3 from "@/components/Card3";
+import PriceFeed from "@/components/PriceFeed";
 import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
 import { useSwapStore } from "@/hooks/store/zustand";
@@ -16,7 +17,7 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Version display on top left */}
       <div className="fixed top-2 left-2 z-50">
-        {process.env.NEXT_PUBLIC_VERSION}
+        <PriceFeed />
       </div>
 
       {/* Contract info on top right */}

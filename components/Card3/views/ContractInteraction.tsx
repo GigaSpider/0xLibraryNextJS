@@ -16,7 +16,7 @@ export default function ContractInteraction() {
   return (
     <Card className="border-violet-500 h-[350px] w-[350px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap XMR ➡️ ETH</CardTitle>
+        <CardTitle className="text-center">Swap XMR ➡️ USDC</CardTitle>
         <CardDescription>XMR/ETH Contract Interaction</CardDescription>
       </CardHeader>
       <CardContent>
