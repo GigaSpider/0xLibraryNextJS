@@ -50,7 +50,7 @@ export default function Home() {
         <Card2 />
         <Card3 />
       </div>
-      <div className="fixed bottom-4 right-4">
+      <div className="fixed bottom-2 right-2">
         <Chatbox />
       </div>
     </div>

@@ -1,3 +1,9 @@
+import { usePriceHook } from "@/hooks/price";
+import { usePriceStore } from "@/hooks/store/priceStore";
+
 export default function PriceFeed() {
-  return <>USDC/XMR $187.32</>;
+  usePriceHook();
+
+  const { xmr_usd_price } = usePriceStore();
+  return <>USDC/XMR ${xmr_usd_price}</>;
 }
