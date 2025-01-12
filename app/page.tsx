@@ -24,7 +24,6 @@ export default function Home() {
       <div className="fixed top-2 right-2 w-auto z-50 space-y-1">
         {MASTER_ADDRESS && (
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" />
             <EnhancedContractInfo
               address={MASTER_ADDRESS}
               label="Master Contract"

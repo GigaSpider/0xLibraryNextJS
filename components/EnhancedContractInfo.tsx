@@ -30,7 +30,7 @@ export const EnhancedContractInfo = ({
   const etherscanlink = `https://holesky.etherscan.io/address/${address}`;
 
   return (
-    <div className="p-1 flex items-center justify-between space-x-2 bg-background/40 backdrop-blur-sm border-muted hover:bg-background/60 transition-all">
+    <div className="p-1 flex items-center justify-between space-x-2">
       <div className="flex items-center space-x-2">
         <Label className="px-1 py-0 text-xs">{label}</Label>
         <span className="text-xs font-mono text-muted-foreground">
