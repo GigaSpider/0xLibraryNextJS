@@ -11,6 +11,7 @@ import Business from "@/components/Chatbox/channels/Business";
 import Politics from "./channels/Politics";
 import Cryptocurrency from "./channels/Cryptocurrency";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 import {
   Dialog,
@@ -212,8 +213,12 @@ export default function Chatbox() {
       )}
 
       {!isOpen && (
-        <Button onClick={() => setIsOpen(true)} variant="ghost">
-          ^Trollbox (Not Available in India)
+        <Button
+          onClick={() => setIsOpen(true)}
+          variant="link"
+          className="text-xs hover:text-violet-500 transition-colors no-underline"
+        >
+          Trollbox
         </Button>
       )}
     </div>

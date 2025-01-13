@@ -6,6 +6,7 @@ import Card3 from "@/components/Card3";
 import PriceFeed from "@/components/PriceFeed";
 import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
+import Directory from "@/components/Directory";
 import { useSwapStore } from "@/hooks/store/zustand";
 
 export default function Home() {
@@ -48,6 +49,9 @@ export default function Home() {
         <Card1 />
         <Card2 />
         <Card3 />
+      </div>
+      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 text-center">
+        <Directory />
       </div>
       <div className="fixed bottom-2 right-2">
         <Chatbox />
