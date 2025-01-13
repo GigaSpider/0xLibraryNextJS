@@ -56,10 +56,10 @@ export default function Chatbox() {
         <>
           <Rnd
             default={{
-              width: 300,
-              height: 300,
-              x: -300,
-              y: -300,
+              width: 500,
+              height: 500,
+              x: -500,
+              y: -500,
             }}
             size={{ width: size.width, height: size.height }}
             position={position}
@@ -87,12 +87,14 @@ export default function Chatbox() {
               setPosition({ x: d.x, y: d.y });
             }}
           >
-            <div className="flex flex-col h-full w-full border border-violet-500 bg-black relative">
-              <div className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize z-[1001] border-l-2 border-t-2 border-white/30" />
+            <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
+              <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
               <div className="relative h-10">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="ghost">Set Username</Button>
+                    <Button variant="ghost" className="fixed left-5 top-0.5">
+                      Set Username
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px] border-violet-500">
                     <DialogHeader>
@@ -146,7 +148,7 @@ export default function Chatbox() {
               <div className="flex-1 overflow-hidden">
                 <ResizablePanelGroup
                   direction="horizontal"
-                  className="h-full rounded-lg border"
+                  className="h-full border"
                 >
                   <ResizablePanel defaultSize={25} minSize={20}>
                     <div>
@@ -154,7 +156,11 @@ export default function Chatbox() {
                         variant="ghost"
                         onClick={() => setChannel(Channel.MAIN)}
                       >
-                        #main
+                        {channel === Channel.MAIN ? (
+                          <span className="text-violet-500">#main</span>
+                        ) : (
+                          <>#main</>
+                        )}
                       </Button>
                     </div>
                     <div>
@@ -162,7 +168,11 @@ export default function Chatbox() {
                         variant="ghost"
                         onClick={() => setChannel(Channel.BUSINESS)}
                       >
-                        #business
+                        {channel === Channel.BUSINESS ? (
+                          <span className="text-violet-500">#business</span>
+                        ) : (
+                          <>#business</>
+                        )}
                       </Button>
                     </div>
                     <div>
@@ -170,7 +180,11 @@ export default function Chatbox() {
                         variant="ghost"
                         onClick={() => setChannel(Channel.POLITICS)}
                       >
-                        #politics
+                        {channel === Channel.POLITICS ? (
+                          <span className="text-violet-500">#politics</span>
+                        ) : (
+                          <>#politics</>
+                        )}
                       </Button>
                     </div>
                     <div>
@@ -178,7 +192,11 @@ export default function Chatbox() {
                         variant="ghost"
                         onClick={() => setChannel(Channel.CRYPTOCURRENCY)}
                       >
-                        #crypto
+                        {channel === Channel.CRYPTOCURRENCY ? (
+                          <span className="text-violet-500">#crypto</span>
+                        ) : (
+                          <>#crypto</>
+                        )}
                       </Button>
                     </div>
                   </ResizablePanel>
