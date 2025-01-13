@@ -11,7 +11,6 @@ import Business from "@/components/Chatbox/channels/Business";
 import Politics from "./channels/Politics";
 import Cryptocurrency from "./channels/Cryptocurrency";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
 
 import {
   Dialog,
