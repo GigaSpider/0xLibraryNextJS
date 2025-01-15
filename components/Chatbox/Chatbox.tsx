@@ -57,9 +57,9 @@ export default function Chatbox() {
           <Rnd
             default={{
               width: 500,
-              height: 500,
+              height: 800,
               x: -500,
-              y: -500,
+              y: -800,
             }}
             size={{ width: size.width, height: size.height }}
             position={position}
@@ -217,7 +217,7 @@ export default function Chatbox() {
           variant="link"
           className="text-xs hover:text-violet-500 transition-colors no-underline"
         >
-          Trollbox
+          Message Channels
         </Button>
       )}
     </div>
