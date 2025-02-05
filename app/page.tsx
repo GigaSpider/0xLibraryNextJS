@@ -35,14 +35,12 @@ export default function Home() {
         )}
         {ETH_XMR_ADDRESS && (
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" />
-            <EnhancedContractInfo address={ETH_XMR_ADDRESS} label="ETH→XMR" />
+            <EnhancedContractInfo address={ETH_XMR_ADDRESS} label="ETH-XMR" />
           </div>
         )}
         {XMR_ETH_ADDRESS && (
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_2px_rgba(34,197,94,0.6)]" />
-            <EnhancedContractInfo address={XMR_ETH_ADDRESS} label="XMR→ETH" />
+            <EnhancedContractInfo address={XMR_ETH_ADDRESS} label="XMR-ETH" />
           </div>
         )}
       </div>
