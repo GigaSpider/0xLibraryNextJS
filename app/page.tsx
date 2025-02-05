@@ -23,7 +23,6 @@ export default function Home() {
       <div className="fixed top-2 left-2 z-50">
         <PriceFeed />
       </div>
-
       {/* Contract info on top right */}
       <div className="fixed top-2 right-2 w-auto z-50 space-y-1">
         {MASTER_ADDRESS && (
@@ -47,7 +46,10 @@ export default function Home() {
           </div>
         )}
       </div>
-
+      <div className="fixed top-40 left-1/2 transform -translate-x-1/2 text-center text-violet-500">
+        This application relies on Metamask and uses Ethereum Contracts on the
+        Optimism l2
+      </div>
       <div className="flex justify-center items-center space-x-6 h-screen">
         <Card1 />
         <Card2 />
