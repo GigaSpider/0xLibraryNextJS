@@ -45,10 +45,9 @@ export default function Home() {
         )}
       </div>
       <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-violet-500">
-        This application uses Metamask to interact with smart contracts that are
-        deployed on the <span className="font-bold">OPTIMISM</span> L2 network.
-        Make sure you are sending and receiving eth on an address configured for
-        Optimism.
+        This application uses Metamask to interact with the{" "}
+        <span className="font-bold">OPTIMISM</span> L2 network. Make sure you
+        are sending and receiving eth on an address configured for Optimism.
       </div>
       <div className="flex justify-center items-center space-x-6 h-screen">
         <Card1 />
