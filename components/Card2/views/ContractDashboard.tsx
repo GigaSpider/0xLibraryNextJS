@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { useSwapStore } from "@/hooks/store/zustand";
 import { useMetaMask } from "@/hooks/useMetaMask";
@@ -12,30 +13,27 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function ContractInteraction() {
+export default function ContractDashboard() {
   useMetaMask();
-  const { ETH_XMR_ADDRESS, EXCHANGE_RATE, signer, provider } = useSwapStore();
+  const { ETH_XMR_ADDRESS, EXCHANGE_RATE, XMR_TXID, signer, provider } =
+    useSwapStore();
 
   const [xmrAmount, setXmrAmount] = useState("");
-  const [usdAmount, setUsdAmount] = useState("");
   const [ethAmount, setEthAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Update calculations when inputs change
   useEffect(() => {
     if (xmrAmount && EXCHANGE_RATE != null) {
-      // Convert BigInt to number for calculations
       const exchangeRateNumber = Number(EXCHANGE_RATE.toString());
-      const ethRequired = Number(usdAmount) / exchangeRateNumber;
-      setEthAmount(ethRequired.toFixed(6));
-      setUsdAmount((Number(xmrAmount) * 100).toFixed(2));
-    } else if (usdAmount) {
-      const exchangeRateNumber = Number((EXCHANGE_RATE as number).toString());
-      const xmr = Number(usdAmount) / 100;
+      const ethRequired = Number(xmrAmount) * exchangeRateNumber; // XMR to USD
+      setEthAmount(ethRequired.toFixed(2)); // USD to XMR
+    } else if (ethAmount) {
+      const exchangeRateNumber = Number(EXCHANGE_RATE!.toString());
+      const xmr = Number(ethAmount) / exchangeRateNumber; // USD to XMR
       setXmrAmount(xmr.toFixed(6));
-      setEthAmount((xmr / exchangeRateNumber).toFixed(6));
     }
-  }, [xmrAmount, usdAmount, EXCHANGE_RATE]);
+  }, [xmrAmount, ethAmount, EXCHANGE_RATE]);
 
   async function handleDeposit() {
     if (!signer || !provider) return;
@@ -57,28 +55,34 @@ export default function ContractInteraction() {
   }
 
   return (
-    <Card className="border-violet-500 h-[350px] w-[350px]">
+    <Card className="border-violet-500 h-[400px] w-[400px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap USDC ➡️ XMR</CardTitle>
-        <CardDescription>Send ETH to smart contract.</CardDescription>
+        <CardTitle className="text-center">ETH ➡️ XMR</CardTitle>
+        <CardDescription className="text-center">
+          Contract Dashboard
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
+          <span className="text-orange-500 text-xs">
+            XMR/ETH Exchange Rate:
+          </span>
+          <span className="text-green-500 text-xs"> {EXCHANGE_RATE}</span>
           <Input
             type="number"
             placeholder="Amount in XMR"
             value={xmrAmount}
             onChange={(e) => {
               setXmrAmount(e.target.value);
-              setUsdAmount("");
+              setEthAmount("");
             }}
           />
           <Input
             type="number"
             placeholder="Amount in USD"
-            value={usdAmount}
+            value={ethAmount}
             onChange={(e) => {
-              setUsdAmount(e.target.value);
+              setEthAmount(e.target.value);
               setXmrAmount("");
             }}
           />
@@ -98,6 +102,13 @@ export default function ContractInteraction() {
           </Button>
         </div>
       </CardContent>
+      <CardFooter>
+        {XMR_TXID ? (
+          `Swap successful. txhash: ${XMR_TXID}`
+        ) : (
+          <>Awaiting confirmation, send ETH to initiate Swap</>
+        )}
+      </CardFooter>
     </Card>
   );
 }

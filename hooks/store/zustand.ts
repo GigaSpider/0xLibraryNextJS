@@ -33,7 +33,7 @@ type Action = {
 
 export const useSwapStore = create<State & Action>((set, get) => ({
   MASTER_ADDRESS: process.env.NEXT_PUBLIC_MASTER_ADDRESS!,
-  MASTER_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${process.env.NEXT_PUBLIC_MASTER_ADDRESS}`,
+  MASTER_ETHERSCAN_LINK: `https://polygonscan.com/address/${process.env.NEXT_PUBLIC_MASTER_ADDRESS}`,
   ETH_XMR_ADDRESS: "",
   XMR_ETH_ADDRESS: "",
   ETH_XMR_ETHERSCAN_LINK: "",
@@ -65,14 +65,14 @@ export const useSwapStore = create<State & Action>((set, get) => ({
 
     set(() => ({
       ETH_XMR_ADDRESS,
-      ETH_XMR_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${ETH_XMR_ADDRESS}`,
+      ETH_XMR_ETHERSCAN_LINK: `https://polygonscan/address/${ETH_XMR_ADDRESS}`,
       ETH_XMR_CONTRACT: contract,
     }));
   },
   update_XMR_ETH_ADDRESS: (XMR_ETH_ADDRESS) =>
     set(() => ({
       XMR_ETH_ADDRESS: XMR_ETH_ADDRESS,
-      XMR_ETH_ETHERSCAN_LINK: `https://holesky.etherscan.io/address/${XMR_ETH_ADDRESS}`,
+      XMR_ETH_ETHERSCAN_LINK: `https://polygonscan/address/${XMR_ETH_ADDRESS}`,
     })),
   update_XMR_TXID: (XMR_TXID) => set(() => ({ XMR_TXID: XMR_TXID })),
   update_EXCHANGE_RATE: (EXCHANGE_RATE) =>

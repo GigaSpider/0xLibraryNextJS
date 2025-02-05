@@ -3,6 +3,7 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -42,15 +43,12 @@ type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function CreateContract() {
   const { toast } = useToast();
-  const {
-    is_connected,
-    update_ETH_XMR_ADDRESS,
-    update_EXCHANGE_RATE,
-    MASTER_ADDRESS,
-  } = useSwapStore();
+  const { update_ETH_XMR_ADDRESS, update_EXCHANGE_RATE, MASTER_ADDRESS } =
+    useSwapStore();
   const { events, add_event } = useEventStore();
   const { connect } = useMetaMask();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreateLoading, setIsCreateLoading] = useState(false);
+  const [isConnectLoading, setIsConnectLoading] = useState(false);
 
   // Create form instances
   const createForm = useForm<CreateContractForm>({
@@ -76,7 +74,7 @@ export default function CreateContract() {
       });
       return;
     }
-    setIsLoading(true);
+    setIsCreateLoading(true);
     try {
       // Only call connect once
       const { provider: currentProvider, signer: currentSigner } =
@@ -105,9 +103,8 @@ export default function CreateContract() {
       console.log("Contract Address ", contractAddress);
       const contract = new Contract(contractAddress, MASTER.abi, currentSigner);
 
-      // await contract.CreateEthXmrContract.staticCall(hashedAddress, {
-      //   gasLimit: 500000,
-      // });
+      const rate = await contract.CalculateExchangeRate();
+      update_EXCHANGE_RATE(rate);
 
       const tx = await contract.CreateEthXmrContract(hashedAddress, {
         gasLimit: 500000,
@@ -132,7 +129,6 @@ export default function CreateContract() {
             console.log("Sender:", sender);
             console.log("Contract Address:", address);
             console.log("hashedMoneroAddress:", encryptedMoneroAddress);
-            console.log("ethToXmrRate:", ethToXmrRate.toString());
 
             console.log(
               "checkpoint, should see an empty event array: ",
@@ -175,13 +171,12 @@ export default function CreateContract() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsCreateLoading(false);
     }
   }
 
   async function onConnectSubmit(data: ConnectContractForm) {
-    const address = data.contractAddress;
-    if (!isAddress(address)) {
+    if (!isAddress(data.contractAddress)) {
       toast({
         title: "Not a Smart Contract",
         description: "Please enter a valid Ethereum Address",
@@ -191,7 +186,11 @@ export default function CreateContract() {
     }
     console.log("Connecting to contract:", data.contractAddress);
 
+    setIsConnectLoading(true);
+
     try {
+      console.log("connection checkpoint");
+      // Only call connect once
       const { provider: currentProvider, signer: currentSigner } =
         await connect();
 
@@ -202,46 +201,57 @@ export default function CreateContract() {
         throw new Error("Provider or signer not available");
       }
 
-      const contractAddress = MASTER_ADDRESS;
+      const contractAddress = process.env.NEXT_PUBLIC_MASTER_ADDRESS!;
       console.log("Contract Address ", contractAddress);
       const contract = new Contract(contractAddress, MASTER.abi, currentSigner);
+      const signerAddress = currentSigner.getAddress();
 
-      const result = await contract.ETH_XMR_CONTRACTS(address);
+      if (
+        (await contract.ETH_XMR_CONTRACTS(data.contractAddress)) ==
+        signerAddress
+      ) {
+        const event: Event = {
+          event: "XMR/ETH swap contract connected",
+          timestamp: Date.now(),
+        };
 
-      if (!isAddress(result)) {
+        add_event(event);
+        update_ETH_XMR_ADDRESS(data.contractAddress);
+        const rate = await contract.CalculateExchangeRate();
+        update_EXCHANGE_RATE(rate);
+      } else if (!(await contract.XMR_ETH_CONTRACTS(data.contractAddress))) {
         toast({
-          title: "Error",
-          description: "Contract connection failed",
+          title: "Contract connection failed",
+          description: "Contract doesn't exist",
           variant: "destructive",
         });
-        const event: Event = {
-          event: "Contract connection failure",
-          timestamp: Date.now(),
-        };
-        add_event(event);
-      } else if (isAddress(result)) {
-        const event: Event = {
-          event: `Contract connection to contract ${result}`,
-          timestamp: Date.now(),
-        };
-        add_event(event);
-        update_ETH_XMR_ADDRESS(result);
+      } else {
+        toast({
+          title: "Contract connection failed",
+          description: "Contract is not associated with this wallet",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Contract creation failed:", error);
+      console.error("Contract connection failed:", error);
       toast({
         title: "Error",
         description:
           error instanceof Error ? error.message : "Contract connection failed",
         variant: "destructive",
       });
+    } finally {
+      setIsConnectLoading(false);
     }
   }
 
   return (
-    <Card className="border-violet-500 h-[350px] w-[350px]">
+    <Card className="border-violet-500 h-[400px] w-[400px]">
       <CardHeader>
-        <CardTitle className="text-center">Swap USDC ➡️ XMR</CardTitle>
+        <CardTitle className="text-center">ETH ➡️ XMR </CardTitle>
+        <CardDescription className="text-center">
+          Contract Initialization
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...createForm}>
@@ -258,7 +268,7 @@ export default function CreateContract() {
                     <Input
                       placeholder="Enter Monero Output Address"
                       {...field}
-                      disabled={isLoading}
+                      disabled={isCreateLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -268,14 +278,10 @@ export default function CreateContract() {
             <Button
               variant="secondary"
               type="submit"
-              disabled={isLoading}
+              disabled={isCreateLoading}
               className="w-full"
             >
-              {isLoading
-                ? "Creating Contract..."
-                : is_connected
-                  ? "Create Ethereum Deposit Contract"
-                  : "Connect Wallet & Create Contract"}
+              {isCreateLoading ? "Creating Contract..." : "Create New Contract"}
             </Button>
           </form>
         </Form>
@@ -296,7 +302,7 @@ export default function CreateContract() {
                     <Input
                       placeholder="Enter Existing Swap Contract"
                       {...field}
-                      disabled={isLoading}
+                      disabled={isCreateLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -306,10 +312,12 @@ export default function CreateContract() {
             <Button
               variant="secondary"
               type="submit"
-              disabled={isLoading}
+              disabled={isConnectLoading}
               className="w-full"
             >
-              Enter Existing Deposit Contract
+              {isConnectLoading
+                ? "Connecting to Contract..."
+                : "Connect Existing Contract"}
             </Button>
           </form>
         </Form>

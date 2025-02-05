@@ -8,12 +8,15 @@ import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
 import Directory from "@/components/Directory";
 import { useSwapStore } from "@/hooks/store/zustand";
+// import { useMetaMask } from "@/hooks/useMetaMask";
 
 export default function Home() {
   const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();
+  // const { provider } = useMetaMask();
   console.log("testing");
   console.log("Contract Address:", process.env.CONTRACT_ADDRESS);
   console.log("Public Address:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
+
   return (
     <div className="min-h-screen">
       {/* Version display on top left */}

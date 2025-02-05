@@ -27,33 +27,33 @@ export function useMetaMask() {
     }
 
     try {
-      // First try to switch to Holesky
+      // First, try to switch to Optimism mainnet
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x4268" }], // Holesky chainId
+          params: [{ chainId: "0xa" }], // Optimism mainnet chainId (10 in decimal)
         });
-      } catch (switchError: any) {
-        // If Holesky isn't added to MetaMask, add it
-        if (switchError.code === 4902) {
+      } catch (error: any) {
+        // If Optimism isn't added to MetaMask, add it
+        if (error.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x4268",
-                chainName: "Holesky",
-                rpcUrls: ["https://ethereum-holesky.publicnode.com"],
+                chainId: "0xa",
+                chainName: "Optimism",
+                rpcUrls: ["https://mainnet.optimism.io"],
                 nativeCurrency: {
-                  name: "ETH",
+                  name: "Ether",
                   symbol: "ETH",
                   decimals: 18,
                 },
-                blockExplorerUrls: ["https://holesky.etherscan.io"],
+                blockExplorerUrls: ["https://optimistic.etherscan.io"],
               },
             ],
           });
         } else {
-          throw switchError;
+          throw error;
         }
       }
 
@@ -90,7 +90,7 @@ export function useMetaMask() {
       });
 
       window.ethereum.on("chainChanged", (_chainId: string) => {
-        // Handle chain changes - you might want to refresh the page
+        // Handle chain changes – you might want to refresh the page
         window.location.reload();
       });
     }

@@ -25,13 +25,13 @@ export default function Card1() {
   const sorted = [...events].sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <Card className="border-violet-500 h-[350px] w-[350px]">
+    <Card className="border-violet-500 h-[400px] w-[400px]">
       <CardHeader>
         <CardTitle className="text-center">Activity Feed</CardTitle>
       </CardHeader>
 
       <CardContent>
-        <ScrollArea className="h-[250px] w-[300px] rounded-md">
+        <ScrollArea className="h-[300px] w-[350px] rounded-md">
           {events ? (
             <Table>
               <TableHeader>

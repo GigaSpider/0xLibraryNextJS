@@ -27,14 +27,16 @@ export const EnhancedContractInfo = ({
     }
   };
 
-  const etherscanlink = `https://holesky.etherscan.io/address/${address}`;
+  const etherscanlink = `https://arbiscan.io/address/${address}`;
 
   return (
     <div className="p-1 flex items-center justify-between space-x-2">
       <div className="flex items-center space-x-2">
         <Label className="px-1 py-0 text-xs">{label}</Label>
         <span className="text-xs font-mono text-muted-foreground">
-          {address}
+          <Link href={etherscanlink} target="_blank" rel="noopener noreferrer">
+            {address}
+          </Link>
         </span>
       </div>
       <div className="flex items-center gap-1">
@@ -45,11 +47,6 @@ export const EnhancedContractInfo = ({
           className="h-5 w-5"
         >
           <Copy className={`h-3 w-3 ${copied ? "text-green-500" : ""}`} />
-        </Button>
-        <Button variant="outline" className="h-6 px-2 text-xs">
-          <Link href={etherscanlink} target="_blank" rel="noopener noreferrer">
-            Etherscan
-          </Link>
         </Button>
       </div>
     </div>

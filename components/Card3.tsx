@@ -1,23 +1,14 @@
 "use client";
 
 import CreateContract from "@/components/Card3/views/CreateContract";
-import ContractInteraction from "@/components/Card3/views/ContractInteraction";
-import AwaitingUpdate from "@/components/Card3/views/AwaitingUpdate";
+import ContractDashboard from "@/components/Card3/views/ContractDashboard";
 import { useXmrEthContractListener } from "@/hooks/listeners";
 import { useSwapStore } from "@/hooks/store/zustand";
 
 export default function Card3() {
-  const { XMR_ETH_ADDRESS, XMR_DEPOSIT_ADDRESS } = useSwapStore();
+  const { XMR_ETH_ADDRESS } = useSwapStore();
 
   useXmrEthContractListener();
 
-  return XMR_ETH_ADDRESS ? (
-    XMR_DEPOSIT_ADDRESS ? (
-      <ContractInteraction />
-    ) : (
-      <AwaitingUpdate />
-    )
-  ) : (
-    <CreateContract />
-  );
+  return XMR_ETH_ADDRESS ? <ContractDashboard /> : <CreateContract />;
 }

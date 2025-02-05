@@ -21,23 +21,19 @@ export function useEthXmrContractListener() {
       console.log("Your swap has failed");
     }
 
-    contract.on("ConfirmSwapSuccess", async (TxID: string) => {
+    contract.on("SwapSuccessConfirmation", async (TxID: string) => {
       await handleConfirmSwapSuccess(TxID);
     });
 
-    contract.on("ConfirmSwapFailure", async () => {
+    contract.on("SwapFailureConfirmation", async () => {
       await handleConfirmSwapFailure();
     });
   }, [ETH_XMR_ADDRESS, provider, update_XMR_TXID]);
 }
 
 export function useXmrEthContractListener() {
-  const {
-    XMR_ETH_ADDRESS,
-    XMR_DEPOSIT_ADDRESS,
-    update_XMR_DEPOSIT_ADDRESS,
-    provider,
-  } = useSwapStore();
+  const { XMR_ETH_ADDRESS, update_XMR_DEPOSIT_ADDRESS, provider } =
+    useSwapStore();
 
   useEffect(() => {
     if (!XMR_ETH_ADDRESS) return;
@@ -70,16 +66,11 @@ export function useXmrEthContractListener() {
       console.log("monero received", withdrawalConfirmation);
     }
 
-    async function handleEthSent(
-      withdrawalAmount: number,
-      withdrawalAddress: string,
-    ) {
-      console.log(
-        `amount ${withdrawalAmount} withdrawn to ${withdrawalAddress}`,
-      );
+    async function handleEthSent(timestamp: number, withdrawalAmount: number) {
+      console.log(`amount ${timestamp} withdrawn to ${withdrawalAmount}`);
     }
 
-    contract.on("haveMoneroAddress", async (encryptedMoneroAddress: string) => {
+    contract.on("HaveMoneroAddress", async (encryptedMoneroAddress: string) => {
       // add logic to push to events that user can see on the front end through zustand
       console.log(
         "Monero Address Received from smart contract",
@@ -88,20 +79,20 @@ export function useXmrEthContractListener() {
       await handleHaveMoneroAddress(encryptedMoneroAddress);
     });
 
-    contract.on("dontHaveMoneroAddress", async () => {
+    contract.on("DontHaveMoneroAddress", async () => {
       await handleDontHaveMoneroAddress();
     });
 
-    contract.on("moneroReceived", async (withdrawalConfirmation: string) => {
+    contract.on("MoneroReceived", async (withdrawalConfirmation: string) => {
       console.log("Monero received");
       await handleMoneroReceived(withdrawalConfirmation);
     });
 
     contract.on(
-      "ethSent",
-      async (withdrawalAmount: number, withdrawalAddress: string) => {
-        await handleEthSent(withdrawalAmount, withdrawalAddress);
+      "EthSentEvent",
+      async (timestamp: number, withdrawalAmount: number) => {
+        await handleEthSent(timestamp, withdrawalAmount);
       },
     );
-  }, [XMR_ETH_ADDRESS, provider]);
+  }, [XMR_ETH_ADDRESS, update_XMR_DEPOSIT_ADDRESS, provider]);
 }

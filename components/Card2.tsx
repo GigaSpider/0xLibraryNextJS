@@ -1,23 +1,14 @@
 "use client";
 
-import ContractInteraction from "@/components/Card2/views/ContractInteraction";
+import ContractDashboard from "@/components/Card2/views/ContractDashboard";
 import CreateContract from "./Card2/views/CreateContract";
-import SwapCompleted from "./Card2/views/SwapCompleted";
 import { useSwapStore } from "@/hooks/store/zustand";
 import { useEthXmrContractListener } from "@/hooks/listeners";
 
 export default function Card2() {
-  const { ETH_XMR_ADDRESS, XMR_TXID } = useSwapStore();
+  const { ETH_XMR_ADDRESS } = useSwapStore();
 
   useEthXmrContractListener();
 
-  return ETH_XMR_ADDRESS ? (
-    XMR_TXID ? (
-      <SwapCompleted />
-    ) : (
-      <ContractInteraction />
-    )
-  ) : (
-    <CreateContract />
-  );
+  return ETH_XMR_ADDRESS ? <ContractDashboard /> : <CreateContract />;
 }

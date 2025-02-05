@@ -4,8 +4,8 @@ import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 
 export const metadata: Metadata = {
-  title: "XMR/ETH Swap",
-  description: "Decentralized Smart Contract Protocol for Monero",
+  title: "Monero DEX",
+  description: "A community driven exchange for Monero",
 };
 
 export default function RootLayout({
