@@ -44,7 +44,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-orange-500">
+      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-red-500">
         <span className="font-bold">READ CAREFULLY:</span> This application uses
         Metamask and ETH contracts that are deployed on the{" "}
         <span className="font-bold">OPTIMISM</span> L2 network. Make sure you
