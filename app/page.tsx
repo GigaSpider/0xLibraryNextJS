@@ -46,9 +46,11 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="fixed top-40 left-1/2 transform -translate-x-1/2 text-center text-violet-500">
-        This application relies on Metamask and uses Ethereum Contracts on the
-        Optimism l2
+      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-orange-500">
+        <span className="font-bold">WARNING:</span> This application uses
+        Metamask and ETH contracts that are deployed on the{" "}
+        <span className="font-bold">OPTIMISM</span> L2 network. Make sure you
+        are sending and receiving eth on an Optimism configured address
       </div>
       <div className="flex justify-center items-center space-x-6 h-screen">
         <Card1 />
