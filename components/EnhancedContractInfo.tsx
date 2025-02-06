@@ -27,7 +27,7 @@ export const EnhancedContractInfo = ({
     }
   };
 
-  const etherscanlink = `https://optimistic.etherscan.io/address/${address}`;
+  const etherscanlink = `https://optimistic.etherscan..io/address/${address}`;
 
   return (
     <div className="p-1 flex items-center justify-between space-x-2">

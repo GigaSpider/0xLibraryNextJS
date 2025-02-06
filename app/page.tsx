@@ -44,7 +44,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-violet-500">
+      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-orange-500">
         This application uses Metamask to interact with the{" "}
         <span className="font-bold">OPTIMISM</span> L2 network. Make sure you
         are sending and receiving eth on an address configured for Optimism.
