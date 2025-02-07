@@ -9,7 +9,7 @@ export default function Directory() {
   return (
     <Popover>
       <PopoverTrigger className="text-xs hover:text-violet-500 transition-colors">
-        .onion directory
+        Smart Contract Directory
       </PopoverTrigger>
       <PopoverContent className="w-auto space-y-4">
         <div>

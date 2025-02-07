@@ -8,10 +8,13 @@ import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
 import Directory from "@/components/Directory";
 import { useSwapStore } from "@/hooks/store/zustand";
-// import { useMetaMask } from "@/hooks/useMetaMask";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import WhitePaper from "@/components/WhitePaper";
 
 export default function Home() {
   const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();
+  const [understood, setUnderstood] = useState(false);
   // const { provider } = useMetaMask();
   console.log("testing");
   console.log("Contract Address:", process.env.CONTRACT_ADDRESS);
@@ -44,14 +47,30 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="fixed top-32 left-1/2 transform -translate-x-1/2 text-center text-orange-500-500">
-        Make sure your wallet is configured for the Optimism layer 2 for
-        Ethereum
-      </div>
+      {understood ? (
+        <></>
+      ) : (
+        <div className="flex space-x-6 fixed top-32 left-1/2 transform -translate-x-1/2 text-center">
+          <p className="text-gray-500 font-xs">
+            This application uses the Optimism layer 2 for Ethereum.
+          </p>
+          <br />
+          <Button
+            onClick={() => setUnderstood(true)}
+            variant="outline"
+            className="font-xs"
+          >
+            I understand
+          </Button>
+        </div>
+      )}
       <div className="flex justify-center items-center space-x-6 h-screen">
         <Card1 />
         <Card2 />
         <Card3 />
+      </div>
+      <div className="fixed bottom-2 left-2">
+        <WhitePaper />
       </div>
       <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 text-center">
         <Directory />
