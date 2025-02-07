@@ -58,7 +58,7 @@ export default function Home() {
           <Button
             onClick={() => setUnderstood(true)}
             variant="outline"
-            className="font-xs"
+            size="sm"
           >
             I understand
           </Button>

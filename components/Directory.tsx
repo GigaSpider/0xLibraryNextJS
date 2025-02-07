@@ -1,63 +1,118 @@
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "./ui/label";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
+const contracts = Array.from({ length: 50 }, (_, index) => {
+  const engineers = ["Alice", "Bob", "Charlie", "Dana"];
+  return {
+    id: index + 1,
+    event: `Contract ${index + 1}`,
+    address: new Date(Date.now() - index * 3600 * 1000).toISOString(),
+    engineer: engineers[index % engineers.length],
+  };
+});
 
 export default function Directory() {
+  // State for the current page
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Calculate total pages
+  const totalPages = Math.ceil(contracts.length / itemsPerPage);
+
+  // Determine the contracts for the current page
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentContracts = contracts.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handlers for pagination buttons
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger className="text-xs hover:text-violet-500 transition-colors">
-        Smart Contract Directory
-      </PopoverTrigger>
-      <PopoverContent className="w-auto space-y-4">
-        <div>
-          <Label className="text-gray-400 font-semibold mb-2 block">
-            Forums
-          </Label>
-          <ul className="space-y-2">
-            <li className="text-xs">
-              <span className="text-gray-400">Dread: </span>
-              <span className="text-violet-500 hover:text-violet-400 cursor-pointer">
-                http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion
-              </span>
-            </li>
-          </ul>
+    <Drawer>
+      <DrawerTrigger>Contract Directory</DrawerTrigger>
+      <DrawerContent>
+        <div className="mx-auto w-full">
+          <DrawerHeader>
+            <DrawerTitle>Contract Directory</DrawerTitle>
+            <DrawerDescription>
+              Choose a contract to interact with.
+            </DrawerDescription>
+          </DrawerHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Contract Name</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Engineer</TableHead>
+                <TableHead>Network</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentContracts.map((contract, index) => (
+                <TableRow key={contract.address || index}>
+                  <TableCell className="font-medium">
+                    {contract.event}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {contract.address}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {contract.engineer}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <Button onClick={goToPreviousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline">Close Menu</Button>
+            </DrawerClose>
+          </DrawerFooter>
         </div>
-        <div>
-          <Label className="text-gray-400 font-semibold mb-2 block">
-            Marketplaces
-          </Label>
-          <ul className="space-y-2">
-            <li className="text-xs">
-              <span className="text-gray-400">Archetype: </span>
-              <span className="text-violet-500 hover:text-violet-400 cursor-pointer">
-                http://zjfsopfrwpvqrhiy73vxb6zq7ksyffkzfyow2gmhgvjsseogy65uguyd.onion
-              </span>
-            </li>
-            <li className="text-xs">
-              <span className="text-gray-400">Bohemia: </span>
-              <span className="text-violet-500 hover:text-violet-400 cursor-pointer">
-                http://bohemiaobko4cecexkj5xmlaove6yn726dstp5wfw4pojjwp6762paqd.onion
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <Label className="text-gray-400 font-semibold mb-2 block">
-            Services
-          </Label>
-          <ul className="space-y-2">
-            <li className="text-xs">
-              <span className="text-gray-400">Protonmail: </span>
-              <span className="text-violet-500 hover:text-violet-400 cursor-pointer">
-                https://protonmailrmez3lotccipshtkleegetolb73fuirgj7r4o4vfu7ozyd.onion
-              </span>
-            </li>
-          </ul>
-        </div>
-      </PopoverContent>
-    </Popover>
+      </DrawerContent>
+    </Drawer>
   );
 }
