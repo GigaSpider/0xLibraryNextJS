@@ -8,7 +8,7 @@ import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
 import Directory from "@/components/Directory";
 import { useSwapStore } from "@/hooks/store/zustand";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import WhitePaper from "@/components/WhitePaper";
 

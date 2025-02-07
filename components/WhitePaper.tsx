@@ -17,14 +17,14 @@ export default function WhitePaper() {
       <SheetTrigger className="text-xs hover:text-violet-500 transition-colors">
         White Paper
       </SheetTrigger>
-      <SheetContent side="left" className="h-screen w-96 max-w-80">
+      <SheetContent side="left" className="h-screen w-full">
         <ScrollArea className="h-full w-full overflow-y-auto">
           <SheetHeader>
             <SheetTitle>White Paper</SheetTitle>
             <SheetDescription>Mission Statement</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
-            <div className="">
+            <p>
               My aim for this project is to facilitate the progress of tangible
               real world usecases on top of existing smart contract technology
               without relying on venture capital or traditional Silicon Valley
@@ -35,7 +35,7 @@ export default function WhitePaper() {
               In the current crypto/defi space you may see a lot of the same
               tired old business strategies that exist solely order to extract
               money out of the users without actually providing any real valuble
-              products that make anybody's' life better. There are crypto
+              products that make anybodys life better. There are crypto
               exchanges ad infinitum, defi lending protocols that dont actually
               lend anybody any money, but very little in the way of actual user
               services. I want this platform to be the thrust in changing that
@@ -51,7 +51,7 @@ export default function WhitePaper() {
               market. And I want to offer consumers the best place possible to
               use their Ethereum and make it work for them without needing to
               worry about beurocratic oversight.
-            </div>
+            </p>
           </div>
           <SheetFooter>
             <SheetClose asChild>
