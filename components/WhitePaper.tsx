@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -15,43 +16,35 @@ export default function WhitePaper() {
   return (
     <Sheet>
       <SheetTrigger className="text-xs hover:text-violet-500 transition-colors">
-        White Paper
+        White Paper (Start Here)
       </SheetTrigger>
       <SheetContent side="left" className="h-screen w-full">
         <ScrollArea className="h-full w-full overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>White Paper</SheetTitle>
-            <SheetDescription>Mission Statement</SheetDescription>
+            <SheetTitle>Instructions</SheetTitle>
+            <SheetDescription>Purpose</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
-            <p>
-              My aim for this project is to facilitate the progress of tangible
-              real world usecases on top of existing smart contract technology
-              without relying on venture capital or traditional Silicon Valley
-              business models. This is to remain a community driven project with
-              an emphasis on low overhead and extreme efficiency
+            <p className="font-xs text-green-500">
+              This application is an open market for Ethereum enthusiasts and
+              developers to interact with and create new smart contracts that
+              are made to be used the the end user directly — beyond the tired
+              old crypto exchanges and NFTs that everybody has seen before. To
+              get the ball rolling I have made a few smart contracts of my own
+              which you are free to interact with and use for your own purposes,
+              and which should give you an idea of what is expected from
+              developer contributions made to this site. This project started as
+              an attempt for me to make a crosschain solution between monero and
+              ethereum, but expanded to make a directory that can have other
+              smart contracts and accept developer contributions.
               <br />
               <br />
-              In the current crypto/defi space you may see a lot of the same
-              tired old business strategies that exist solely order to extract
-              money out of the users without actually providing any real valuble
-              products that make anybodys life better. There are crypto
-              exchanges ad infinitum, defi lending protocols that dont actually
-              lend anybody any money, but very little in the way of actual user
-              services. I want this platform to be the thrust in changing that
-              and facilitate new growth.
+              Featuring your own smart contract in our directory is available to
+              anybody at the price of 0.02ETH
               <br />
               <br />
-              Our goal here should be to remove power from huge corporations and
-              governments and place it in the hands of the devloper and the
-              cryptocurrency holder. That is the whole point of the project as
-              was originally planned by Paul Le Roux almost 20 years ago. I want
-              to offer the opportunity for talented broke young people to market
-              their skills directly to users on the platform in a fair and open
-              market. And I want to offer consumers the best place possible to
-              use their Ethereum and make it work for them without needing to
-              worry about beurocratic oversight.
             </p>
+            <Label>Instructions on usage</Label>
           </div>
           <SheetFooter>
             <SheetClose asChild>

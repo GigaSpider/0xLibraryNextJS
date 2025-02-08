@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -17,10 +18,16 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+// Import shadcn’s built-in pagination components
+import {
+  Pagination,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
 
 const contracts = Array.from({ length: 50 }, (_, index) => {
-  const engineers = ["Alice", "Bob", "Charlie", "Dana"];
+  const engineers = ["ADMIN", "Bob", "Charlie", "Dana"];
   return {
     id: index + 1,
     event: `Contract ${index + 1}`,
@@ -30,30 +37,14 @@ const contracts = Array.from({ length: 50 }, (_, index) => {
 });
 
 export default function Directory() {
-  // State for the current page
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  // Calculate total pages
   const totalPages = Math.ceil(contracts.length / itemsPerPage);
 
-  // Determine the contracts for the current page
+  // Calculate indices for the current page
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentContracts = contracts.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Handlers for pagination buttons
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
 
   return (
     <Drawer>
@@ -76,8 +67,8 @@ export default function Directory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentContracts.map((contract, index) => (
-                <TableRow key={contract.address || index}>
+              {currentContracts.map((contract) => (
+                <TableRow key={contract.id}>
                   <TableCell className="font-medium">
                     {contract.event}
                   </TableCell>
@@ -87,25 +78,50 @@ export default function Directory() {
                   <TableCell className="text-right">
                     {contract.engineer}
                   </TableCell>
+                  <TableCell className="text-right">Optimism</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          {/* Pagination Controls */}
-          <div className="flex justify-between items-center mt-4">
-            <Button onClick={goToPreviousPage} disabled={currentPage === 1}>
-              Previous
-            </Button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
+
+          {/* Pagination using shadcn components */}
+          <Pagination className="mt-4">
+            <PaginationPrevious
+              onClick={() => {
+                if (currentPage > 1) setCurrentPage(currentPage - 1);
+              }}
+              // Use className to mimic a disabled state
+              className={
+                currentPage === 1 ? "opacity-50 pointer-events-none" : ""
+              }
+            />
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
+              return (
+                <PaginationItem
+                  key={pageNumber}
+                  onClick={() => setCurrentPage(pageNumber)}
+                  // Apply active styling via className when the page number matches the current page
+                  className={
+                    pageNumber === currentPage ? "bg-blue-500 text-white" : ""
+                  }
+                >
+                  {pageNumber}
+                </PaginationItem>
+              );
+            })}
+            <PaginationNext
+              onClick={() => {
+                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+              }}
+              className={
+                currentPage === totalPages
+                  ? "opacity-50 pointer-events-none"
+                  : ""
+              }
+            />
+          </Pagination>
+
           <DrawerFooter>
             <DrawerClose asChild>
               <Button variant="outline">Close Menu</Button>
