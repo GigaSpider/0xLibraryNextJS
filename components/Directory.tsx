@@ -64,6 +64,7 @@ export default function Directory() {
                 <TableHead>Address</TableHead>
                 <TableHead>Engineer</TableHead>
                 <TableHead>Network</TableHead>
+                <TableHead>Proxy?</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

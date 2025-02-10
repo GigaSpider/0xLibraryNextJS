@@ -39,8 +39,8 @@ export default function WhitePaper() {
               smart contracts and accept developer contributions.
               <br />
               <br />
-              Featuring your own smart contract in our directory is available to
-              anybody at the price of 0.02ETH
+              Featuring your own smart contract in our directory is available
+              for a price of 0.02ETH
               <br />
               <br />
             </p>
