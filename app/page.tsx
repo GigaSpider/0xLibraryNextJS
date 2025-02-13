@@ -6,7 +6,7 @@ import Card3 from "@/components/Card3";
 import PriceFeed from "@/components/PriceFeed";
 import EnhancedContractInfo from "@/components/EnhancedContractInfo";
 import Chatbox from "@/components/Chatbox/Chatbox";
-import Directory from "@/components/Directory";
+import Library from "@/components/Library";
 import { useSwapStore } from "@/hooks/store/zustand";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,8 @@ export default function Home() {
       ) : (
         <div className="flex space-x-6 fixed top-32 left-1/2 transform -translate-x-1/2 text-center">
           <p className="text-gray-500 font-xs">
-            This application uses the Optimism layer 2 for Ethereum.
+            This application uses layer 2 solutions for Ethereum, ensure you are
+            using the right one.
           </p>
           <br />
           <Button
@@ -73,7 +74,7 @@ export default function Home() {
         <WhitePaper />
       </div>
       <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 text-center">
-        <Directory />
+        <Library />
       </div>
       <div className="fixed bottom-2 right-2">
         <Chatbox />

@@ -3,6 +3,7 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -27,7 +28,10 @@ export default function Card1() {
   return (
     <Card className="border-violet-500 h-[400px] w-[400px]">
       <CardHeader>
-        <CardTitle className="text-center">Activity Feed</CardTitle>
+        <CardTitle className="text-center">Event Listener</CardTitle>
+        <CardDescription>
+          Initialize contract to listen for events
+        </CardDescription>
       </CardHeader>
 
       <CardContent>

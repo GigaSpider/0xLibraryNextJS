@@ -24,19 +24,12 @@ import {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
+  PaginationLink,
 } from "@/components/ui/pagination";
+import { useContractStore, Contract } from "@/hooks/store/contractStore";
 
-const contracts = Array.from({ length: 50 }, (_, index) => {
-  const engineers = ["ADMIN", "Bob", "Charlie", "Dana"];
-  return {
-    id: index + 1,
-    event: `Contract ${index + 1}`,
-    address: new Date(Date.now() - index * 3600 * 1000).toISOString(),
-    engineer: engineers[index % engineers.length],
-  };
-});
-
-export default function Directory() {
+export default function Library() {
+  const { set_SELECTED_CONTRACT, contracts } = useContractStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(contracts.length / itemsPerPage);
@@ -48,11 +41,11 @@ export default function Directory() {
 
   return (
     <Drawer>
-      <DrawerTrigger>Contract Directory</DrawerTrigger>
+      <DrawerTrigger>Contract Library</DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full">
           <DrawerHeader>
-            <DrawerTitle>Contract Directory</DrawerTitle>
+            <DrawerTitle>Contract Library</DrawerTitle>
             <DrawerDescription>
               Choose a contract to interact with.
             </DrawerDescription>
@@ -64,50 +57,40 @@ export default function Directory() {
                 <TableHead>Address</TableHead>
                 <TableHead>Engineer</TableHead>
                 <TableHead>Network</TableHead>
-                <TableHead>Proxy?</TableHead>
+                <TableHead className="text-right">Proxy?</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentContracts.map((contract) => (
-                <TableRow key={contract.id}>
-                  <TableCell className="font-medium">
-                    {contract.event}
-                  </TableCell>
+              {currentContracts.map((contract: Contract) => (
+                <TableRow
+                  key={contract.id}
+                  onClick={() => set_SELECTED_CONTRACT(contract)}
+                >
+                  <TableCell className="font-medium">{contract.name}</TableCell>
+                  <TableCell>{contract.address}</TableCell>
+                  <TableCell>{contract.engineer}</TableCell>
+                  <TableCell>{contract.network}</TableCell>
                   <TableCell className="text-right">
-                    {contract.address}
+                    {contract.proxy.toString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                    {contract.engineer}
-                  </TableCell>
-                  <TableCell className="text-right">Optimism</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
 
-          {/* Pagination using shadcn components */}
           <Pagination className="mt-4">
             <PaginationPrevious
               onClick={() => {
                 if (currentPage > 1) setCurrentPage(currentPage - 1);
               }}
-              // Use className to mimic a disabled state
-              className={
-                currentPage === 1 ? "opacity-50 pointer-events-none" : ""
-              }
             />
             {Array.from({ length: totalPages }, (_, index) => {
               const pageNumber = index + 1;
               return (
-                <PaginationItem
-                  key={pageNumber}
-                  onClick={() => setCurrentPage(pageNumber)}
-                  // Apply active styling via className when the page number matches the current page
-                  className={
-                    pageNumber === currentPage ? "bg-blue-500 text-white" : ""
-                  }
-                >
-                  {pageNumber}
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink onClick={() => setCurrentPage(pageNumber)}>
+                    {pageNumber}
+                  </PaginationLink>
                 </PaginationItem>
               );
             })}
@@ -115,11 +98,6 @@ export default function Directory() {
               onClick={() => {
                 if (currentPage < totalPages) setCurrentPage(currentPage + 1);
               }}
-              className={
-                currentPage === totalPages
-                  ? "opacity-50 pointer-events-none"
-                  : ""
-              }
             />
           </Pagination>
 

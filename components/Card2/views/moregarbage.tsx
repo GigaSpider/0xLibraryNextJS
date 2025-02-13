@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function ContractDashboard() {
+export default function InitializationMenu() {
   useMetaMask();
   const { ETH_XMR_ADDRESS, EXCHANGE_RATE, XMR_TXID, signer, provider } =
     useSwapStore();
