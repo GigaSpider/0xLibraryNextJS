@@ -93,7 +93,7 @@ export default function ProxyInterface() {
 
   return (
     <div>
-      <div className="text-yellow-500">{SELECTED_CONTRACT?.name}</div>
+      <div className="text-green-500">{SELECTED_CONTRACT?.name}</div>
       <Separator />
       <br />
       <div>Master Contract: {SELECTED_CONTRACT?.master_address}</div>
