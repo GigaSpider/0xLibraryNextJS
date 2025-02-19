@@ -26,10 +26,11 @@ import {
   PaginationNext,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { useContractStore, Contract } from "@/hooks/store/contractStore";
+import { useContractStore, SmartContract } from "@/hooks/store/contractStore";
 
 export default function Library() {
-  const { set_SELECTED_CONTRACT, contracts } = useContractStore();
+  const { set_SELECTED_CONTRACT, contracts, set_INITIALIZED_CONTRACT } =
+    useContractStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(contracts.length / itemsPerPage);
@@ -47,13 +48,14 @@ export default function Library() {
           <DrawerHeader>
             <DrawerTitle>Contract Library</DrawerTitle>
             <DrawerDescription>
-              Choose a contract to interact with.
+              Choose an Ethereum Smart Contract to interact with.
             </DrawerDescription>
           </DrawerHeader>
-          <Table>
+          <Table className="text-violet-500">
             <TableHeader>
               <TableRow>
                 <TableHead>Contract Name</TableHead>
+                <TableHead>Fee</TableHead>
                 <TableHead>Address</TableHead>
                 <TableHead>Engineer</TableHead>
                 <TableHead>Network</TableHead>
@@ -61,12 +63,16 @@ export default function Library() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentContracts.map((contract: Contract) => (
+              {currentContracts.map((contract: SmartContract) => (
                 <TableRow
                   key={contract.id}
-                  onClick={() => set_SELECTED_CONTRACT(contract)}
+                  onClick={() => {
+                    set_INITIALIZED_CONTRACT(null);
+                    set_SELECTED_CONTRACT(contract);
+                  }}
                 >
                   <TableCell className="font-medium">{contract.name}</TableCell>
+                  <TableCell>{contract.fee}%</TableCell>
                   <TableCell>{contract.address}</TableCell>
                   <TableCell>{contract.engineer}</TableCell>
                   <TableCell>{contract.network}</TableCell>

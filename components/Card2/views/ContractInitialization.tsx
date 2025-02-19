@@ -11,13 +11,17 @@ import { useContractStore } from "@/hooks/store/contractStore";
 import InitializationMenu from "./InitializationMenu";
 
 export default function ContractInitialization() {
-  const { SELECTED_CONTRACT } = useContractStore();
+  const { SELECTED_CONTRACT, INITIALIZED_CONTRACT } = useContractStore();
   return (
     <Card className="border-violet-500 h-[400px] w-[400px]">
       <CardHeader className="text-center">
-        <CardTitle>Contract Initialization</CardTitle>
+        <CardTitle>Stage Contract</CardTitle>
         {SELECTED_CONTRACT ? (
-          <></>
+          INITIALIZED_CONTRACT ? (
+            <CardDescription>Proxy Contract Deployed</CardDescription>
+          ) : (
+            <></>
+          )
         ) : (
           <CardDescription>Select a contract from the library</CardDescription>
         )}

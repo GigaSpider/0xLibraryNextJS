@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
@@ -12,8 +11,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { isAddress } from "ethers";
+import { Result, isAddress } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
+import {
+  deployProxyContract,
+  connectProxyContract,
+} from "@/lib/initializeContract";
 
 // Define explicit types for ABI
 interface AbiInput {
@@ -76,6 +79,8 @@ export default function ProxyInterface() {
 
   async function onDeploySubmit(data: DeployContractForm) {
     console.log("Deploying contract with data:", data);
+    const blockchain_confirmation: Result[] = await deployProxyContract(data);
+    console.log("Confirmation: ", blockchain_confirmation);
     // Add your deployment logic here.
   }
 
@@ -88,24 +93,22 @@ export default function ProxyInterface() {
       });
       return;
     }
+    await connectProxyContract(data.contractAddress);
     console.log("Connecting to contract:", data.contractAddress);
   }
 
   return (
     <div>
       <div className="text-green-500">{SELECTED_CONTRACT?.name}</div>
-      <Separator />
       <br />
       <div>Master Contract: {SELECTED_CONTRACT?.master_address}</div>
-      <Separator />
       <br />
       <div>Deploy Proxy Contract from master with the following parameters</div>
-      <Separator />
       <br />
       <Form {...deployForm}>
         <form
           onSubmit={deployForm.handleSubmit(onDeploySubmit)}
-          className="space-y-4"
+          className=" space-y-4"
         >
           {functionAbi?.inputs.map((param: AbiInput, index: number) => (
             <FormField
@@ -130,7 +133,6 @@ export default function ProxyInterface() {
           </Button>
         </form>
       </Form>
-      <Separator />
       <br />
       <Form {...connectForm}>
         <form
