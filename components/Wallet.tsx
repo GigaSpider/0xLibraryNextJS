@@ -49,12 +49,11 @@ export function formatWei(quantity: bigint): string {
   // toFixed(18) returns a string with exactly 18 decimals.
   const etherString = weiBN.dividedBy("1e18").toFixed(18);
   // Split the string into integer and fractional parts.
-  let [intPart] = etherString.split(".");
-  const fracPart = etherString.split(".");
+  const [intPart, fracPart] = etherString.split(".");
   // Pad the integer part with leading zeros to ensure it is 5 digits.
-  intPart = intPart.padStart(5, "0");
+  const intPart2 = intPart.padStart(5, "0");
   // Return the formatted string.
-  return `${intPart}.${fracPart}`;
+  return `${intPart2}.${fracPart}`;
 }
 
 export default function Wallet() {
