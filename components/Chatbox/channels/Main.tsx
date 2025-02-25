@@ -29,8 +29,8 @@ export default function Main() {
       <ScrollArea className="flex-1 overflow-y-auto">
         {MAIN_messages.map((msg) => (
           <div key={msg.timestamp} className="p-2">
-            <strong className="text-gray-500">{msg.author}:</strong>{" "}
-            <span className="text-violet-500">{msg.text}</span>
+            <strong className="text-gray-500 text-xs">{msg.author}</strong>{" "}
+            <span className="text-violet-500 text-xs">{msg.text}</span>
           </div>
         ))}
       </ScrollArea>
