@@ -13,7 +13,7 @@ import InitializationMenu from "./InitializationMenu";
 export default function ContractInitialization() {
   const { SELECTED_CONTRACT, INITIALIZED_CONTRACT } = useContractStore();
   return (
-    <Card className="border-violet-500 h-[400px] w-[400px]">
+    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
       <CardHeader className="text-center">
         <CardTitle>Stage Contract</CardTitle>
         {SELECTED_CONTRACT ? (

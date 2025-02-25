@@ -26,21 +26,16 @@ export default function WhitePaper() {
           </SheetHeader>
           <div className="grid gap-4 py-4">
             <p className="font-xs text-green-500">
-              This application is an open market for Ethereum enthusiasts and
-              developers to interact with and create new smart contracts that
-              are made to be used the the end user directly — beyond the tired
-              old crypto exchanges and NFTs that everybody has seen before. To
-              get the ball rolling I have made a few smart contracts of my own
-              which you are free to interact with and use for your own purposes,
-              and which should give you an idea of what is expected from
-              developer contributions made to this site. This project started as
-              an attempt for me to make a crosschain solution between monero and
-              ethereum, but expanded to make a directory that can have other
-              smart contracts and accept developer contributions.
+              Beyond the scope of your traditional East/South Asian crypto scam
+              or scamcoin offering. Ive decided to go outside of the box here,
+              building upon existing technologies in order to make something
+              which is actually useful to the end user.
               <br />
               <br />
-              Featuring your own smart contract in our directory is available
-              for a price of 0.02ETH
+              Everything is non custodial and decentralized. The private keys
+              are controlled by you and there are no funny browser extensions
+              like metamask to get in the way either. By not using metamask that
+              means you can use this application from within tor browser.
               <br />
               <br />
             </p>

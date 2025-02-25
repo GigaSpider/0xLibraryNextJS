@@ -2,12 +2,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/store/chatStore";
+import { useWalletStore } from "@/hooks/store/walletStore";
 import { useChatHook, useSendMessage } from "@/hooks/chat";
 import { useState } from "react";
 
 export default function Politics() {
   const [input, setInput] = useState("");
-  const { POLITICS_messages, username } = useChatStore();
+  const { POLITICS_messages } = useChatStore();
+  const { wallet } = useWalletStore();
   useChatHook();
   const { sendMessage } = useSendMessage();
 
@@ -15,7 +17,7 @@ export default function Politics() {
     if (input.trim()) {
       const message = {
         channelId: "POLITICS",
-        author: username,
+        author: wallet ? wallet.address : "anonymous",
         text: input,
       };
       sendMessage(message);

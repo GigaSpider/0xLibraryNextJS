@@ -8,25 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from "@/components/ui/table";
+// import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { useEventStore } from "@/hooks/store/eventStore";
+// import { useEventStore } from "@/hooks/store/eventStore";
 
 export default function Card1() {
-  const { events } = useEventStore();
+  // const { events } = useEventStore();
 
-  const sorted = [...events].sort((a, b) => b.timestamp - a.timestamp);
+  // const sorted = [...events].sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <Card className="border-violet-500 h-[400px] w-[400px]">
+    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
       <CardHeader>
         <CardTitle className="text-center">Event Listener</CardTitle>
         <CardDescription>
@@ -35,7 +35,7 @@ export default function Card1() {
       </CardHeader>
 
       <CardContent>
-        <ScrollArea className="h-[300px] w-[350px] rounded-md">
+        {/* <ScrollArea className="h-[300px] w-[350px] rounded-md">
           {events ? (
             <Table>
               <TableHeader>
@@ -58,7 +58,7 @@ export default function Card1() {
           ) : (
             <>No Activity Yet</>
           )}
-        </ScrollArea>
+        </ScrollArea> */}
       </CardContent>
       <CardFooter></CardFooter>
     </Card>

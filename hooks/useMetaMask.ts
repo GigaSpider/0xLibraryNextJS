@@ -26,6 +26,8 @@ export function useMetaMask() {
       throw new Error("MetaMask is not installed");
     }
 
+    console.log("using connect function from useMetaMask hook");
+
     try {
       // First, try to switch to Optimism mainnet
       try {

@@ -13,10 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Result, isAddress } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
-import {
-  deployProxyContract,
-  connectProxyContract,
-} from "@/lib/initializeContract";
+import { useInitializeContract } from "@/hooks/initializeContract";
 
 // Define explicit types for ABI
 interface AbiInput {
@@ -37,6 +34,7 @@ type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function ProxyInterface() {
   const { SELECTED_CONTRACT } = useContractStore();
+  const { deployProxyContract, connectProxyContract } = useInitializeContract();
   const { toast } = useToast();
 
   const functionAbi: AbiItem | undefined = SELECTED_CONTRACT?.master_abi?.find(

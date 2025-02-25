@@ -1,11 +1,12 @@
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useSwapStore } from "@/hooks/store/zustand";
-import { signContract } from "@/lib/initializeContract";
+import { useInitializeContract } from "@/hooks/initializeContract";
 import { Button } from "@/components/ui/button";
 
 export default function NonProxyInterface() {
   const { SELECTED_CONTRACT } = useContractStore();
   const { signer } = useSwapStore();
+  const { signContract } = useInitializeContract();
 
   return (
     <div>

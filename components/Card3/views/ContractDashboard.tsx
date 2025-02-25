@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FunctionFragment } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 import { Form } from "@/components/ui/form";
@@ -60,7 +61,7 @@ function DynamicForm({ func }: { func: FunctionFragment }) {
               >
                 {fieldName} ({input.type})
               </label>
-              <input
+              <Input
                 id={`${func.name}-${fieldName}`}
                 type="text"
                 {...register(fieldName)}
@@ -89,7 +90,7 @@ export default function ContractDashboard() {
     ) || [];
 
   return (
-    <Card className="border-violet-500 h-[400px] w-[400px]">
+    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
       <CardHeader>
         <CardTitle className="text-center">Contract Dashboard</CardTitle>
         {INITIALIZED_CONTRACT ? (
@@ -101,10 +102,10 @@ export default function ContractDashboard() {
         )}
       </CardHeader>
       <CardContent>
-        <ScrollArea>
+        <ScrollArea className="h-80 w-full overflow-hidden">
           {INITIALIZED_CONTRACT ? (
             functions.map((func: FunctionFragment, index: number) => (
-              <div key={index} className="p-2 border-b border-gray-300">
+              <div key={index} className="p-2 border-gray-300">
                 <DynamicForm func={func} />
                 <br />
                 <Separator />
