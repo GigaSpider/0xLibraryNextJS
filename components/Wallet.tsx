@@ -51,11 +51,7 @@ export function formatWei(quantity: bigint): string {
 }
 
 export default function Wallet() {
-  const { balance, wallet, set_wallet, get_wallet } = useWalletStore();
-  const stored_wallet = get_wallet();
-  if (stored_wallet) {
-    set_wallet(stored_wallet);
-  }
+  const { balance, wallet, set_wallet } = useWalletStore();
   useWalletHook();
 
   // Create separate form instances with proper typing using z.infer

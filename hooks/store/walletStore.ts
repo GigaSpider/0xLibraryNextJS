@@ -20,7 +20,7 @@ type WalletStore = {
   wallet: HDNodeWallet | null;
   set_balance: (network: Network, balance: BalanceInfo) => void;
   set_wallet: (wallet: HDNodeWallet) => void;
-  get_wallet: () => HDNodeWallet | null;
+  // get_wallet: () => HDNodeWallet | null;
 };
 
 export const useWalletStore = create<WalletStore>()(
@@ -40,11 +40,11 @@ export const useWalletStore = create<WalletStore>()(
           },
         })),
       set_wallet: (wallet: HDNodeWallet) => set({ wallet: wallet }),
-      get_wallet: () => {
-        const storedWallet = get().wallet;
-        if (!storedWallet) return null;
-        return storedWallet;
-      },
+      // get_wallet: () => {
+      //   const storedWallet = get().wallet;
+      //   if (!storedWallet) return null;
+      //   return storedWallet;
+      // },
     }),
     {
       name: "wallet-store", // unique key in localStorage
