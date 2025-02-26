@@ -28,9 +28,9 @@ export function useWalletHook() {
         const OPTIMISM_BALANCE = await OPTIMISM_PROVIDER.getBalance(address);
         const ARBITRUM_BALANCE = await ARBITRUM_PROVIDER.getBalance(address);
         const balances = [
-          parseFloat(formatEther(MAIN_BALANCE)),
-          parseFloat(formatEther(OPTIMISM_BALANCE)),
-          parseFloat(formatEther(ARBITRUM_BALANCE)),
+          `MAINNET ETHEREUM ${parseFloat(formatEther(MAIN_BALANCE))} wei`,
+          `MAINNET ETHEREUM ${parseFloat(formatEther(OPTIMISM_BALANCE))} wei`,
+          `MAINNET ETHEREUM ${parseFloat(formatEther(ARBITRUM_BALANCE))} wei`,
         ];
         console.log("balances: ", balances);
 

@@ -43,21 +43,19 @@ const bridgeSchema = z.object({
 });
 
 export function formatWei(quantity: bigint): string {
-  // Convert the bigint (which represents wei) into a BigNumber.
   const weiBN = new BigNumber(quantity.toString());
-  // Convert wei to Ether by dividing by 10^18, ensuring 18 decimals.
-  // toFixed(18) returns a string with exactly 18 decimals.
   const etherString = weiBN.dividedBy("1e18").toFixed(18);
-  // Split the string into integer and fractional parts.
   const [intPart, fracPart] = etherString.split(".");
-  // Pad the integer part with leading zeros to ensure it is 5 digits.
   const intPart2 = intPart.padStart(5, "0");
-  // Return the formatted string.
   return `${intPart2}.${fracPart}`;
 }
 
 export default function Wallet() {
-  const { balance, wallet, set_wallet } = useWalletStore();
+  const { balance, wallet, set_wallet, get_wallet } = useWalletStore();
+  const stored_wallet = get_wallet();
+  if (stored_wallet) {
+    set_wallet(stored_wallet);
+  }
   useWalletHook();
 
   // Create separate form instances with proper typing using z.infer
