@@ -25,21 +25,8 @@ export default function WhitePaper() {
             <SheetDescription>Purpose</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
-            <p className="font-xs text-green-500">
-              Beyond the scope of your traditional East/South Asian crypto scam
-              or scamcoin offering. Ive decided to go outside of the box here,
-              building upon existing technologies in order to make something
-              which is actually useful to the end user.
-              <br />
-              <br />
-              Everything is non custodial and decentralized. The private keys
-              are controlled by you and there are no funny browser extensions
-              like metamask to get in the way either. By not using metamask that
-              means you can use this application from within tor browser.
-              <br />
-              <br />
-            </p>
-            <Label>Instructions on usage</Label>
+            <p className="font-xs text-green-500">Work in progress</p>
+            <Label>Security Considerations</Label>
           </div>
           <SheetFooter>
             <SheetClose asChild>

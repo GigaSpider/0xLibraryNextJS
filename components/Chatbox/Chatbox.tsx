@@ -3,13 +3,11 @@
 import { Rnd } from "react-rnd";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Messages from "./Messages";
+
 import { Channel, useChatStore } from "@/hooks/store/chatStore";
 import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import Main from "@/components/Chatbox/channels/Main";
-import Business from "@/components/Chatbox/channels/Business";
-import Politics from "./channels/Politics";
-import Cryptocurrency from "./channels/Cryptocurrency";
 import { Label } from "@/components/ui/label";
 
 import {
@@ -32,23 +30,10 @@ export default function Chatbox() {
   const { set_username } = useChatStore();
 
   const [usernameInput, setUsernameInput] = useState("");
-  const [size, setSize] = useState({ width: 300, height: 300 });
-  const [position, setPosition] = useState({ x: -300, y: -300 });
+  const [size, setSize] = useState({ width: 700, height: 500 });
+  const [position, setPosition] = useState({ x: -700, y: -500 });
   const [isOpen, setIsOpen] = useState(false);
   const [channel, setChannel] = useState(Channel.MAIN);
-
-  const renderChannel = () => {
-    switch (channel) {
-      case Channel.MAIN:
-        return <Main />;
-      case Channel.BUSINESS:
-        return <Business />;
-      case Channel.POLITICS:
-        return <Politics />;
-      case Channel.CRYPTOCURRENCY:
-        return <Cryptocurrency />;
-    }
-  };
 
   return (
     <div className="fixed bottom-0 right-0 z-[1000]">
@@ -150,7 +135,7 @@ export default function Chatbox() {
                   direction="horizontal"
                   className="h-full border"
                 >
-                  <ResizablePanel defaultSize={25} minSize={20}>
+                  <ResizablePanel defaultSize={20} minSize={20}>
                     <div>
                       <Button
                         variant="ghost"
@@ -202,7 +187,7 @@ export default function Chatbox() {
                   </ResizablePanel>
                   <ResizableHandle />
                   <ResizablePanel defaultSize={75}>
-                    {renderChannel()}
+                    <Messages channel={channel} />
                   </ResizablePanel>
                 </ResizablePanelGroup>
               </div>

@@ -25,7 +25,7 @@ type WalletStore = {
 
 export const useWalletStore = create<WalletStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       balance: {
         [Network.Main]: { amount: BigInt(0) },
         [Network.Optimism]: { amount: BigInt(0) },

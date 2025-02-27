@@ -5,7 +5,7 @@ import Card2 from "@/components/Card2";
 import Card3 from "@/components/Card3";
 // import PriceFeed from "@/components/PriceFeed";
 // import WebSockets from "@/components/Websockets";
-import Wallet from "@/components/Wallet";
+import Wallet from "@/components/Wallet/Wallet";
 import Chatbox from "@/components/Chatbox/Chatbox";
 import Library from "@/components/Library";
 // import { useSwapStore } from "@/hooks/store/zustand";

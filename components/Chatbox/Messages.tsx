@@ -1,3 +1,4 @@
+import { Channel } from "@/hooks/store/chatStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,9 @@ import { useWalletStore } from "@/hooks/store/walletStore";
 import { useChatHook, useSendMessage } from "@/hooks/chat";
 import { useState } from "react";
 
-export default function Main() {
+export default function Messages({ channel }: { channel: Channel }) {
   const [input, setInput] = useState("");
-  const { MAIN_messages } = useChatStore();
+  const { messages } = useChatStore();
   const { wallet } = useWalletStore();
   useChatHook();
   const { sendMessage } = useSendMessage();
@@ -16,7 +17,7 @@ export default function Main() {
   const handleSend = () => {
     if (input.trim()) {
       const message = {
-        channelId: "MAIN",
+        channelId: channel,
         author: wallet ? wallet.address : "anonymous",
         text: input,
       };
@@ -24,11 +25,38 @@ export default function Main() {
       setInput("");
     }
   };
+
+  let filtered_messages;
+
+  switch (channel) {
+    case "MAIN":
+      filtered_messages = messages.filter((msg) => msg.channelId === "MAIN");
+      break;
+    case "BUSINESS":
+      filtered_messages = messages.filter(
+        (msg) => msg.channelId === "BUSINESS",
+      );
+      break;
+    case "POLITICS":
+      filtered_messages = messages.filter(
+        (msg) => msg.channelId === "POLITICS",
+      );
+      break;
+    case "CRYPTOCURRENCY":
+      filtered_messages = messages.filter(
+        (msg) => msg.channelId === "CRYPTOCURRENCY",
+      );
+      break;
+    default:
+      filtered_messages = messages;
+      break;
+  }
+
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 overflow-y-auto">
-        {MAIN_messages.map((msg) => (
-          <div key={msg.timestamp} className="p-2">
+        {filtered_messages!.map((msg) => (
+          <div key={`${msg.timestamp}`} className="p-2">
             <strong className="text-gray-500 text-xs">{msg.author}</strong>{" "}
             <span className="text-violet-500 text-xs">{msg.text}</span>
           </div>

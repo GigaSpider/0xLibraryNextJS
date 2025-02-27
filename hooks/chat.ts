@@ -2,82 +2,33 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useChatStore, Channel } from "./store/chatStore";
+import { useChatStore } from "./store/chatStore";
 import { useEffect } from "react";
 
 export function useChatHook() {
-  const {
-    set_MAIN_messages,
-    set_BUSINESS_messages,
-    set_POLITICS_messages,
-    set_CRYPTOCURRENCY_messages,
-    lastTimestamps,
-    setLastTimestamp,
-  } = useChatStore();
+  // Assume your Zustand store now has a single messages array,
+  // a unified lastTimestamp, and actions to update them.
+  const { set_messages, lastTimestamp, setLastTimestamp } = useChatStore();
 
-  const MAIN_messages = useQuery(api.functions.chat.getMessages, {
-    channelId: "MAIN",
-    lastTimestamp: lastTimestamps.main || 0,
-  });
-
-  const BUSINESS_messages = useQuery(api.functions.chat.getMessages, {
-    channelId: "BUSINESS",
-    lastTimestamp: lastTimestamps.business || 0,
-  });
-
-  const POLITICS_messages = useQuery(api.functions.chat.getMessages, {
-    channelId: "POLITICS",
-    lastTimestamp: lastTimestamps.politics || 0,
-  });
-
-  const CRYPTOCURRENCY_messages = useQuery(api.functions.chat.getMessages, {
-    channelId: "CRYPTOCURRENCY",
-    lastTimestamp: lastTimestamps.cryptocurrency || 0,
+  // Query for all messages, using a unified lastTimestamp (or 0 if not set)
+  const messagesData = useQuery(api.functions.chat.getMessages, {
+    lastTimestamp: lastTimestamp,
   });
 
   useEffect(() => {
-    if (MAIN_messages && MAIN_messages.length > 0) {
-      set_MAIN_messages(MAIN_messages);
-      setLastTimestamp(
-        Channel.MAIN,
-        MAIN_messages[MAIN_messages.length - 1].timestamp,
-      );
+    if (messagesData && messagesData.length > 0) {
+      // Update the consolidated messages state in your store
+      set_messages(messagesData);
+      // Update the unified lastTimestamp using the timestamp of the last message
+      const newLastTimestamp = messagesData[messagesData.length - 1].timestamp;
+      console.log(newLastTimestamp);
+      setLastTimestamp(newLastTimestamp);
+      console.log(lastTimestamp);
     }
+  }, [messagesData, set_messages, setLastTimestamp, lastTimestamp]);
 
-    if (BUSINESS_messages && BUSINESS_messages.length > 0) {
-      set_BUSINESS_messages(BUSINESS_messages);
-      setLastTimestamp(
-        Channel.BUSINESS,
-        BUSINESS_messages[BUSINESS_messages.length - 1].timestamp,
-      );
-    }
-
-    if (POLITICS_messages && POLITICS_messages.length > 0) {
-      set_POLITICS_messages(POLITICS_messages);
-      setLastTimestamp(
-        Channel.POLITICS,
-        POLITICS_messages[POLITICS_messages.length - 1].timestamp,
-      );
-    }
-
-    if (CRYPTOCURRENCY_messages && CRYPTOCURRENCY_messages.length > 0) {
-      set_CRYPTOCURRENCY_messages(CRYPTOCURRENCY_messages);
-      setLastTimestamp(
-        Channel.CRYPTOCURRENCY,
-        CRYPTOCURRENCY_messages[CRYPTOCURRENCY_messages.length - 1].timestamp,
-      );
-    }
-  }, [
-    MAIN_messages,
-    BUSINESS_messages,
-    POLITICS_messages,
-    CRYPTOCURRENCY_messages,
-    set_MAIN_messages,
-    set_BUSINESS_messages,
-    set_POLITICS_messages,
-    set_CRYPTOCURRENCY_messages,
-    setLastTimestamp,
-  ]);
+  // Optionally, return the messages from the store for your components
+  return useChatStore((state) => state.messages);
 }
 
 export function useSendMessage() {
