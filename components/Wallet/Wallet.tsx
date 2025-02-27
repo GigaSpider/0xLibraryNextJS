@@ -57,7 +57,7 @@ export function formatWei(quantity: bigint): string {
 }
 
 export default function Wallet() {
-  const { balance, wallet, set_wallet } = useWalletStore();
+  const { balance, wallet, set_wallet, private_key } = useWalletStore();
   useWalletHook();
 
   const { toast } = useToast();
@@ -223,7 +223,7 @@ export default function Wallet() {
                     onClick={() => {
                       toast({
                         title: "private key",
-                        description: `${wallet?.privateKey}`,
+                        description: `${private_key}`,
                       });
                     }}
                   >

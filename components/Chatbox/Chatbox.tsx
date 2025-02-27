@@ -1,24 +1,12 @@
 "use client";
 
 import { Rnd } from "react-rnd";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Messages from "./Messages";
 
-import { Channel, useChatStore } from "@/hooks/store/chatStore";
+import { Channel } from "@/hooks/store/chatStore";
 import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
 import {
   ResizableHandle,
@@ -27,9 +15,6 @@ import {
 } from "@/components/ui/resizable";
 
 export default function Chatbox() {
-  const { set_username } = useChatStore();
-
-  const [usernameInput, setUsernameInput] = useState("");
   const [size, setSize] = useState({ width: 700, height: 500 });
   const [position, setPosition] = useState({ x: -700, y: -500 });
   const [isOpen, setIsOpen] = useState(false);
@@ -75,51 +60,6 @@ export default function Chatbox() {
             <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
               <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
               <div className="relative h-10">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" className="fixed left-5 top-0.5">
-                      Set Username
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] border-violet-500">
-                    <DialogHeader>
-                      <DialogTitle>Set Username</DialogTitle>
-                      <DialogDescription>
-                        Optionally set a username, will default to anonymous
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="username" className="text-right">
-                          Username
-                        </Label>
-                        <Input
-                          value={usernameInput}
-                          onChange={(e) => setUsernameInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              set_username(usernameInput.trim());
-                              setUsernameInput(""); // Optional: clear input after setting
-                            }
-                          }}
-                          className="w-[250px]"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button
-                        type="submit"
-                        onClick={() => {
-                          set_username(usernameInput.trim());
-                          setUsernameInput("");
-                        }}
-                      >
-                        Update
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
                 <Button
                   onClick={() => setIsOpen(false)}
                   className="absolute right-1 z-[1002]"

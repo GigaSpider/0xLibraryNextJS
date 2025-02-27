@@ -16,11 +16,10 @@ type Balances = Record<Network, BalanceInfo>;
 
 type WalletStore = {
   balance: Balances;
-  // We'll persist only the wallet (which you store as an HDNodeWallet)
   wallet: HDNodeWallet | null;
+  private_key: string | null;
   set_balance: (network: Network, balance: BalanceInfo) => void;
   set_wallet: (wallet: HDNodeWallet) => void;
-  // get_wallet: () => HDNodeWallet | null;
 };
 
 export const useWalletStore = create<WalletStore>()(
@@ -32,6 +31,7 @@ export const useWalletStore = create<WalletStore>()(
         [Network.Arbitrum]: { amount: BigInt(0) },
       },
       wallet: null,
+      private_key: null,
       set_balance: (network: Network, balance: BalanceInfo) =>
         set((state) => ({
           balance: {
@@ -39,17 +39,15 @@ export const useWalletStore = create<WalletStore>()(
             [network]: balance,
           },
         })),
-      set_wallet: (wallet: HDNodeWallet) => set({ wallet: wallet }),
-      // get_wallet: () => {
-      //   const storedWallet = get().wallet;
-      //   if (!storedWallet) return null;
-      //   return storedWallet;
-      // },
+      set_wallet: (wallet: HDNodeWallet) =>
+        set({ wallet: wallet, private_key: wallet.privateKey }),
     }),
     {
       name: "wallet-store", // unique key in localStorage
-      // Only persist the wallet property to avoid JSON serializing BigInts.
-      partialize: (state) => ({ wallet: state.wallet }),
+      partialize: (state) => ({
+        wallet: state.wallet,
+        private_key: state.private_key,
+      }),
     },
   ),
 );
