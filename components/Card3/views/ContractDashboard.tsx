@@ -82,7 +82,7 @@ export default function ContractDashboard() {
     ) || [];
 
   return (
-    <ScrollArea className="h-full w-full overflow-hidden">
+    <ScrollArea className="h-full w-full">
       {INITIALIZED_CONTRACT ? (
         functions.map((func: FunctionFragment, index: number) => (
           <div key={index} className="p-2 border-gray-300">

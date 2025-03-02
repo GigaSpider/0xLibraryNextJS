@@ -6,6 +6,7 @@ import { useChatStore } from "@/hooks/store/chatStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useChatHook, useSendMessage } from "@/hooks/chat";
 import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Messages({ channel }: { channel: Channel }) {
   const [input, setInput] = useState("");
@@ -52,6 +53,12 @@ export default function Messages({ channel }: { channel: Channel }) {
       break;
   }
 
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [filtered_messages]);
+
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 overflow-y-auto">
@@ -61,6 +68,7 @@ export default function Messages({ channel }: { channel: Channel }) {
             <span className="text-violet-500 text-xs">{msg.text}</span>
           </div>
         ))}
+        <div ref={bottomRef} />
       </ScrollArea>
       <div className="p-2.5 flex gap-2 border-t">
         <Input

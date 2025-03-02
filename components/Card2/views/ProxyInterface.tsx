@@ -39,7 +39,8 @@ export default function ProxyInterface() {
 
   const functionAbi: AbiItem | undefined = SELECTED_CONTRACT?.master_abi?.find(
     (item: AbiItem) =>
-      item.type === "function" && item.name === SELECTED_CONTRACT.function_name,
+      item.type === "function" &&
+      item.name === SELECTED_CONTRACT!.function_name,
   );
 
   const deployDefaultValues: Record<string, string> = functionAbi
@@ -100,6 +101,8 @@ export default function ProxyInterface() {
       <div className="text-green-500">{SELECTED_CONTRACT?.name}</div>
       <br />
       <div>Master Contract: {SELECTED_CONTRACT?.master_address}</div>
+      <br />
+      <div>Description: {SELECTED_CONTRACT?.description}</div>
       <br />
       <div>Deploy Proxy Contract from master with the following parameters</div>
       <br />

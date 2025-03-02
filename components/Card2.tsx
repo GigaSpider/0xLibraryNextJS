@@ -31,7 +31,7 @@ export default function Card2() {
           <CardDescription>Select a contract from the library</CardDescription>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-hidden">
         <ContractInitialization />
       </CardContent>
     </Card>

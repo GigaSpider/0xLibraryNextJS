@@ -11,7 +11,7 @@ import NonProxyInterface from "./NonProxyInterface";
 export default function InitializationMenu() {
   const { SELECTED_CONTRACT, INITIALIZED_CONTRACT } = useContractStore();
   return (
-    <ScrollArea className="max-h-full w-full overflow-hidden">
+    <ScrollArea className="h-full w-full">
       {SELECTED_CONTRACT?.proxy ? (
         INITIALIZED_CONTRACT ? (
           <ProxyDisplay />

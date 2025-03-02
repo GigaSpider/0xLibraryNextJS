@@ -6,6 +6,12 @@ import ETH_MIXER from "./contractdata/ETH_MIXER.json";
 import ETH_ODDS from "./contractdata/ETH_ODDS.json";
 import MASTER from "./contractdata/MASTER.json";
 
+export enum NetworkIndex {
+  "Mainnet" = 0,
+  "Optimism" = 1,
+  "Arbitrum" = 2,
+}
+
 export type SmartContract = {
   id: number;
   name: string;
