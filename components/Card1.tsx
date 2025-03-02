@@ -26,7 +26,7 @@ export default function Card1() {
   // const sorted = [...events].sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
+    <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
       <CardHeader>
         <CardTitle className="text-center">Event Listener</CardTitle>
         <CardDescription>

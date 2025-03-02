@@ -1,34 +1,9 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useContractStore } from "@/hooks/store/contractStore";
 import InitializationMenu from "./InitializationMenu";
+import { useContractStore } from "@/hooks/store/contractStore";
 
 export default function ContractInitialization() {
-  const { SELECTED_CONTRACT, INITIALIZED_CONTRACT } = useContractStore();
-  return (
-    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
-      <CardHeader className="text-center">
-        <CardTitle>Stage Contract</CardTitle>
-        {SELECTED_CONTRACT ? (
-          INITIALIZED_CONTRACT ? (
-            <CardDescription>Proxy Contract Deployed</CardDescription>
-          ) : (
-            <></>
-          )
-        ) : (
-          <CardDescription>Select a contract from the library</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        {SELECTED_CONTRACT ? <InitializationMenu /> : <></>}
-      </CardContent>
-    </Card>
-  );
+  const { SELECTED_CONTRACT } = useContractStore();
+  return <>{SELECTED_CONTRACT ? <InitializationMenu /> : <></>}</>;
 }

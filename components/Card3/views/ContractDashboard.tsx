@@ -1,11 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FunctionFragment } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
@@ -90,33 +82,18 @@ export default function ContractDashboard() {
     ) || [];
 
   return (
-    <Card className="border-violet-500 h-[400px] w-[400px] bg-black">
-      <CardHeader>
-        <CardTitle className="text-center">Contract Dashboard</CardTitle>
-        {INITIALIZED_CONTRACT ? (
-          <></>
-        ) : (
-          <CardDescription>
-            Intialize contract to view dashboard
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-80 w-full overflow-hidden">
-          {INITIALIZED_CONTRACT ? (
-            functions.map((func: FunctionFragment, index: number) => (
-              <div key={index} className="p-2 border-gray-300">
-                <DynamicForm func={func} />
-                <br />
-                <Separator />
-              </div>
-            ))
-          ) : (
-            <></>
-          )}
-        </ScrollArea>
-      </CardContent>
-      <CardFooter></CardFooter>
-    </Card>
+    <ScrollArea className="h-full w-full overflow-hidden">
+      {INITIALIZED_CONTRACT ? (
+        functions.map((func: FunctionFragment, index: number) => (
+          <div key={index} className="p-2 border-gray-300">
+            <DynamicForm func={func} />
+            <br />
+            <Separator />
+          </div>
+        ))
+      ) : (
+        <></>
+      )}
+    </ScrollArea>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { HDNodeWallet } from "ethers";
+import { HDNodeWallet, JsonRpcProvider, JsonRpcSigner } from "ethers";
 
 export enum Network {
   Main = "Main",
@@ -18,8 +18,11 @@ type WalletStore = {
   balance: Balances;
   wallet: HDNodeWallet | null;
   private_key: string | null;
+  providers: JsonRpcProvider[] | null;
+  signers: JsonRpcSigner[] | null;
   set_balance: (network: Network, balance: BalanceInfo) => void;
   set_wallet: (wallet: HDNodeWallet) => void;
+  set_providers: (providers: JsonRpcProvider[]) => void;
 };
 
 export const useWalletStore = create<WalletStore>()(
@@ -32,6 +35,8 @@ export const useWalletStore = create<WalletStore>()(
       },
       wallet: null,
       private_key: null,
+      providers: null,
+      signers: null,
       set_balance: (network: Network, balance: BalanceInfo) =>
         set((state) => ({
           balance: {
@@ -41,6 +46,13 @@ export const useWalletStore = create<WalletStore>()(
         })),
       set_wallet: (wallet: HDNodeWallet) =>
         set({ wallet: wallet, private_key: wallet.privateKey }),
+      set_providers: async (providers: JsonRpcProvider[]) => {
+        // const signers: JsonRpcSigner[] = await Promise.all(
+        //   providers.map(async (provider) => await provider.getSigner()),
+        // );
+        console.log(providers);
+        set({ providers: providers });
+      },
     }),
     {
       name: "wallet-store", // unique key in localStorage

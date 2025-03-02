@@ -3,7 +3,7 @@ import { JsonRpcProvider, formatEther } from "ethers";
 import { useEffect } from "react";
 
 export function useWalletHook() {
-  const { wallet, set_balance } = useWalletStore();
+  const { wallet, set_balance, set_providers } = useWalletStore();
 
   useEffect(() => {
     if (!wallet) return;
@@ -20,6 +20,10 @@ export function useWalletHook() {
     const ARBITRUM_PROVIDER = new JsonRpcProvider(
       process.env.NEXT_PUBLIC_ARBITRUM_URI!,
     );
+
+    const providers = [MAIN_PROVIDER, OPTIMISM_PROVIDER, ARBITRUM_PROVIDER];
+
+    set_providers(providers);
 
     async function fetchBalances() {
       console.log("Getting blockchain data every 10 seconds...");
@@ -54,5 +58,7 @@ export function useWalletHook() {
     return () => {
       clearInterval(interval);
     };
-  }, [wallet, set_balance]);
+  }, [wallet, set_balance, set_providers]);
 }
+
+export async function connect() {}

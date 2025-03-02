@@ -171,7 +171,7 @@ export default function Wallet() {
   // };
 
   return (
-    <div className="flex-col text-xs text-indigo-500">
+    <div className="flex-col text-xs text-gray-400">
       <div className="text-xs">
         address <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
       </div>
@@ -222,8 +222,23 @@ export default function Wallet() {
                     variant="outline"
                     onClick={() => {
                       toast({
-                        title: "private key",
-                        description: `${private_key}`,
+                        title: "Private Key",
+                        description: (
+                          <div className="flex items-center justify-between w-full">
+                            <span className="max-w-xs break-words whitespace-pre-wrap">
+                              {private_key}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation(); // prevent closing the toast if that's desired
+                                navigator.clipboard.writeText(private_key!);
+                              }}
+                            >
+                              Copy
+                            </Button>
+                          </div>
+                        ),
                       });
                     }}
                   >

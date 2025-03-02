@@ -1,11 +1,11 @@
 import { useContractStore } from "@/hooks/store/contractStore";
-import { useSwapStore } from "@/hooks/store/zustand";
+import { useWalletStore } from "@/hooks/store/walletStore";
 import { useInitializeContract } from "@/hooks/initializeContract";
 import { Button } from "@/components/ui/button";
 
 export default function NonProxyInterface() {
   const { SELECTED_CONTRACT } = useContractStore();
-  const { signer } = useSwapStore();
+  const { providers } = useWalletStore();
   const { signContract } = useInitializeContract();
 
   return (
@@ -14,8 +14,10 @@ export default function NonProxyInterface() {
       <br />
       <div>Address: {SELECTED_CONTRACT?.address}</div>
       <br />
-      {signer ? (
-        <>User signed already, proceed to interaction menu</>
+      <div>Description: {SELECTED_CONTRACT?.description}</div>
+      <br />
+      {providers ? (
+        <>Providers provided</>
       ) : (
         <Button
           variant="outline"

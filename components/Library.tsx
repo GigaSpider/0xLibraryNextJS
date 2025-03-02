@@ -43,7 +43,7 @@ export default function Library() {
   return (
     <Drawer>
       <DrawerTrigger>Contract Library</DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="bg-black">
         <div className="mx-auto w-full">
           <DrawerHeader>
             <DrawerTitle>Contract Library</DrawerTitle>
@@ -109,7 +109,7 @@ export default function Library() {
 
           <DrawerFooter>
             <DrawerClose asChild>
-              <Button variant="outline">Close Menu</Button>
+              <Button variant="ghost">Close Menu</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

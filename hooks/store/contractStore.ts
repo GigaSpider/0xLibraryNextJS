@@ -16,6 +16,7 @@ export type SmartContract = {
   abi: any;
   bytecode: string;
   fee: number;
+  description: string;
   master_address?: string;
   master_abi?: any;
   function_name?: string;
@@ -32,6 +33,7 @@ const ethxmr: SmartContract = {
   abi: ETH_XMR.abi,
   bytecode: ETH_XMR.bytecode,
   fee: 1.0,
+  description: "Contract description",
   master_address: "0xeC5c0B495Ac3460C161AB732BB910aA96A00b4A1",
   master_abi: MASTER.abi,
   function_name: "CreateEthXmrContract",
@@ -48,6 +50,7 @@ const xmreth: SmartContract = {
   abi: XMR_ETH.abi,
   bytecode: XMR_ETH.bytecode,
   fee: 1.0,
+  description: "Contract description",
   master_address: "0xeC5c0B495Ac3460C161AB732BB910aA96A00b4A1",
   master_abi: MASTER.abi,
   function_name: "CreateXmrEthContract",
@@ -64,6 +67,7 @@ const tumbler: SmartContract = {
   abi: ETH_MIXER.abi,
   bytecode: ETH_MIXER.bytecode,
   fee: 0.1,
+  description: "Contract description",
 };
 
 const gambler: SmartContract = {
@@ -76,6 +80,7 @@ const gambler: SmartContract = {
   abi: ETH_ODDS.abi,
   bytecode: ETH_ODDS.bytecode,
   fee: 0.2,
+  description: "Contract description",
 };
 
 export const contracts: SmartContract[] = [ethxmr, xmreth, tumbler, gambler];

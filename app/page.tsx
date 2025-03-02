@@ -25,10 +25,14 @@ export default function Home() {
       <div className="fixed top-2 left-2 z-50">
         <Wallet />
       </div>
-      <div className="flex justify-center items-center space-x-6 h-screen">
-        <Card1 />
+      <div
+        className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-6 h-screen mx-auto max-w-[90%]
+
+"
+      >
         <Card2 />
         <Card3 />
+        <Card1 />
       </div>
       <div className="fixed bottom-2 left-2">
         <WhitePaper />
