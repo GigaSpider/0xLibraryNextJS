@@ -1,34 +1,45 @@
 import { useContractStore as ContractStore } from "@/hooks/store/contractStore";
 import { useSwapStore as SwapStore } from "@/hooks/store/zustand";
 import { useWalletStore } from "./store/walletStore";
-import { Interface, Contract, Log, Result, Wallet } from "ethers";
+import {
+  Interface,
+  Contract,
+  Log,
+  Result,
+  Wallet,
+  FunctionFragment,
+} from "ethers";
+import { useToast } from "./use-toast";
 
 export function useInitializeContract() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT } = ContractStore();
   const { provider, signer, update_provider, update_signer } = SwapStore();
   const { private_key, providers, wallet } = useWalletStore();
+  const { toast } = useToast();
 
-  const deployProxyContract = async (data: unknown): Promise<Result[]> => {
-    if (!providers || !wallet) {
+  const deployProxyContract = async (
+    data: unknown,
+  ): Promise<Result[] | Error> => {
+    if (!providers || !private_key) {
       throw new Error("providers or wallet not available");
     }
 
-    let network: number;
+    let network_index: number;
     switch (SELECTED_CONTRACT?.network) {
       case "Mainnet":
-        network = 0;
+        network_index = 0;
         break;
       case "Optimism":
-        network = 1;
+        network_index = 1;
         break;
       case "Arbitrum":
-        network = 2;
+        network_index = 2;
         break;
       default:
-        network = 0;
+        network_index = 0;
     }
 
-    const local_wallet = new Wallet(private_key!, providers![network]);
+    const wallet = new Wallet(private_key!, providers![network_index]);
 
     const master_address = SELECTED_CONTRACT?.master_address;
     const proxy_abi = SELECTED_CONTRACT?.abi;
@@ -38,85 +49,125 @@ export function useInitializeContract() {
     const master_contract = new Contract(
       master_address!,
       master_abi as any,
-      local_wallet,
+      wallet,
     );
-    const tx = await master_contract[function_name!](data);
-    const receipt = await tx.wait();
+
+    console.log("checkpoint, calling deploy proxy function on blockchain");
 
     const iface = new Interface(master_abi as any);
-    let returnArgs: Result[] = [];
-    let proxy_address: string = "";
 
-    receipt.logs.forEach((log: Log) => {
-      try {
-        const parsed = iface.parseLog(log);
-        if (parsed && parsed.name === "ProxyContractCreation") {
-          proxy_address = parsed.args.ProxyAddress;
-          returnArgs = [...parsed.args];
-        } else {
-          proxy_address = "error";
+    const deployFunction = iface.getFunction(function_name!);
+    if (!deployFunction) {
+      throw new Error("Function not found in abi");
+    }
+
+    console.log(data);
+
+    console.log(deployFunction);
+
+    try {
+      const tx = await master_contract[deployFunction.format()](
+        ...Object.values(data as any),
+      );
+      const receipt = await tx.wait();
+
+      let returnArgs: Result[] = [];
+      let proxy_address: string = "";
+
+      receipt.logs.forEach((log: Log) => {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed && parsed.name === "ProxyContractCreation") {
+            proxy_address = parsed.args.ProxyAddress;
+            returnArgs = [...parsed.args];
+          } else {
+            proxy_address = "error";
+          }
+        } catch (error) {
+          console.log("Error parsing log:", error);
         }
-      } catch (error) {
-        console.log("Error parsing log:", error);
+      });
+
+      const proxy_contract = new Contract(
+        proxy_address,
+        proxy_abi as any,
+        wallet,
+      );
+      set_INITIALIZED_CONTRACT(proxy_contract);
+
+      return returnArgs;
+    } catch (error: any) {
+      if (error.code === "INSUFFICIENT_FUNDS") {
+        toast({
+          title: "PROXY DEPLOYMENT ERROR",
+          description: "Insufficient Funds.",
+          variant: "destructive",
+        });
       }
-    });
-
-    const proxy_contract = new Contract(
-      proxy_address,
-      proxy_abi as any,
-      local_wallet,
-    );
-    set_INITIALIZED_CONTRACT(proxy_contract);
-
-    return returnArgs;
+      console.log(error);
+      return error as Error;
+    }
   };
 
   const connectProxyContract = async (
-    contractAddress: string,
-  ): Promise<void> => {
-    let network: number;
+    address: string,
+  ): Promise<Contract | Error> => {
+    console.log(address);
+    let network_index: number;
     switch (SELECTED_CONTRACT?.network) {
       case "Mainnet":
-        network = 0;
+        network_index = 0;
         break;
       case "Optimism":
-        network = 1;
+        network_index = 1;
         break;
       case "Arbitrum":
-        network = 2;
+        network_index = 2;
         break;
       default:
-        network = 0;
+        return Error("Invalid network");
     }
 
-    const local_wallet = new Wallet(private_key!, providers![network]);
-
-    const master_address = SELECTED_CONTRACT?.master_address;
-    const proxy_abi = SELECTED_CONTRACT?.abi;
-    const master_abi = SELECTED_CONTRACT?.master_abi;
-    const mapping_name = SELECTED_CONTRACT?.mapping_name;
-
-    const master_contract = new Contract(
-      master_address!,
-      master_abi as any,
-      local_wallet,
-    );
-
-    const mapping = master_contract[mapping_name!];
-
     try {
-      if ((await mapping(contractAddress)) === wallet!.address) {
-        const proxy_contract = new Contract(
-          contractAddress,
-          proxy_abi as any,
-          local_wallet,
-        );
-        set_INITIALIZED_CONTRACT(proxy_contract);
-      } else {
-        console.log("Failed to connect to proxy contract.");
+      const wallet = new Wallet(private_key!, providers![network_index]);
+
+      const master_contract = new Contract(
+        SELECTED_CONTRACT?.master_address!,
+        SELECTED_CONTRACT?.master_abi as any,
+        wallet,
+      );
+
+      // Add verification that mapping exists
+      if (!SELECTED_CONTRACT?.mapping_name) {
+        return Error("Mapping function name not specified");
+      }
+
+      try {
+        const result =
+          await master_contract[SELECTED_CONTRACT.mapping_name](address);
+
+        if (result === wallet.address) {
+          const proxy_contract = new Contract(
+            address,
+            SELECTED_CONTRACT?.abi as any,
+            wallet,
+          );
+          set_INITIALIZED_CONTRACT(proxy_contract);
+          return proxy_contract;
+        } else {
+          return Error(
+            "Contract not owned by this address, interaction prohibited",
+          );
+        }
+      } catch (error: any) {
+        if (error.code === "BAD_DATA") {
+          return Error("Contract not found in mapping");
+        }
+        return error;
       }
     } catch (error) {
       console.log("Error connecting proxy contract:", error);
+      return error as Error;
     }
   };
 

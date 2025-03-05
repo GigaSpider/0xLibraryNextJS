@@ -25,6 +25,7 @@ export default function WhitePaper() {
             <SheetDescription>Purpose</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
+            <Label>Instructions</Label>
             <p className="font-xs text-green-500">Work in progress</p>
             <Label>Security Considerations</Label>
           </div>

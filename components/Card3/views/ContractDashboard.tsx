@@ -1,16 +1,35 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FunctionFragment } from "ethers";
+import { Contract, FunctionFragment } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
+import { useWalletStore } from "@/hooks/store/walletStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-function DynamicForm({ func }: { func: FunctionFragment }) {
+// interface AbiFunction {
+//   type: string;
+//   name: string;
+//   inputs: any[];
+//   outputs: any[];
+//   stateMutability: string;
+//   modifiers?: string[];
+// }
+
+function DynamicForm({
+  func,
+  contract,
+}: {
+  func: FunctionFragment;
+  contract: Contract;
+}) {
+  const {} = useWalletStore();
+  const { toast } = useToast();
   // Dynamically build a zod schema from the function inputs.
   const schema = z.object(
     func.inputs.reduce(
@@ -33,9 +52,32 @@ function DynamicForm({ func }: { func: FunctionFragment }) {
     formState: { errors },
   } = form;
 
-  const onSubmit = (data: z.infer<typeof schema>) => {
-    console.log(`Calling ${func.name} with data:`, data);
-    // Add your contract function call logic here.
+  const onSubmit = async (data: z.infer<typeof schema>) => {
+    try {
+      console.log(`Calling ${func.name} with data:`, data);
+
+      const params = func.inputs.map((input, index) => {
+        const fieldName = input.name || `input_${index}`;
+        return data[fieldName];
+      });
+
+      const tx = await contract[func.name](...params);
+      const receipt = await tx.wait();
+
+      console.log(receipt);
+
+      toast({
+        title: "function call success",
+        description: `${func.name} called successfully!`,
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "function call fatality",
+        variant: "destructive",
+        description: `${func.name} ran into error: ${error}`,
+      });
+    }
   };
 
   return (
@@ -67,7 +109,9 @@ function DynamicForm({ func }: { func: FunctionFragment }) {
             </div>
           );
         })}
-        <Button type="submit">Call {func.name}</Button>
+        <Button variant="secondary" type="submit">
+          Call {func.name}
+        </Button>
       </form>
     </Form>
   );
@@ -81,12 +125,16 @@ export default function ContractDashboard() {
       (fragment): fragment is FunctionFragment => fragment.type === "function",
     ) || [];
 
+  // const filtered_functions: FunctionFragment[] = functions.filter(
+  //   (func) => func.name.startsWith("USER"),
+  // );
+
   return (
     <ScrollArea className="h-full w-full">
       {INITIALIZED_CONTRACT ? (
         functions.map((func: FunctionFragment, index: number) => (
           <div key={index} className="p-2 border-gray-300">
-            <DynamicForm func={func} />
+            <DynamicForm func={func} contract={INITIALIZED_CONTRACT} />
             <br />
             <Separator />
           </div>

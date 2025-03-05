@@ -11,9 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { Result, isAddress } from "ethers";
+import { Contract, Result, isAddress } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useInitializeContract } from "@/hooks/initializeContract";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 // Define explicit types for ABI
 interface AbiInput {
@@ -36,6 +38,8 @@ export default function ProxyInterface() {
   const { SELECTED_CONTRACT } = useContractStore();
   const { deployProxyContract, connectProxyContract } = useInitializeContract();
   const { toast } = useToast();
+  const [isDeployLoading, setIsDeployLoading] = useState(false);
+  const [isConnectLoading, setIsConnectLoading] = useState(false);
 
   const functionAbi: AbiItem | undefined = SELECTED_CONTRACT?.master_abi?.find(
     (item: AbiItem) =>
@@ -77,9 +81,12 @@ export default function ProxyInterface() {
   });
 
   async function onDeploySubmit(data: DeployContractForm) {
+    setIsDeployLoading(true);
     console.log("Deploying contract with data:", data);
-    const blockchain_confirmation: Result[] = await deployProxyContract(data);
+    const blockchain_confirmation: Result[] | Error =
+      await deployProxyContract(data);
     console.log("Confirmation: ", blockchain_confirmation);
+    setIsDeployLoading(false);
     // Add your deployment logic here.
   }
 
@@ -92,8 +99,19 @@ export default function ProxyInterface() {
       });
       return;
     }
-    await connectProxyContract(data.contractAddress);
-    console.log("Connecting to contract:", data.contractAddress);
+    setIsConnectLoading(true);
+    const connect_confirmation: Contract | Error = await connectProxyContract(
+      data.contractAddress,
+    );
+    console.log("Confirmation:", connect_confirmation);
+    if (connect_confirmation instanceof Error) {
+      toast({
+        title: "Contract connection failed",
+        variant: "destructive",
+        description: `${connect_confirmation}`,
+      });
+    }
+    setIsConnectLoading(false);
   }
 
   return (
@@ -130,7 +148,14 @@ export default function ProxyInterface() {
             />
           ))}
           <Button variant="default" type="submit" className="w-full">
-            Deploy Proxy Contract
+            {isDeployLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deploying...
+              </>
+            ) : (
+              "Deploy Proxy Contract"
+            )}
           </Button>
         </form>
       </Form>
@@ -156,7 +181,14 @@ export default function ProxyInterface() {
             )}
           />
           <Button variant="secondary" type="submit" className="w-full">
-            Connect Existing Proxy Contract
+            {isConnectLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              "Connect Existing Proxy Contract"
+            )}
           </Button>
         </form>
       </Form>

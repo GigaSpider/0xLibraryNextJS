@@ -22,7 +22,7 @@ export default function Card2() {
       <CardHeader className="text-center">
         <CardTitle>Stage Contract</CardTitle>
         {SELECTED_CONTRACT ? (
-          INITIALIZED_CONTRACT ? (
+          INITIALIZED_CONTRACT && SELECTED_CONTRACT.proxy ? (
             <CardDescription>Proxy Contract Deployed</CardDescription>
           ) : (
             <></>
