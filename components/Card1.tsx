@@ -18,12 +18,12 @@ export default function Card1() {
   return (
     <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
       <CardHeader>
-        <CardTitle className="text-center">Event Listener</CardTitle>
+        <CardTitle className="text-center">Contract Performance</CardTitle>
         <CardDescription>
           {INITIALIZED_CONTRACT ? (
-            <div>Event listeners active</div>
+            <div>Function outputs and contract events will appear below</div>
           ) : (
-            <div>Initialize contract to listen for events</div>
+            <div>View results and listen for blockchain events</div>
           )}
         </CardDescription>
       </CardHeader>

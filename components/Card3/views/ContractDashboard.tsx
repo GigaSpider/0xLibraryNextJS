@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +30,7 @@ function DynamicForm({
   func: FunctionFragment;
   contract: Contract;
 }) {
+  const [isCallLoading, setIsCallLoading] = useState(false);
   const { add_output } = useContractStore();
   const {} = useWalletStore();
   const { toast } = useToast();
@@ -55,6 +58,7 @@ function DynamicForm({
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
     try {
+      setIsCallLoading(true);
       console.log(`Calling ${func.name} with data:`, data);
 
       const params = func.inputs.map((input, index) => {
@@ -69,6 +73,8 @@ function DynamicForm({
         add_output(func.name, receipt);
       }
 
+      setIsCallLoading(false);
+
       console.log(receipt);
 
       toast({
@@ -76,6 +82,7 @@ function DynamicForm({
         description: `${func.name} called successfully!`,
       });
     } catch (error) {
+      setIsCallLoading(false);
       console.log(error);
       toast({
         title: "function call fatality",
@@ -115,7 +122,14 @@ function DynamicForm({
           );
         })}
         <Button variant="secondary" type="submit">
-          Call {func.name}
+          {isCallLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Deploying...
+            </>
+          ) : (
+            <>Sign {func.name}</>
+          )}
         </Button>
       </form>
     </Form>

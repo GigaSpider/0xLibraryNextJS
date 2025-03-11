@@ -16,12 +16,12 @@ export default function Card3() {
   return (
     <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
       <CardHeader>
-        <CardTitle className="text-center">Contract Dashboard</CardTitle>
+        <CardTitle className="text-center">Contract Execution</CardTitle>
         <CardDescription className="text-center">
           {INITIALIZED_CONTRACT ? (
             <></>
           ) : (
-            <>Initialize contract to view Dashboard</>
+            <>Provide consideration and sign agreements</>
           )}
         </CardDescription>
       </CardHeader>
