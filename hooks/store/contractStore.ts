@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Contract } from "ethers";
+import { Contract, TransactionReceipt } from "ethers";
 import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
 import ETH_MIXER from "./contractdata/ETH_MIXER.json";
@@ -68,7 +68,7 @@ const xmreth: SmartContract = {
 
 const tumbler: SmartContract = {
   id: 3,
-  name: "Ethereum obfuscation service (coin mixer)",
+  name: "Zero Knowledge Proof ETH mixer",
   address: "0x0000000000",
   engineer: "Admin",
   network: "Arbitrum",
@@ -82,7 +82,7 @@ const tumbler: SmartContract = {
 
 const gambler: SmartContract = {
   id: 4,
-  name: "Variable odds dice roller (supports the website)",
+  name: "Choose your odds roullete",
   address: "0x0000000000",
   engineer: "Admin",
   network: "Arbitrum",
@@ -98,6 +98,8 @@ export const contracts: SmartContract[] = [ethxmr, xmreth, tumbler, gambler];
 
 type ContractStore = {
   contracts: SmartContract[];
+  outputs: Record<string, TransactionReceipt[]> | null;
+  add_output: (function_name: string, output: TransactionReceipt) => void;
   INITIALIZED_CONTRACT: Contract | null;
   SELECTED_CONTRACT: SmartContract | null;
   set_SELECTED_CONTRACT: (selected: SmartContract) => void;
@@ -106,10 +108,27 @@ type ContractStore = {
 
 export const useContractStore = create<ContractStore>((set) => ({
   contracts: contracts,
+  outputs: null,
   SELECTED_CONTRACT: null,
   INITIALIZED_CONTRACT: null,
   set_SELECTED_CONTRACT: (selected: SmartContract) =>
     set(() => ({ SELECTED_CONTRACT: selected })),
   set_INITIALIZED_CONTRACT: (proxy: Contract | null) =>
     set(() => ({ INITIALIZED_CONTRACT: proxy })),
+  add_output: (function_name: string, output: TransactionReceipt) =>
+    set((state) => {
+      // Initialize outputs if null
+      const currentOutputs = state.outputs || {};
+
+      // Initialize array for this function if it doesn't exist
+      const functionOutputs = currentOutputs[function_name] || [];
+
+      // Create a new object with the updated array for this function
+      return {
+        outputs: {
+          ...currentOutputs,
+          [function_name]: [...functionOutputs, output],
+        },
+      };
+    }),
 }));

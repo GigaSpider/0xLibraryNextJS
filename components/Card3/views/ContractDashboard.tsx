@@ -1,5 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Contract, FunctionFragment } from "ethers";
+import { Contract, FunctionFragment, TransactionResponse } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ function DynamicForm({
   func: FunctionFragment;
   contract: Contract;
 }) {
+  const { add_output } = useContractStore();
   const {} = useWalletStore();
   const { toast } = useToast();
   // Dynamically build a zod schema from the function inputs.
@@ -61,8 +62,12 @@ function DynamicForm({
         return data[fieldName];
       });
 
-      const tx = await contract[func.name](...params);
+      const tx: TransactionResponse = await contract[func.name](...params);
       const receipt = await tx.wait();
+
+      if (receipt) {
+        add_output(func.name, receipt);
+      }
 
       console.log(receipt);
 

@@ -9,7 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useContractStore } from "@/hooks/store/contractStore";
+import { ScrollArea } from "./ui/scroll-area";
 import EventListener from "@/components/Card1/views/EventListener";
+import ContractOutputs from "./Card3/views/ContractOutputs";
 
 export default function Card1() {
   const { INITIALIZED_CONTRACT } = useContractStore();
@@ -19,14 +21,24 @@ export default function Card1() {
         <CardTitle className="text-center">Event Listener</CardTitle>
         <CardDescription>
           {INITIALIZED_CONTRACT ? (
-            <>Event listeners active</>
+            <div>Event listeners active</div>
           ) : (
-            <>Initialize contract to listen for events</>
+            <div>Initialize contract to listen for events</div>
           )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
-        {INITIALIZED_CONTRACT ? <EventListener /> : <></>}
+        {INITIALIZED_CONTRACT ? (
+          <ScrollArea className="h-full w-full">
+            <ContractOutputs />
+
+            <br />
+
+            {INITIALIZED_CONTRACT.proxy ? <EventListener /> : <></>}
+          </ScrollArea>
+        ) : (
+          <></>
+        )}
       </CardContent>
       <CardFooter></CardFooter>
     </Card>

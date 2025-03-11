@@ -48,7 +48,8 @@ export default function Library() {
           <DrawerHeader>
             <DrawerTitle>Contract Library</DrawerTitle>
             <DrawerDescription>
-              Choose an Ethereum Smart Contract to interact with.
+              Choose an Ethereum Smart Contract to interact with. More being
+              worked on and being added to the Library.
             </DrawerDescription>
           </DrawerHeader>
           <Table className="text-violet-500">

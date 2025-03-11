@@ -1,6 +1,6 @@
 "use client";
 
-import ContractDashboard from "@/components/Card3/views/ContractDashboard";
+import ContractDashboard from "./Card3/views/ContractDashboard";
 import {
   Card,
   CardContent,
