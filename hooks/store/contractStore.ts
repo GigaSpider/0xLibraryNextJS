@@ -3,7 +3,7 @@ import { Contract, TransactionReceipt } from "ethers";
 import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
 import ETH_MIXER from "./contractdata/ETH_MIXER.json";
-import ETH_ODDS from "./contractdata/ETH_ODDS.json";
+import ProbabilisticWager from "./contractdata/ProbabilisticWager.json";
 import MASTER from "./contractdata/MASTER.json";
 
 export enum NetworkIndex {
@@ -87,8 +87,8 @@ const gambler: SmartContract = {
   engineer: "Admin",
   network: "Arbitrum",
   proxy: false,
-  abi: ETH_ODDS.abi,
-  bytecode: ETH_ODDS.bytecode,
+  abi: ProbabilisticWager.abi,
+  bytecode: ProbabilisticWager.bytecode,
   fee: 0.2,
   description: "Contract description",
   instructions: "Instructions on usage: ",

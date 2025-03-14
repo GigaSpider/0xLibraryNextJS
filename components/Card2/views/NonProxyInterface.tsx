@@ -56,7 +56,7 @@ export default function NonProxyInterface() {
           Contract Signed, awaiting user actions
         </div>
       ) : (
-        <Button onClick={() => handleInitialization()}>Sign</Button>
+        <Button onClick={() => handleInitialization()}>Agree and Sign</Button>
       )}
     </div>
   );

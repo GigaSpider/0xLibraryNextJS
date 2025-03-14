@@ -20,7 +20,7 @@ export default function Card2() {
   return (
     <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
       <CardHeader className="text-center">
-        <CardTitle>Caveat Emptor</CardTitle>
+        <CardTitle>Stage Contract – Caveat Emptor</CardTitle>
         {SELECTED_CONTRACT ? (
           INITIALIZED_CONTRACT && SELECTED_CONTRACT.proxy ? (
             <CardDescription>Proxy Contract Deployed</CardDescription>

@@ -1,19 +1,10 @@
 import { useContractStore as ContractStore } from "@/hooks/store/contractStore";
-import { useSwapStore as SwapStore } from "@/hooks/store/zustand";
 import { useWalletStore } from "./store/walletStore";
-import {
-  Interface,
-  Contract,
-  Log,
-  Result,
-  Wallet,
-  FunctionFragment,
-} from "ethers";
+import { Interface, Contract, Log, Result, Wallet } from "ethers";
 import { useToast } from "./use-toast";
 
 export function useInitializeContract() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT } = ContractStore();
-  const { provider, signer, update_provider, update_signer } = SwapStore();
   const { private_key, providers, wallet } = useWalletStore();
   const { toast } = useToast();
 
