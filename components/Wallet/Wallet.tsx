@@ -136,10 +136,10 @@ export default function Wallet() {
           provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
           break;
         case "Optimism":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
+          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_OPTIMISM_URI!);
           break;
         case "Arbitrum":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
+          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_ARBITRUM_URI!);
           break;
         default:
           console.log("error, network out of bounds");
