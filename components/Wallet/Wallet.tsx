@@ -146,7 +146,7 @@ export default function Wallet() {
           return;
       }
 
-      const connected_wallet = new Wállet(wallet.privateKey, provider);
+      const connected_wallet = new Wállet(private_key!, provider);
 
       try {
         const tx_response = await connected_wallet.sendTransaction({
