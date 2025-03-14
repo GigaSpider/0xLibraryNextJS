@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { HDNodeWallet, JsonRpcProvider, JsonRpcSigner } from "ethers";
+import { Wallet, JsonRpcProvider, JsonRpcSigner } from "ethers";
 
 export enum Network {
   Main = "Main",
@@ -16,12 +16,12 @@ type Balances = Record<Network, BalanceInfo>;
 
 type WalletStore = {
   balance: Balances;
-  wallet: HDNodeWallet | null;
+  wallet: Wallet | null;
   private_key: string | null;
   providers: JsonRpcProvider[] | null;
   signers: JsonRpcSigner[] | null;
   set_balance: (network: Network, balance: BalanceInfo) => void;
-  set_wallet: (wallet: HDNodeWallet) => void;
+  set_wallet: (wallet: Wallet) => void;
   set_providers: (providers: JsonRpcProvider[]) => void;
 };
 
@@ -44,7 +44,7 @@ export const useWalletStore = create<WalletStore>()(
             [network]: balance,
           },
         })),
-      set_wallet: (wallet: HDNodeWallet) =>
+      set_wallet: (wallet: Wallet) =>
         set({ wallet: wallet, private_key: wallet.privateKey }),
       set_providers: async (providers: JsonRpcProvider[]) => {
         // const signers: JsonRpcSigner[] = await Promise.all(

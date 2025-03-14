@@ -2,9 +2,9 @@
 
 import {
   Wallet as Wállet,
-  HDNodeWallet,
   JsonRpcProvider,
   isAddress,
+  isHexString,
 } from "ethers";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useWalletHook } from "@/hooks/wallet";
@@ -42,6 +42,9 @@ const sendSchema = z.object({
   amount: z.string().nonempty("field required"),
 });
 
+const connectSchema = z.object({
+  key: z.string().nonempty({ message: "private key required" }),
+});
 // const bridgeSchema = z.object({
 //   fromNetwork: z.string().nonempty("field required"),
 //   toNetwork: z.string().nonempty("field required"),
@@ -72,6 +75,13 @@ export default function Wallet() {
     },
   });
 
+  const connectForm = useForm<z.infer<typeof connectSchema>>({
+    resolver: zodResolver(connectSchema),
+    defaultValues: {
+      key: "",
+    },
+  });
+
   // const bridgeForm = useForm<z.infer<typeof bridgeSchema>>({
   //   resolver: zodResolver(bridgeSchema),
   //   defaultValues: {
@@ -82,9 +92,38 @@ export default function Wallet() {
   // });
 
   async function handleCreateNewWallet() {
-    const newWallet: HDNodeWallet = Wállet.createRandom();
+    const newWallet: Wállet = new Wállet(Wállet.createRandom().privateKey);
     set_wallet(newWallet);
   }
+
+  const onConnectSubmit = async (data: z.infer<typeof connectSchema>) => {
+    try {
+      if (isHexString(data.key)) {
+        console.log("Connecting to private key:", data);
+        console.log(data.key);
+        const existing_wallet = new Wállet(data.key);
+        set_wallet(existing_wallet);
+        toast({
+          title: "success",
+          description: `client wallet set to private key: ${data.key}`,
+        });
+      } else {
+        toast({
+          title: "error",
+          description: `not a valid key`,
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      toast({
+        title: "error",
+        description: `${error}`,
+        variant: "destructive",
+      });
+      return;
+    }
+  };
 
   // onSubmit handlers – replace these console.logs with your own logic
   const onSendSubmit = async (data: z.infer<typeof sendSchema>) => {
@@ -93,28 +132,48 @@ export default function Wallet() {
     if (wallet && isAddress(data.destination)) {
       let provider;
       switch (data.network) {
-        case "main":
+        case "Main":
           provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
           break;
-        case "optimism":
+        case "Optimism":
           provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
           break;
-        case "arbitrum":
+        case "Arbitrum":
           provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
           break;
         default:
           console.log("error, network out of bounds");
           return;
       }
-      const connected_wallet = wallet.connect(provider);
-      const tx_response = await connected_wallet.sendTransaction({
-        to: data.destination,
-        value: data.amount,
-      });
-      const tx_hash = tx_response.hash;
-      console.log(tx_hash);
+
+      const connected_wallet = new Wállet(wallet.privateKey, provider);
+
+      try {
+        const tx_response = await connected_wallet.sendTransaction({
+          to: data.destination,
+          value: data.amount,
+        });
+        const tx_hash = tx_response.hash;
+        console.log(tx_hash);
+        toast({
+          title: "send success",
+          description: ``,
+        });
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: "send error",
+          description: `${error}`,
+          variant: "destructive",
+        });
+      }
     } else {
       console.log("error, invalid form data");
+      toast({
+        title: "send error",
+        description: "not an ethereum address",
+        variant: "destructive",
+      });
       return;
     }
   };
@@ -231,7 +290,7 @@ export default function Wallet() {
                             <Button
                               variant="ghost"
                               onClick={(e) => {
-                                e.stopPropagation(); // prevent closing the toast if that's desired
+                                e.stopPropagation();
                                 navigator.clipboard.writeText(private_key!);
                               }}
                             >
@@ -245,17 +304,24 @@ export default function Wallet() {
                     Reveal
                   </Button>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>Use Another Wallet</Label>
-                  <Input placeholder="Enter private key" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Show Previous Wallets</Label>
-                  <Button variant="outline">Show</Button>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter private key"
+                      {...connectForm.register("key")}
+                    />
+                    <Button
+                      variant="outline"
+                      type="submit"
+                      onClick={connectForm.handleSubmit(onConnectSubmit)}
+                    >
+                      Submit
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-
             {/* Send Ethereum Section */}
             <div className="border-t pt-6">
               <h3 className="font-semibold mb-4">Send Ethereum</h3>
@@ -302,7 +368,7 @@ export default function Wallet() {
                     </div>
                     {/* Amount */}
                     <div className="flex flex-col gap-2">
-                      <Label>Amount</Label>
+                      <Label>Amount in Wei</Label>
                       <Input
                         placeholder="Enter amount"
                         {...sendForm.register("amount")}
