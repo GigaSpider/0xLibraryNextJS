@@ -157,7 +157,7 @@ export default function Wallet() {
         console.log(tx_hash);
         toast({
           title: "send success",
-          description: `$tx hash: {tx_hash} | sent using the ${provider._network} network`,
+          description: `tx hash: ${tx_hash} | sent using the ${data.network} network`,
           duration: 30000,
         });
       } catch (error) {
