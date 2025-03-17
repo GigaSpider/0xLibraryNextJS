@@ -36,6 +36,7 @@ export function useInitializeContract() {
     const proxy_abi = SELECTED_CONTRACT?.abi;
     const master_abi = SELECTED_CONTRACT?.master_abi;
     const function_name = SELECTED_CONTRACT?.function_name;
+    const event_name = SELECTED_CONTRACT?.event_name;
 
     const master_contract = new Contract(
       master_address!,
@@ -68,8 +69,8 @@ export function useInitializeContract() {
       receipt.logs.forEach((log: Log) => {
         try {
           const parsed = iface.parseLog(log);
-          if (parsed && parsed.name === "ProxyContractCreation") {
-            proxy_address = parsed.args.ProxyAddress;
+          if (parsed && parsed.name === event_name) {
+            proxy_address = parsed.args[0];
             returnArgs = [...parsed.args];
           } else {
             proxy_address = "error";

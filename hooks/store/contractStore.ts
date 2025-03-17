@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { Contract, TransactionReceipt } from "ethers";
 import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
-import ETH_MIXER from "./contractdata/ETH_MIXER.json";
 import ProbabilisticWager from "./contractdata/ProbabilisticWager.json";
 import MASTER from "./contractdata/MASTER.json";
 
@@ -27,13 +26,14 @@ export type SmartContract = {
   master_address?: string;
   master_abi?: any;
   function_name?: string;
+  event_name?: string;
   mapping_name?: string;
 };
 
 const ethxmr: SmartContract = {
   id: 1,
   name: "Decentralized Noncustodial ETH/XMR Swap",
-  address: "Oxxxxxx",
+  address: "0x9B7ed66191FEf140eBA44ea28a2C0429556F1e1F",
   engineer: "Admin",
   network: "Optimism",
   proxy: true,
@@ -42,16 +42,17 @@ const ethxmr: SmartContract = {
   fee: 1.0,
   description: "Contract description",
   instructions: "Instructions on usage: ",
-  master_address: "0xeC5c0B495Ac3460C161AB732BB910aA96A00b4A1",
+  master_address: "0x588FC98Db88442798E714365cdc62F8Fa00ea13c",
   master_abi: MASTER.abi,
   function_name: "CreateEthXmrContract",
+  event_name: "EthXmrContractCreation",
   mapping_name: "ETH_XMR_CONTRACTS",
 };
 
 const xmreth: SmartContract = {
   id: 2,
   name: "Decentralized Noncustodial XMR/ETH Swap",
-  address: "Oxxxxxx",
+  address: "0xC81AeD2f4Dc16BB2aa558DE243BF02e28419A41d",
   engineer: "Admin",
   network: "Optimism",
   proxy: true,
@@ -60,9 +61,10 @@ const xmreth: SmartContract = {
   fee: 1.0,
   description: "Contract description",
   instructions: "Instructions on usage: ",
-  master_address: "0xeC5c0B495Ac3460C161AB732BB910aA96A00b4A1",
+  master_address: "0x588FC98Db88442798E714365cdc62F8Fa00ea13c",
   master_abi: MASTER.abi,
   function_name: "CreateXmrEthContract",
+  event_name: "XmrEthContractCreation",
   mapping_name: "XMR_ETH_CONTRACTS",
 };
 
@@ -73,8 +75,8 @@ const tumbler: SmartContract = {
   engineer: "Admin",
   network: "Arbitrum",
   proxy: false,
-  abi: ETH_MIXER.abi,
-  bytecode: ETH_MIXER.bytecode,
+  abi: ProbabilisticWager.abi,
+  bytecode: ProbabilisticWager.bytecode,
   fee: 0.1,
   description: "Contract description",
   instructions: "Instructions on usage: ",
