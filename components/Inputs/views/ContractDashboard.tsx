@@ -1,5 +1,10 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Contract, FunctionFragment, TransactionResponse } from "ethers";
+import {
+  Contract,
+  FunctionFragment,
+  TransactionResponse,
+  parseEther,
+} from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Button } from "@/components/ui/button";
@@ -14,15 +19,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// interface AbiFunction {
-//   type: string;
-//   name: string;
-//   inputs: any[];
-//   outputs: any[];
-//   stateMutability: string;
-//   modifiers?: string[];
-// }
-
 function DynamicForm({
   func,
   contract,
@@ -35,16 +31,25 @@ function DynamicForm({
   const {} = useWalletStore();
   const { toast } = useToast();
   // Dynamically build a zod schema from the function inputs.
-  const schema = z.object(
-    func.inputs.reduce(
-      (acc, input, i) => {
-        const fieldName = input.name || `input_${i}`;
-        acc[fieldName] = z.string().nonempty({ message: "Required" });
-        return acc;
-      },
-      {} as Record<string, z.ZodTypeAny>,
-    ),
+  //
+  const baseSchema = func.inputs.reduce(
+    (acc, input, i) => {
+      const fieldName = input.name || `input_${i}`;
+      acc[fieldName] = z.string().nonempty({ message: "Required" });
+      return acc;
+    },
+    {} as Record<string, z.ZodTypeAny>,
   );
+
+  // Add ethAmount field for payable functions
+  const schemaObj = func.payable
+    ? {
+        ...baseSchema,
+        ethAmount: z.string().nonempty({ message: "ETH amount required" }),
+      }
+    : baseSchema;
+
+  const schema = z.object(schemaObj);
 
   // Create the form instance.
   const form = useForm({
@@ -56,7 +61,7 @@ function DynamicForm({
     formState: { errors },
   } = form;
 
-  const onSubmit = async (data: z.infer<typeof schema>) => {
+  const functionSubmit = async (data: z.infer<typeof schema>) => {
     try {
       setIsCallLoading(true);
       console.log(`Calling ${func.name} with data:`, data);
@@ -66,7 +71,14 @@ function DynamicForm({
         return data[fieldName];
       });
 
-      const tx: TransactionResponse = await contract[func.name](...params);
+      const options = func.payable
+        ? { value: parseEther(data.ethAmount as string) }
+        : {};
+
+      const tx: TransactionResponse = await contract[func.name](
+        ...params,
+        options,
+      );
       const receipt = await tx.wait();
 
       if (receipt) {
@@ -78,14 +90,14 @@ function DynamicForm({
       console.log(receipt);
 
       toast({
-        title: "function call success",
+        title: "Contract Execution Success",
         description: `${func.name} called successfully!`,
       });
     } catch (error) {
       setIsCallLoading(false);
       console.log(error);
       toast({
-        title: "function call fatality",
+        title: "Contract Execution Error",
         variant: "destructive",
         description: `${func.name} ran into error: ${error}`,
       });
@@ -95,8 +107,31 @@ function DynamicForm({
   return (
     // Spread the form instance so <Form> gets all the required props.
     <Form {...form}>
-      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <h3 className="font-bold">{func.name}</h3>
+      <form className="space-y-4" onSubmit={handleSubmit(functionSubmit)}>
+        <h3 className="font-bold">{func.name.slice(4)}</h3>
+        {func.payable && (
+          <div>
+            <label
+              htmlFor={`${func.name}-ethAmount`}
+              className="block text-sm font-medium"
+            >
+              ETH Amount to Send
+            </label>
+            <Input
+              id={`${func.name}-ethAmount`}
+              type="number"
+              step="0.0001"
+              placeholder="0.0"
+              {...register("ethAmount")}
+              className="border rounded p-1 w-full"
+            />
+            {errors.ethAmount && (
+              <span className="text-red-500 text-xs">
+                {errors.ethAmount?.message?.toString()}
+              </span>
+            )}
+          </div>
+        )}
         {func.inputs.map((input, idx) => {
           const fieldName = input.name || `input_${idx}`;
           return (
@@ -128,7 +163,7 @@ function DynamicForm({
               Deploying...
             </>
           ) : (
-            <>Sign {func.name}</>
+            <>Execute {func.name.slice(4)}</>
           )}
         </Button>
       </form>
@@ -144,20 +179,42 @@ export default function ContractDashboard() {
       (fragment): fragment is FunctionFragment => fragment.type === "function",
     ) || [];
 
-  // const filtered_functions: FunctionFragment[] = functions.filter(
-  //   (func) => func.name.startsWith("USER"),
-  // );
+  const callable_functions: FunctionFragment[] = functions
+    .filter((func) => func.name.startsWith("USER"))
+    .filter((func) => func.payable == false);
+
+  const payable_functions: FunctionFragment[] | null = functions.filter(
+    (func) => func.payable == true,
+  );
 
   return (
     <ScrollArea className="h-full w-full">
-      {INITIALIZED_CONTRACT ? (
-        functions.map((func: FunctionFragment, index: number) => (
-          <div key={index} className="p-2 border-gray-300">
-            <DynamicForm func={func} contract={INITIALIZED_CONTRACT} />
-            <br />
-            <Separator />
-          </div>
-        ))
+      {payable_functions.length > 0 ? (
+        <>
+          <div>Payable functions</div>
+          {payable_functions.map((func: FunctionFragment, index: number) => (
+            <div key={index} className="p-2 border-gray-300">
+              <DynamicForm func={func} contract={INITIALIZED_CONTRACT!} />
+              <br />
+              <Separator />
+            </div>
+          ))}
+        </>
+      ) : (
+        <></>
+      )}
+
+      {callable_functions.length > 0 ? (
+        <>
+          <div>Non payable</div>
+          {callable_functions.map((func: FunctionFragment, index: number) => (
+            <div key={index} className="p-2 border-gray-300">
+              <DynamicForm func={func} contract={INITIALIZED_CONTRACT!} />
+              <br />
+              <Separator />
+            </div>
+          ))}
+        </>
       ) : (
         <></>
       )}

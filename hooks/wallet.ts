@@ -1,9 +1,10 @@
 import { useWalletStore, Network } from "./store/walletStore";
-import { JsonRpcProvider, formatEther } from "ethers";
+import { JsonRpcProvider, WebSocketProvider, formatEther } from "ethers";
 import { useEffect } from "react";
 
 export function useWalletHook() {
-  const { wallet, set_balance, set_providers } = useWalletStore();
+  const { wallet, set_balance, set_providers, set_ws_providers } =
+    useWalletStore();
 
   useEffect(() => {
     if (!wallet) return;
@@ -21,9 +22,32 @@ export function useWalletHook() {
       process.env.NEXT_PUBLIC_ARBITRUM_URI!,
     );
 
-    const providers = [MAIN_PROVIDER, OPTIMISM_PROVIDER, ARBITRUM_PROVIDER];
+    const MAIN_PROVIDER_WS = new WebSocketProvider(
+      process.env.NEXT_PUBLIC_MAINNET_WS_URI!,
+    );
+    const OPTIMISM_PROVIDER_WS = new WebSocketProvider(
+      process.env.NEXT_PUBLIC_OPTIMISM_WS_URI!,
+    );
+
+    const ARBITRUM_PROVIDER_WS = new WebSocketProvider(
+      process.env.NEXT_PUBLIC_ARBITRUM_WS_URI!,
+    );
+
+    const providers: JsonRpcProvider[] = [
+      MAIN_PROVIDER,
+      OPTIMISM_PROVIDER,
+      ARBITRUM_PROVIDER,
+    ];
+
+    const ws_providers: WebSocketProvider[] = [
+      MAIN_PROVIDER_WS,
+      OPTIMISM_PROVIDER_WS,
+      ARBITRUM_PROVIDER_WS,
+    ];
 
     set_providers(providers);
+
+    set_ws_providers(ws_providers);
 
     async function fetchBalances() {
       console.log("Getting blockchain data every 10 seconds...");
@@ -58,7 +82,7 @@ export function useWalletHook() {
     return () => {
       clearInterval(interval);
     };
-  }, [wallet, set_balance, set_providers]);
+  }, [wallet, set_balance, set_providers, set_ws_providers]);
 }
 
 export async function connect() {}

@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/card";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { ScrollArea } from "./ui/scroll-area";
-import EventListener from "@/components/Card1/views/EventListener";
-import ContractOutputs from "./Card3/views/ContractOutputs";
+import EventListener from "@/components/Outputs/views/EventListener";
+import ContractOutputs from "./Outputs/views/ContractOutputs";
+import { Separator } from "./ui/separator";
 
-export default function Card1() {
-  const { INITIALIZED_CONTRACT } = useContractStore();
+export default function Outputs() {
+  const { INITIALIZED_CONTRACT, SELECTED_CONTRACT } = useContractStore();
   return (
     <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
       <CardHeader>
@@ -30,11 +31,10 @@ export default function Card1() {
       <CardContent className="flex-1 overflow-hidden">
         {INITIALIZED_CONTRACT ? (
           <ScrollArea className="h-full w-full">
-            <ContractOutputs />
-
+            {SELECTED_CONTRACT!.proxy ? <EventListener /> : <></>}
+            <Separator />
             <br />
-
-            {INITIALIZED_CONTRACT.proxy ? <EventListener /> : <></>}
+            <ContractOutputs />
           </ScrollArea>
         ) : (
           <></>

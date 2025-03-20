@@ -1,6 +1,6 @@
 "use client";
 
-import ContractDashboard from "./Card3/views/ContractDashboard";
+import ContractDashboard from "./Inputs/views/ContractDashboard";
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { useContractStore } from "@/hooks/store/contractStore";
 
-export default function Card3() {
+export default function Inputs() {
   const { INITIALIZED_CONTRACT } = useContractStore();
   return (
     <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">

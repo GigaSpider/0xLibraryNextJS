@@ -5,9 +5,10 @@ export default function ContractOutputs() {
 
   return (
     <div>
+      <div>Function outputs:</div>
       {outputs ? (
         Object.entries(outputs).map(([functionName, receipts]) => (
-          <div key={functionName}>
+          <div key={functionName} className="p-2">
             <h3>{functionName}</h3>
             <ul>
               {receipts.map((receipt) => (

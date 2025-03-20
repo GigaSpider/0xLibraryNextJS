@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import ContractInitialization from "@/components/Card2/views/ContractInitialization";
+import ContractInitialization from "@/components/Staging/views/ContractInitialization";
 import { useEthXmrContractListener } from "@/hooks/listeners";
 import { useContractStore } from "@/hooks/store/contractStore";
 
-export default function Card2() {
+export default function Staging() {
   // const { ETH_XMR_ADDRESS } = useSwapStore();
 
   useEthXmrContractListener();

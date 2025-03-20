@@ -1,8 +1,8 @@
 "use client";
 
-import Card1 from "@/components/Card1";
-import Card2 from "@/components/Card2";
-import Card3 from "@/components/Card3";
+import Staging from "@/components/Staging";
+import Inputs from "@/components/Inputs";
+import Outputs from "@/components/Outputs";
 // import PriceFeed from "@/components/PriceFeed";
 // import WebSockets from "@/components/Websockets";
 import Wallet from "@/components/Wallet/Wallet";
@@ -30,9 +30,9 @@ export default function Home() {
 
 "
       >
-        <Card2 />
-        <Card3 />
-        <Card1 />
+        <Staging />
+        <Inputs />
+        <Outputs />
       </div>
       <div className="fixed bottom-2 left-2">
         <WhitePaper />
