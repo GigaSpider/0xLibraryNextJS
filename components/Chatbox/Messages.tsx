@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/store/chatStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useChatHook, useSendMessage } from "@/hooks/chat";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Messages({ channel }: { channel: Channel }) {
   const [input, setInput] = useState("");
@@ -15,8 +15,6 @@ export default function Messages({ channel }: { channel: Channel }) {
   const { sendMessage } = useSendMessage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Store the previous messages to detect actual changes
-  const prevMessagesRef = useRef<typeof messages>([]);
   // Store previous channel to detect changes
   const prevChannelRef = useRef<Channel>(channel);
 
