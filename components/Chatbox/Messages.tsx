@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/store/chatStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useChatHook, useSendMessage } from "@/hooks/chat";
-import { useState } from "react";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Messages({ channel }: { channel: Channel }) {
   const [input, setInput] = useState("");
@@ -14,6 +13,12 @@ export default function Messages({ channel }: { channel: Channel }) {
   const { wallet } = useWalletStore();
   useChatHook();
   const { sendMessage } = useSendMessage();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Store the previous messages to detect actual changes
+  const prevMessagesRef = useRef<typeof messages>([]);
+  // Store previous channel to detect changes
+  const prevChannelRef = useRef<Channel>(channel);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -24,11 +29,14 @@ export default function Messages({ channel }: { channel: Channel }) {
       };
       sendMessage(message);
       setInput("");
+      // Scroll when user sends a message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      }, 50);
     }
   };
 
   let filtered_messages;
-
   switch (channel) {
     case "MAIN":
       filtered_messages = messages.filter((msg) => msg.channelId === "MAIN");
@@ -53,11 +61,27 @@ export default function Messages({ channel }: { channel: Channel }) {
       break;
   }
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  // CRITICAL CHANGE: Remove the useEffect that auto-scrolls based on messages
+  // We'll only scroll on specific actions:
+  // 1. When user sends a message (handled in handleSend)
+  // 2. When channel changes (handled below)
+  // 3. On initial load (handled below)
 
+  // Handle channel changes
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [filtered_messages]);
+    if (channel !== prevChannelRef.current) {
+      prevChannelRef.current = channel;
+      // Scroll to bottom when channel changes
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      }, 50);
+    }
+  }, [channel]);
+
+  // Scroll to bottom only on initial load
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -68,7 +92,7 @@ export default function Messages({ channel }: { channel: Channel }) {
             <span className="text-violet-500 text-xs">{msg.text}</span>
           </div>
         ))}
-        <div ref={bottomRef} />
+        <div ref={messagesEndRef} />
       </ScrollArea>
       <div className="p-2.5 flex gap-2 border-t">
         <Input
