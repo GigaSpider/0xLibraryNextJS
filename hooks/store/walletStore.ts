@@ -24,12 +24,10 @@ type WalletStore = {
   wallet: Wallet | null;
   private_key: string | null;
   providers: JsonRpcProvider[] | null;
-  ws_providers: WebSocketProvider[] | null;
   signers: JsonRpcSigner[] | null;
   set_balance: (network: Network, balance: BalanceInfo) => void;
   set_wallet: (wallet: Wallet) => void;
   set_providers: (providers: JsonRpcProvider[]) => void;
-  set_ws_providers: (ws_providers: WebSocketProvider[]) => void;
 };
 
 export const useWalletStore = create<WalletStore>()(
@@ -43,7 +41,6 @@ export const useWalletStore = create<WalletStore>()(
       wallet: null,
       private_key: null,
       providers: null,
-      ws_providers: null,
       signers: null,
       set_balance: (network: Network, balance: BalanceInfo) =>
         set((state) => ({
@@ -60,9 +57,6 @@ export const useWalletStore = create<WalletStore>()(
         // );
         console.log(providers);
         set({ providers: providers });
-      },
-      set_ws_providers: (ws_providers: WebSocketProvider[]) => {
-        set({ ws_providers: ws_providers });
       },
     }),
     {

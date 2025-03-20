@@ -1,9 +1,13 @@
 import { useEventListener } from "@/hooks/eventListener";
+import { useContractStore } from "@/hooks/store/contractStore";
+import { Interface, Log } from "ethers";
 import { useState, useEffect } from "react";
 
 export default function EventListener() {
+  const { SELECTED_CONTRACT } = useContractStore();
   const { events } = useEventListener();
   const array = Array.from(events);
+  const iface = new Interface(SELECTED_CONTRACT!.abi);
   const [dots, setDots] = useState("");
 
   useEffect(() => {
@@ -13,6 +17,24 @@ export default function EventListener() {
 
     return () => clearInterval(dotsInterval);
   }, []);
+
+  function parseLog(log: Log, name: string) {
+    try {
+      const parsed = iface.parseLog({
+        topics: log.topics as string[],
+        data: log.data,
+      });
+
+      return (
+        <>
+          {name} {parsed?.args[0]?.toString() || "No data"}
+        </>
+      );
+    } catch (error) {
+      console.error("Error parsing log:", error);
+      return <>Error parsing log</>;
+    }
+  }
 
   return (
     <div>
@@ -24,16 +46,14 @@ export default function EventListener() {
               {dots}
             </div>
             <div className="p-2">
-              {event[1] ? (
-                event[1].map((log) => (
-                  <div key={log.toJSON()["args"][0]}>
-                    <div>hello</div>
-                    <br />
-                    <div>{log.transactionHash}</div>
+              {event[1] && event[1].length > 0 ? (
+                event[1].map((log, logIndex) => (
+                  <div key={`log-${logIndex}`}>
+                    {parseLog(log, event[0].name)}
                   </div>
                 ))
               ) : (
-                <div></div>
+                <div>empty</div>
               )}
             </div>
           </div>
