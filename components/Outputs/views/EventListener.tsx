@@ -18,18 +18,14 @@ export default function EventListener() {
     return () => clearInterval(dotsInterval);
   }, []);
 
-  function parseLog(log: Log, name: string) {
+  function parseLog(log: Log) {
     try {
       const parsed = iface.parseLog({
         topics: log.topics as string[],
         data: log.data,
       });
 
-      return (
-        <>
-          {name} {parsed?.args[0]?.toString() || "No data"}
-        </>
-      );
+      return <>{parsed?.args[0]?.toString() || "No data"}</>;
     } catch (error) {
       console.error("Error parsing log:", error);
       return <>Error parsing log</>;
@@ -48,12 +44,10 @@ export default function EventListener() {
             <div className="p-2">
               {event[1] && event[1].length > 0 ? (
                 event[1].map((log, logIndex) => (
-                  <div key={`log-${logIndex}`}>
-                    {parseLog(log, event[0].name)}
-                  </div>
+                  <div key={`log-${logIndex}`}>{parseLog(log)}</div>
                 ))
               ) : (
-                <div>empty</div>
+                <div></div>
               )}
             </div>
           </div>

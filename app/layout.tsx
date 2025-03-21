@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Monero DEX",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body className="bg-black font-mono text-sm">
         <ConvexClientProvider>{children}</ConvexClientProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );

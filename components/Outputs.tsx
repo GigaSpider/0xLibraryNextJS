@@ -22,7 +22,7 @@ export default function Outputs() {
         <CardTitle className="text-center">Contract Performance</CardTitle>
         <CardDescription>
           {INITIALIZED_CONTRACT ? (
-            <div>Function outputs and contract events will appear below</div>
+            <div></div>
           ) : (
             <div>View results and listen for blockchain events</div>
           )}

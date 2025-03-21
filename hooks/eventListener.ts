@@ -60,10 +60,6 @@ export function useEventListener() {
     async function fetchEvents() {
       console.log("scanning for new events every 10 seconds");
 
-      // Debug the contract and provider
-      console.log("Contract address:", contract.target);
-      console.log("Provider network:", provider._network?.name);
-
       const block_height = await provider.getBlockNumber();
       console.log(`Current block: ${block_height}`);
 
@@ -72,7 +68,7 @@ export function useEventListener() {
 
         try {
           // Use a bigger block range to find historical events
-          const fromBlock = block_height - 10; // Look back 1000 blocks
+          const fromBlock = block_height - 1000; // Look back 1000 blocks
           const toBlock = block_height;
 
           const recent_events = await contract.queryFilter(
@@ -99,27 +95,15 @@ export function useEventListener() {
             );
 
             if (new_events.length > 0) {
-              toast({
-                title: "Contract Event Detected",
-                description: `${event.name}`,
-              });
+              console.log("checkpoint, proceeding to add to map ", event.name);
               setEvents((prev) => {
                 const map = new Map(prev);
                 map.set(event, [...existing_events, ...new_events]);
                 return map;
               });
             }
-
-            // const firstEvent = recent_events[0];
-            // console.log(`First event block: ${firstEvent.blockNumber}`);
-            // console.log(`First event tx: ${firstEvent.transactionHash}`);
-
-            // // Try to access args if it's an EventLog
-            // if ("args" in firstEvent) {
-            //   console.log(`Event args:`, firstEvent.args);
-            // } else {
-            //   console.log(`Raw log data:`, firstEvent.data);
-            // }
+          } else {
+            console.log("no events found");
           }
 
           // Rest of your code...
