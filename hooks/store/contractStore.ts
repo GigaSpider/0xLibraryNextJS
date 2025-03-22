@@ -33,7 +33,7 @@ export type SmartContract = {
 const ethxmr: SmartContract = {
   id: 1,
   name: "Decentralized Noncustodial ETH/XMR Swap",
-  address: "0x346bEcefA96fF63FeD9bAe49D402980c9b21f93C",
+  address: "0xaD7B9773599E866174CA0dd0BfFC4c7b1F655814",
   engineer: "Admin",
   network: "Optimism",
   proxy: true,
@@ -52,7 +52,7 @@ const ethxmr: SmartContract = {
 const xmreth: SmartContract = {
   id: 2,
   name: "Decentralized Noncustodial XMR/ETH Swap",
-  address: "0x99558440B26B0935c9E85fD66f6211011f70F998",
+  address: "0x4bF7F3844F80782320B3b386A33d0b9E8f819fAA",
   engineer: "Admin",
   network: "Optimism",
   proxy: true,
@@ -96,7 +96,27 @@ const gambler: SmartContract = {
   instructions: "Instructions on usage: ",
 };
 
-export const contracts: SmartContract[] = [ethxmr, xmreth, tumbler, gambler];
+const master: SmartContract = {
+  id: 5,
+  name: "Master (Admin use only)",
+  address: "0x3d8390c9d4035650d5129E383728D6eD67Fb1671",
+  engineer: "Admin",
+  network: "Optimism",
+  proxy: false,
+  abi: MASTER.abi,
+  bytecode: MASTER.bytecode,
+  fee: 0,
+  description: "Contract description",
+  instructions: "Instructions on usage: ",
+};
+
+export const contracts: SmartContract[] = [
+  ethxmr,
+  xmreth,
+  tumbler,
+  gambler,
+  master,
+];
 
 type ContractStore = {
   contracts: SmartContract[];
