@@ -5,8 +5,8 @@ import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
-  title: "Monero DEX",
-  description: "A community driven exchange for Monero",
+  title: "0xLibrary",
+  description: "Do anything be anybody",
 };
 
 export default function RootLayout({
