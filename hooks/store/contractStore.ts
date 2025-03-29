@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { Contract, TransactionReceipt } from "ethers";
 import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
-import ProbabilisticWager from "./contractdata/ProbabilisticWager.json";
+import Bridge from "./contractdata/Bridge.json";
+import VariableProbabilityWager from "./contractdata/VariableProbabilityWager.json";
 import MASTER from "./contractdata/MASTER.json";
 
 export enum NetworkIndex {
@@ -75,8 +76,8 @@ const tumbler: SmartContract = {
   engineer: "Admin",
   network: "Arbitrum",
   proxy: false,
-  abi: ProbabilisticWager.abi,
-  bytecode: ProbabilisticWager.bytecode,
+  abi: VariableProbabilityWager.abi,
+  bytecode: VariableProbabilityWager.bytecode,
   fee: 0.1,
   description: "Contract description",
   instructions: "Instructions on usage: ",
@@ -84,20 +85,20 @@ const tumbler: SmartContract = {
 
 const gambler: SmartContract = {
   id: 4,
-  name: "Choose your odds roullete",
+  name: "Variable Probability Wager (Supports the website)",
   address: "not available yet",
   engineer: "Admin",
-  network: "Arbitrum",
+  network: "Optimism",
   proxy: false,
-  abi: ProbabilisticWager.abi,
-  bytecode: ProbabilisticWager.bytecode,
-  fee: 0.2,
+  abi: VariableProbabilityWager.abi,
+  bytecode: VariableProbabilityWager.bytecode,
+  fee: 1.0,
   description: "Contract description",
   instructions: "Instructions on usage: ",
 };
 
 const master: SmartContract = {
-  id: 5,
+  id: 8,
   name: "Master (Admin use only)",
   address: "0xE56eFe07c2a6cd7C4d41B441c3DFeb5cbc7087eF",
   engineer: "Admin",

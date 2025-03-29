@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Bridge",
+  "sourceName": "contracts/Bridge.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212209c27697532f4192ac44b405516cc274ab2f4fead9f0d683e7a14d0966a7d688564736f6c634300081b0033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212209c27697532f4192ac44b405516cc274ab2f4fead9f0d683e7a14d0966a7d688564736f6c634300081b0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

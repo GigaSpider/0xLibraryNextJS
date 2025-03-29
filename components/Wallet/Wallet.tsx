@@ -35,10 +35,22 @@ import {
 
 import BigNumber from "bignumber.js";
 
+export enum Networks {
+  Mainnet = "Mainnet",
+  Optimism = "Optimism",
+  Arbitrum = "Arbitrum",
+}
+
 // Zod schemas for each form
 const sendSchema = z.object({
   network: z.string().nonempty({ message: "field required" }),
   destination: z.string().nonempty("field required"),
+  amount: z.string().nonempty("field required"),
+});
+
+const bridgeSchema = z.object({
+  fromNetwork: z.string().nonempty("field required"),
+  toNetwork: z.string().nonempty("field required"),
   amount: z.string().nonempty("field required"),
 });
 
@@ -75,21 +87,21 @@ export default function Wallet() {
     },
   });
 
+  const bridgeForm = useForm<z.infer<typeof bridgeSchema>>({
+    resolver: zodResolver(bridgeSchema),
+    defaultValues: {
+      fromNetwork: "",
+      toNetwork: "",
+      amount: "",
+    },
+  });
+
   const connectForm = useForm<z.infer<typeof connectSchema>>({
     resolver: zodResolver(connectSchema),
     defaultValues: {
       key: "",
     },
   });
-
-  // const bridgeForm = useForm<z.infer<typeof bridgeSchema>>({
-  //   resolver: zodResolver(bridgeSchema),
-  //   defaultValues: {
-  //     fromNetwork: "",
-  //     toNetwork: "",
-  //     amount: "",
-  //   },
-  // });
 
   async function handleCreateNewWallet() {
     const newWallet: Wállet = new Wállet(Wállet.createRandom().privateKey);
@@ -122,6 +134,60 @@ export default function Wallet() {
         variant: "destructive",
       });
       return;
+    }
+  };
+
+  const onBridgeSubmit = async (data: z.infer<typeof bridgeSchema>) => {
+    if (data.fromNetwork == data.toNetwork) {
+      toast({
+        title: "invalid network input",
+        description: "can't bridge to the same network",
+        variant: "destructive",
+      });
+      return;
+    } else if (
+      data.fromNetwork == Networks.Optimism &&
+      data.toNetwork != Networks.Mainnet
+    ) {
+      toast({
+        title: "invalid network input",
+        description:
+          "if bridging from a layer 2, you must first bridge to mainnet",
+        variant: "destructive",
+      });
+      return;
+    } else if (
+      data.fromNetwork == Networks.Arbitrum &&
+      data.toNetwork != Networks.Mainnet
+    ) {
+      toast({
+        title: "invalid network input",
+        description:
+          "if bridging from a layer 2, you must first bridge to mainnet",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("checkpoint, network inputs validated:", data);
+
+    try {
+      switch (data.fromNetwork) {
+        case Networks.Mainnet: {
+          switch (data.toNetwork) {
+            case Networks.Optimism: {
+            }
+            case Networks.Arbitrum: {
+            }
+          }
+        }
+        case Networks.Optimism: {
+        }
+        case Networks.Arbitrum: {
+        }
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -179,57 +245,6 @@ export default function Wallet() {
     }
   };
 
-  // const onBridgeSubmit = async (data: z.infer<typeof bridgeSchema>) => {
-  //   console.log("Bridge Ethereum data:", data);
-
-  //   let source_provider;
-  //   let target_provider;
-
-  //   switch (data.fromNetwork) {
-  //     case "main":
-  //       source_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_MAINNET_URI!,
-  //       );
-  //       break;
-  //     case "optimism":
-  //       source_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_OPTIMISM_URI!,
-  //       );
-  //       break;
-  //     case "arbitrum":
-  //       source_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_ARBITRUM_URI!,
-  //       );
-  //       break;
-  //     default:
-  //       console.log("error, network out of bounds");
-  //       return;
-  //   }
-
-  //   switch (data.toNetwork) {
-  //     case "main":
-  //       target_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_MAINNET_URI!,
-  //       );
-  //       break;
-  //     case "optimism":
-  //       target_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_OPTIMISM_URI!,
-  //       );
-  //       break;
-  //     case "arbitrum":
-  //       target_provider = new JsonRpcProvider(
-  //         process.env.NEXT_PUBLIC_ARBITRUM_URI!,
-  //       );
-  //       break;
-  //     default:
-  //       console.log("error, network out of bounds");
-  //       return;
-  //   }
-
-  //   await bridge(source_provider, target_provider);
-  // };
-
   return (
     <div className="flex-col text-xs text-gray-400">
       <div className="text-xs">
@@ -265,7 +280,11 @@ export default function Wallet() {
 
       {/* Wallet Actions Section */}
       <Popover>
-        <PopoverTrigger>Wallet Actions</PopoverTrigger>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="text-xs">
+            Wallet Actions
+          </Button>
+        </PopoverTrigger>
         <PopoverContent className="w-full max-w-2xl p-6 border-violet-500 bg-black">
           <div className="space-y-8">
             {/* Wallet Management Section */}
@@ -346,12 +365,14 @@ export default function Wallet() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value="Main">Mainnet</SelectItem>
+                                <SelectItem value="Main">
+                                  Mainnet(L1)
+                                </SelectItem>
                                 <SelectItem value="Optimism">
-                                  Optimism
+                                  Optimism(L2)
                                 </SelectItem>
                                 <SelectItem value="Arbitrum">
-                                  Arbitrum
+                                  Arbitrum(L2)
                                 </SelectItem>
                               </SelectGroup>
                             </SelectContent>
@@ -386,14 +407,12 @@ export default function Wallet() {
                 </form>
               </Form>
             </div>
-
-            {/* <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">
-                Bridge Ethereum Between Networks
-              </h3>
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-4">Bridge Networks</h3>
               <Form {...bridgeForm}>
                 <form onSubmit={bridgeForm.handleSubmit(onBridgeSubmit)}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Network Select */}
                     <div className="flex flex-col gap-2">
                       <Label>From Network</Label>
                       <Controller
@@ -410,12 +429,14 @@ export default function Wallet() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value="main">Mainnet</SelectItem>
-                                <SelectItem value="optimism">
-                                  Optimism
+                                <SelectItem value={Networks.Mainnet}>
+                                  Mainnet(L1)
                                 </SelectItem>
-                                <SelectItem value="arbitrum">
-                                  Arbitrum
+                                <SelectItem value={Networks.Optimism}>
+                                  Optimism(L2)
+                                </SelectItem>
+                                <SelectItem value={Networks.Arbitrum}>
+                                  Arbitrum(L2)
                                 </SelectItem>
                               </SelectGroup>
                             </SelectContent>
@@ -423,6 +444,7 @@ export default function Wallet() {
                         )}
                       />
                     </div>
+                    {/* Destination Address */}
                     <div className="flex flex-col gap-2">
                       <Label>To Network</Label>
                       <Controller
@@ -439,12 +461,14 @@ export default function Wallet() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value="main">Mainnet</SelectItem>
-                                <SelectItem value="optimism">
-                                  Optimism
+                                <SelectItem value={Networks.Mainnet}>
+                                  Mainnet(L1)
                                 </SelectItem>
-                                <SelectItem value="arbitrum">
-                                  Arbitrum
+                                <SelectItem value={Networks.Optimism}>
+                                  Optimism(L2)
+                                </SelectItem>
+                                <SelectItem value={Networks.Arbitrum}>
+                                  Arbitrum(L2)
                                 </SelectItem>
                               </SelectGroup>
                             </SelectContent>
@@ -452,23 +476,25 @@ export default function Wallet() {
                         )}
                       />
                     </div>
+                    {/* Amount */}
                     <div className="flex flex-col gap-2">
-                      <Label>Amount</Label>
+                      <Label>Amount in Wei</Label>
                       <Input
                         placeholder="Enter amount"
                         {...bridgeForm.register("amount")}
                       />
                     </div>
+                    {/* Send Button */}
                     <div className="flex flex-col gap-2">
-                      <Label>Bridge</Label>
+                      <Label>Send</Label>
                       <Button type="submit" variant="outline">
-                        Bridge
+                        Send
                       </Button>
                     </div>
                   </div>
                 </form>
               </Form>
-              </div> */}
+            </div>
           </div>
         </PopoverContent>
       </Popover>

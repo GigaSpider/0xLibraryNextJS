@@ -28,7 +28,6 @@ function DynamicForm({
 }) {
   const [isCallLoading, setIsCallLoading] = useState(false);
   const { add_output } = useContractStore();
-  const {} = useWalletStore();
   const { toast } = useToast();
   // Dynamically build a zod schema from the function inputs.
   //
@@ -108,7 +107,9 @@ function DynamicForm({
     // Spread the form instance so <Form> gets all the required props.
     <Form {...form}>
       <form className="space-y-4" onSubmit={handleSubmit(functionSubmit)}>
-        <h3 className="font-bold">{func.name.slice(4)}</h3>
+        <h3 className="font-bold">
+          {func.name.startsWith("USER") ? func.name.slice(4) : func.name}
+        </h3>
         {func.payable && (
           <div>
             <label
@@ -163,7 +164,10 @@ function DynamicForm({
               Deploying...
             </>
           ) : (
-            <>Execute {func.name.slice(4)}</>
+            <>
+              Execute{" "}
+              {func.name.startsWith("USER") ? func.name.slice(4) : func.name}
+            </>
           )}
         </Button>
       </form>
@@ -173,19 +177,31 @@ function DynamicForm({
 
 export default function ContractDashboard() {
   const { INITIALIZED_CONTRACT } = useContractStore();
+  const { wallet } = useWalletStore();
 
   const functions: FunctionFragment[] =
     INITIALIZED_CONTRACT?.interface.fragments.filter(
       (fragment): fragment is FunctionFragment => fragment.type === "function",
     ) || [];
 
-  const callable_functions: FunctionFragment[] = functions
-    .filter((func) => func.name.startsWith("USER"))
-    .filter((func) => func.payable == false);
+  let callable_functions: FunctionFragment[] | null;
 
-  const payable_functions: FunctionFragment[] | null = functions.filter(
-    (func) => func.payable == true,
-  );
+  const user_address: string = wallet?.address as string;
+  const oracle_address: string = process.env.NEXT_PUBLIC_ORACLE_ADDRESS!;
+
+  if (user_address == oracle_address) {
+    callable_functions = functions;
+  } else {
+    callable_functions = functions.filter((func) =>
+      func.name.startsWith("USER"),
+    );
+  }
+
+  const payable_functions: FunctionFragment[] | null =
+    callable_functions.filter((func) => func.payable == true);
+
+  const nonpayable_functions: FunctionFragment[] | null =
+    callable_functions.filter((func) => func.payable == false);
 
   return (
     <ScrollArea className="h-full w-full">
@@ -207,7 +223,7 @@ export default function ContractDashboard() {
       {callable_functions.length > 0 ? (
         <>
           <div>Non payable</div>
-          {callable_functions.map((func: FunctionFragment, index: number) => (
+          {nonpayable_functions.map((func: FunctionFragment, index: number) => (
             <div key={index} className="p-2 border-gray-300">
               <DynamicForm func={func} contract={INITIALIZED_CONTRACT!} />
               <br />

@@ -1,11 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  Wallet,
-  JsonRpcProvider,
-  JsonRpcSigner,
-  WebSocketProvider,
-} from "ethers";
+import { Wallet, JsonRpcProvider, JsonRpcSigner } from "ethers";
 
 export enum Network {
   Main = "Main",

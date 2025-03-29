@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "0xLibrary",
-  description: "Do anything be anybody",
+  description: "Ethereum Smart Contract Library",
 };
 
 export default function RootLayout({

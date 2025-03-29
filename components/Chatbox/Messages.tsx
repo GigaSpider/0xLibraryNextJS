@@ -77,9 +77,10 @@ export default function Messages({ channel }: { channel: Channel }) {
   }, [channel]);
 
   // Scroll to bottom only on initial load
-  useEffect(() => {
+
+  setTimeout(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
-  }, []);
+  }, 50);
 
   return (
     <div className="flex flex-col h-full">
