@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import {
@@ -342,7 +343,10 @@ export default function ProxyInterface() {
 
   return (
     <div>
-      <div className="text-green-500">{selectedContract?.name}</div>
+      <Label className="text-red-500">
+        {selectedContract?.name} proxy contract
+      </Label>
+      <br />
       <br />
       <div>Master Contract: {selectedContract?.master_address}</div>
       <br />

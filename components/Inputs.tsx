@@ -9,12 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useContractStore } from "@/hooks/store/contractStore";
 
 export default function Inputs() {
   const { INITIALIZED_CONTRACT } = useContractStore();
   return (
-    <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
+    <ScrollArea>
       <CardHeader>
         <CardTitle className="text-center">Contract Execution</CardTitle>
         <CardDescription className="text-center">
@@ -29,6 +30,6 @@ export default function Inputs() {
         <ContractDashboard />
       </CardContent>
       <CardFooter></CardFooter>
-    </Card>
+    </ScrollArea>
   );
 }

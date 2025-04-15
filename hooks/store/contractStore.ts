@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { Contract, TransactionReceipt } from "ethers";
 import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
-import Bridge from "./contractdata/Bridge.json";
 import VariableProbabilityWager from "./contractdata/VariableProbabilityWager.json";
 import MASTER from "./contractdata/MASTER.json";
 
@@ -10,6 +9,17 @@ export enum NetworkIndex {
   "Mainnet" = 0,
   "Optimism" = 1,
   "Arbitrum" = 2,
+}
+
+interface OffchainSoftware {
+  name: string;
+  files: {
+    [filename: string]: {
+      inputs: string[];
+      outputs: string[];
+      source: string;
+    };
+  };
 }
 
 export type SmartContract = {
@@ -33,7 +43,7 @@ export type SmartContract = {
 
 const ethxmr: SmartContract = {
   id: 1,
-  name: "Decentralized Noncustodial ETH/XMR Swap",
+  name: "Cross chain ETH/XMR Swap",
   address: "0x32c615C98E173d8e0D3cc98ee93fBD1734552449",
   engineer: "Admin",
   network: "Optimism",
@@ -52,7 +62,7 @@ const ethxmr: SmartContract = {
 
 const xmreth: SmartContract = {
   id: 2,
-  name: "Decentralized Noncustodial XMR/ETH Swap",
+  name: "Cross chain XMR/ETH Swap",
   address: "0x715EE67c54BBa24A05f256aeDB4f6bb0AD2E06F3",
   engineer: "Admin",
   network: "Optimism",
@@ -69,12 +79,12 @@ const xmreth: SmartContract = {
   mapping_name: "XMR_ETH_CONTRACTS",
 };
 
-const tumbler: SmartContract = {
+const zksnark: SmartContract = {
   id: 3,
-  name: "Zero Knowledge Proof ETH mixer",
+  name: "Zero Knowledge SNARK Deposit and Withdrawal",
   address: "not available yet",
   engineer: "Admin",
-  network: "Arbitrum",
+  network: "Optimism",
   proxy: false,
   abi: VariableProbabilityWager.abi,
   bytecode: VariableProbabilityWager.bytecode,
@@ -114,7 +124,7 @@ const master: SmartContract = {
 export const contracts: SmartContract[] = [
   ethxmr,
   xmreth,
-  tumbler,
+  zksnark,
   gambler,
   master,
 ];

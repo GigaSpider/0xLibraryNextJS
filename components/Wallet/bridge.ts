@@ -1,8 +1,17 @@
-import { JsonRpcProvider } from "ethers";
+// import { Network } from "@/components/Wallet/Wallet";
+// import { createAcrossClient } from "@across-protocol/app-sdk";
+import { mainnet, optimism, arbitrum } from "viem/chains";
 
-export default function bridge(
-  source_provider: JsonRpcProvider,
-  target_provider: JsonRpcProvider,
+// const client = createAcrossClient({
+//   integratorId: "your-integrator-ID",
+//   chains: [mainnet, optimism, arbitrum],
+// });
+
+export async function bridge(
+  fromNetwork: string,
+  toNetwork: string,
+  amount: number,
+  private_key: string,
 ) {
-  console.log(source_provider, target_provider);
+  const quote = await client.getQuote;
 }

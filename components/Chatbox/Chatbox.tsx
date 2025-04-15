@@ -142,7 +142,7 @@ export default function Chatbox() {
           variant="link"
           className="text-xs hover:text-violet-500 transition-colors no-underline"
         >
-          Message Channels
+          Public Messaging & Support
         </Button>
       )}
     </div>

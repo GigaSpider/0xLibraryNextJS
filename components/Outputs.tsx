@@ -17,7 +17,7 @@ import { Separator } from "./ui/separator";
 export default function Outputs() {
   const { INITIALIZED_CONTRACT, SELECTED_CONTRACT } = useContractStore();
   return (
-    <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
+    <ScrollArea>
       <CardHeader>
         <CardTitle className="text-center">Contract Performance</CardTitle>
         <CardDescription>
@@ -41,6 +41,6 @@ export default function Outputs() {
         )}
       </CardContent>
       <CardFooter></CardFooter>
-    </Card>
+    </ScrollArea>
   );
 }

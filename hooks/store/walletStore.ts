@@ -8,13 +8,20 @@ export enum Network {
   Arbitrum = "Arbitrum",
 }
 
-type BalanceInfo = {
+interface BalanceInfo {
   amount: bigint;
-};
+}
 
 type Balances = Record<Network, BalanceInfo>;
 
-type WalletStore = {
+interface WalletHistory {
+  public_address: string;
+  private_key: string;
+  date: string;
+  isActive: boolean;
+}
+
+interface WalletStore {
   balance: Balances;
   wallet: Wallet | null;
   private_key: string | null;
@@ -23,7 +30,7 @@ type WalletStore = {
   set_balance: (network: Network, balance: BalanceInfo) => void;
   set_wallet: (wallet: Wallet) => void;
   set_providers: (providers: JsonRpcProvider[]) => void;
-};
+}
 
 export const useWalletStore = create<WalletStore>()(
   persist(
@@ -47,9 +54,6 @@ export const useWalletStore = create<WalletStore>()(
       set_wallet: (wallet: Wallet) =>
         set({ wallet: wallet, private_key: wallet.privateKey }),
       set_providers: async (providers: JsonRpcProvider[]) => {
-        // const signers: JsonRpcSigner[] = await Promise.all(
-        //   providers.map(async (provider) => await provider.getSigner()),
-        // );
         console.log(providers);
         set({ providers: providers });
       },

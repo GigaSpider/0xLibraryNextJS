@@ -3,6 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/react";
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
 
 export const metadata: Metadata = {
   title: "0xLibrary",
@@ -15,9 +17,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className="dark">
+    <html lang="en" className="dark h-full">
       <body className="bg-black font-mono text-sm">
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        <div>
+          <Header />
+        </div>
+
+        <main className="min-h-full">{children}</main>
+        <div>
+          <ConvexClientProvider>
+            <Footer />
+          </ConvexClientProvider>
+        </div>
         <Toaster />
         <Analytics />
       </body>

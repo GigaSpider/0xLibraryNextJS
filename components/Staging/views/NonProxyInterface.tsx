@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 export default function NonProxyInterface() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT, INITIALIZED_CONTRACT } =
     useContractStore();
+  const offchain_software = SELECTED_CONTRACT?.offchain_software;
   const { providers, private_key } = useWalletStore();
 
   async function handleInitialization() {
@@ -41,6 +42,8 @@ export default function NonProxyInterface() {
 
   return (
     <div>
+      {" "}
+      {}
       <div className="text-violet-500">{SELECTED_CONTRACT?.name}</div>
       <br />
       <div>Address: {SELECTED_CONTRACT?.address}</div>
@@ -54,6 +57,8 @@ export default function NonProxyInterface() {
       {INITIALIZED_CONTRACT ? (
         <div className="text-green-500">
           Contract Signed, awaiting user actions
+          <br />
+          {offchain_software ? <>software below </> : <>nothing detected</>}
         </div>
       ) : (
         <Button onClick={() => handleInitialization()}>Agree and Sign</Button>

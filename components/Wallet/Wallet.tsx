@@ -6,6 +6,7 @@ import {
   isAddress,
   isHexString,
 } from "ethers";
+import { bridge } from "./bridge";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useWalletHook } from "@/hooks/wallet";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +36,7 @@ import {
 
 import BigNumber from "bignumber.js";
 
-export enum Networks {
+export enum Network {
   Mainnet = "Mainnet",
   Optimism = "Optimism",
   Arbitrum = "Arbitrum",
@@ -145,47 +146,21 @@ export default function Wallet() {
         variant: "destructive",
       });
       return;
-    } else if (
-      data.fromNetwork == Networks.Optimism &&
-      data.toNetwork != Networks.Mainnet
-    ) {
-      toast({
-        title: "invalid network input",
-        description:
-          "if bridging from a layer 2, you must first bridge to mainnet",
-        variant: "destructive",
-      });
-      return;
-    } else if (
-      data.fromNetwork == Networks.Arbitrum &&
-      data.toNetwork != Networks.Mainnet
-    ) {
-      toast({
-        title: "invalid network input",
-        description:
-          "if bridging from a layer 2, you must first bridge to mainnet",
-        variant: "destructive",
-      });
-      return;
     }
 
     console.log("checkpoint, network inputs validated:", data);
 
+    const amount = Number(data.amount);
+
+    // let confirmation: boolean = false;
+
     try {
-      switch (data.fromNetwork) {
-        case Networks.Mainnet: {
-          switch (data.toNetwork) {
-            case Networks.Optimism: {
-            }
-            case Networks.Arbitrum: {
-            }
-          }
-        }
-        case Networks.Optimism: {
-        }
-        case Networks.Arbitrum: {
-        }
-      }
+      await bridge(data.fromNetwork, data.toNetwork, amount, private_key!);
+
+      toast({
+        title: "Bridge success",
+        description: "funds bridged",
+      });
     } catch (error) {
       console.error(error);
     }
@@ -290,7 +265,7 @@ export default function Wallet() {
             {/* Wallet Management Section */}
             <div>
               <h3 className="font-semibold mb-4">Manage Wallet</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex flex-col gap-2">
                   <Label>Create New Wallet</Label>
                   <Button onClick={handleCreateNewWallet}>Create</Button>
@@ -324,7 +299,64 @@ export default function Wallet() {
                     Reveal
                   </Button>
                 </div>
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2">
+                  <Label>Previous Wallets</Label>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Get wallet data from local storage
+                      const wallets = JSON.parse(
+                        localStorage.getItem("wallet-store") || "{}",
+                      );
+
+                      // Create a Blob containing the HTML content
+                      const htmlContent = `
+                        <html>
+                          <head>
+                            <title>Stored Wallets</title>
+                            <style>
+                              body {
+                                font-family: monospace;
+                                padding: 20px;
+                                background: #f5f5f5;
+                              }
+                              pre {
+                                background: white;
+                                padding: 15px;
+                                border-radius: 4px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                              }
+                              button {
+                                margin: 10px 0;
+                                padding: 8px 16px;
+                                cursor: pointer;
+                              }
+                            </style>
+                          </head>
+                          <body>
+                            <h2>Stored Wallets</h2>
+                            <button onclick="location.reload()">Refresh</button>
+                            <pre>${JSON.stringify(wallets, null, 2)}</pre>
+                          </body>
+                        </html>
+                      `;
+
+                      const blob = new Blob([htmlContent], {
+                        type: "text/html",
+                      });
+                      const url = URL.createObjectURL(blob);
+
+                      // Open in new tab
+                      window.open(url, "_blank");
+
+                      // Clean up the URL object after the tab is opened
+                      setTimeout(() => URL.revokeObjectURL(url), 0);
+                    }}
+                  >
+                    Show
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-3">
                   <Label>Use Another Wallet</Label>
                   <div className="flex gap-2">
                     <Input
@@ -409,10 +441,11 @@ export default function Wallet() {
             </div>
             <div className="border-t pt-6">
               <h3 className="font-semibold mb-4">Bridge Networks</h3>
+              <div>Coming soon, maybe like a week</div>
+              {/*
               <Form {...bridgeForm}>
                 <form onSubmit={bridgeForm.handleSubmit(onBridgeSubmit)}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Network Select */}
                     <div className="flex flex-col gap-2">
                       <Label>From Network</Label>
                       <Controller
@@ -429,13 +462,13 @@ export default function Wallet() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value={Networks.Mainnet}>
+                                <SelectItem value={Network.Mainnet}>
                                   Mainnet(L1)
                                 </SelectItem>
-                                <SelectItem value={Networks.Optimism}>
+                                <SelectItem value={Network.Optimism}>
                                   Optimism(L2)
                                 </SelectItem>
-                                <SelectItem value={Networks.Arbitrum}>
+                                <SelectItem value={Network.Arbitrum}>
                                   Arbitrum(L2)
                                 </SelectItem>
                               </SelectGroup>
@@ -444,7 +477,6 @@ export default function Wallet() {
                         )}
                       />
                     </div>
-                    {/* Destination Address */}
                     <div className="flex flex-col gap-2">
                       <Label>To Network</Label>
                       <Controller
@@ -461,13 +493,13 @@ export default function Wallet() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value={Networks.Mainnet}>
+                                <SelectItem value={Network.Mainnet}>
                                   Mainnet(L1)
                                 </SelectItem>
-                                <SelectItem value={Networks.Optimism}>
+                                <SelectItem value={Network.Optimism}>
                                   Optimism(L2)
                                 </SelectItem>
-                                <SelectItem value={Networks.Arbitrum}>
+                                <SelectItem value={Network.Arbitrum}>
                                   Arbitrum(L2)
                                 </SelectItem>
                               </SelectGroup>
@@ -476,7 +508,6 @@ export default function Wallet() {
                         )}
                       />
                     </div>
-                    {/* Amount */}
                     <div className="flex flex-col gap-2">
                       <Label>Amount in Wei</Label>
                       <Input
@@ -484,7 +515,6 @@ export default function Wallet() {
                         {...bridgeForm.register("amount")}
                       />
                     </div>
-                    {/* Send Button */}
                     <div className="flex flex-col gap-2">
                       <Label>Send</Label>
                       <Button type="submit" variant="outline">
@@ -494,6 +524,7 @@ export default function Wallet() {
                   </div>
                 </form>
               </Form>
+              */}
             </div>
           </div>
         </PopoverContent>

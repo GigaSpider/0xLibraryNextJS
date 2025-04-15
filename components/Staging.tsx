@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ContractInitialization from "@/components/Staging/views/ContractInitialization";
 import { useEthXmrContractListener } from "@/hooks/listeners";
 import { useContractStore } from "@/hooks/store/contractStore";
@@ -18,7 +19,7 @@ export default function Staging() {
   const { SELECTED_CONTRACT, INITIALIZED_CONTRACT } = useContractStore();
 
   return (
-    <Card className="border-violet-500 w-full md:w-1/3 min-w-[200px] aspect-square bg-black flex flex-col">
+    <ScrollArea>
       <CardHeader className="text-center">
         <CardTitle>Stage Contract – Caveat Emptor</CardTitle>
         {SELECTED_CONTRACT ? (
@@ -36,7 +37,7 @@ export default function Staging() {
       <CardContent className="flex-1 overflow-hidden">
         <ContractInitialization />
       </CardContent>
-    </Card>
+    </ScrollArea>
   );
 }
 
