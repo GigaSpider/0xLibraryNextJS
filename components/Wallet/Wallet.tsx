@@ -6,7 +6,7 @@ import {
   isAddress,
   isHexString,
 } from "ethers";
-import { bridge } from "./bridge";
+// import { bridge } from "./bridge";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useWalletHook } from "@/hooks/wallet";
 import { useToast } from "@/hooks/use-toast";
@@ -49,11 +49,11 @@ const sendSchema = z.object({
   amount: z.string().nonempty("field required"),
 });
 
-const bridgeSchema = z.object({
-  fromNetwork: z.string().nonempty("field required"),
-  toNetwork: z.string().nonempty("field required"),
-  amount: z.string().nonempty("field required"),
-});
+// const bridgeSchema = z.object({
+//   fromNetwork: z.string().nonempty("field required"),
+//   toNetwork: z.string().nonempty("field required"),
+//   amount: z.string().nonempty("field required"),
+// });
 
 const connectSchema = z.object({
   key: z.string().nonempty({ message: "private key required" }),
@@ -88,14 +88,14 @@ export default function Wallet() {
     },
   });
 
-  const bridgeForm = useForm<z.infer<typeof bridgeSchema>>({
-    resolver: zodResolver(bridgeSchema),
-    defaultValues: {
-      fromNetwork: "",
-      toNetwork: "",
-      amount: "",
-    },
-  });
+  // const bridgeForm = useForm<z.infer<typeof bridgeSchema>>({
+  //   resolver: zodResolver(bridgeSchema),
+  //   defaultValues: {
+  //     fromNetwork: "",
+  //     toNetwork: "",
+  //     amount: "",
+  //   },
+  // });
 
   const connectForm = useForm<z.infer<typeof connectSchema>>({
     resolver: zodResolver(connectSchema),
@@ -138,33 +138,33 @@ export default function Wallet() {
     }
   };
 
-  const onBridgeSubmit = async (data: z.infer<typeof bridgeSchema>) => {
-    if (data.fromNetwork == data.toNetwork) {
-      toast({
-        title: "invalid network input",
-        description: "can't bridge to the same network",
-        variant: "destructive",
-      });
-      return;
-    }
+  // const onBridgeSubmit = async (data: z.infer<typeof bridgeSchema>) => {
+  //   if (data.fromNetwork == data.toNetwork) {
+  //     toast({
+  //       title: "invalid network input",
+  //       description: "can't bridge to the same network",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
 
-    console.log("checkpoint, network inputs validated:", data);
+  //   console.log("checkpoint, network inputs validated:", data);
 
-    const amount = Number(data.amount);
+  //   const amount = Number(data.amount);
 
-    // let confirmation: boolean = false;
+  //   // let confirmation: boolean = false;
 
-    try {
-      await bridge(data.fromNetwork, data.toNetwork, amount, private_key!);
+  //   try {
+  //     await bridge(data.fromNetwork, data.toNetwork, amount, private_key!);
 
-      toast({
-        title: "Bridge success",
-        description: "funds bridged",
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //     toast({
+  //       title: "Bridge success",
+  //       description: "funds bridged",
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   // onSubmit handlers – replace these console.logs with your own logic
   const onSendSubmit = async (data: z.infer<typeof sendSchema>) => {

@@ -11,4 +11,4 @@ const zkSecretGenerator: Tool = {
 
 export const Tools: Tool[] = [zkProofGenerator, zkSecretGenerator];
 
-export default function ProgramInterface({ Program }: { Program: Program }) {}
+// export default function ProgramInterface({ Program }: { Program: Program }) {}

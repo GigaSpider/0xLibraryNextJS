@@ -2,7 +2,6 @@
 
 import ContractDashboard from "./Inputs/views/ContractDashboard";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardFooter,
