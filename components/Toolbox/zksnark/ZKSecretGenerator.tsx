@@ -1,28 +1,62 @@
-import { randomBytes, keccak256, hexlify } from "ethers";
+import { Scalar, utils } from "ffjavascript";
+import { buildPedersenHash, buildBabyjub } from "circomlibjs";
+import { randomBytes } from "crypto";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ZKProofGenerator from "./ZKProofGenerator";
+import Relayer from "./Relayer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Redo, RedoIcon } from "lucide-react";
 
 export default function ZKSecretGenerator() {
-  const [secrets, setSecrets] = useState<{ [key: string]: string } | null>(
-    null,
-  );
+  const [secrets, setSecrets] = useState<{
+    [key: string]: bigint | Buffer<ArrayBuffer> | string;
+  } | null>(null);
 
   async function handleGenerateSecrets() {
-    // Convert random bytes to hex strings
-    const secret1 = hexlify(randomBytes(32));
-    const secret2 = hexlify(randomBytes(32));
+    const pedersen = await buildPedersenHash();
+    const babyJub = await buildBabyjub();
 
-    // Concatenate the hex strings properly
-    const concatenatedSecrets = secret1 + secret2.slice(2); // Remove '0x' from second secret
-    const hash: string = keccak256(concatenatedSecrets);
-    const nullifier: string = keccak256(secret1);
+    const rbigint = (nbytes: number) => utils.leBuff2int(randomBytes(nbytes));
+
+    const pedersenHash = (data) => {
+      return babyJub.unpackPoint(pedersen.hash(data))[0];
+    };
+
+    // const toHex = (number, length = 32) => "0x" + number.toString("hex");
+
+    const toHex = (value, length = 32) =>
+      "0x" + value.toString("hex").padStart(length * 2, "0");
+
+    const secret = rbigint(31);
+    const nullifier = rbigint(31);
+
+    const preimage = Buffer.concat([
+      utils.leInt2Buff(nullifier, 31),
+      utils.leInt2Buff(secret, 31),
+    ]);
+
+    const commitment = pedersenHash(preimage);
+    const hex = toHex(preimage, 64);
+    const nullifierHash = pedersenHash(utils.leInt2Buff(nullifier, 31));
+
+    const hexWithoutPrefix = hex.slice(2);
+    const buf = Buffer.from(hexWithoutPrefix, "hex");
+
+    const reconstructed_nullifier = utils.leBuff2int(preimage.subarray(0, 31));
+    const reconstructed_secret = utils.leBuff2int(preimage.subarray(31, 62));
 
     const output = {
-      "secret 1": secret1,
-      "secret 2": secret2,
-      hash: hash,
+      secret: secret,
       nullifier: nullifier,
+      preimage: preimage,
+      preimageHash: hex,
+      commitment: commitment,
+      nullifierHash: nullifierHash,
+      reconstructed_nullifier: reconstructed_nullifier,
+      reconstructed_secret: reconstructed_secret,
     };
 
     setSecrets(output);
@@ -30,18 +64,57 @@ export default function ZKSecretGenerator() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full text-xs text-green-400">
       <ScrollArea className="flex overflow-y-auto m-2">
         <div>
-          <Button onClick={handleGenerateSecrets}>Generate Secrets</Button>
+          <Button
+            onClick={handleGenerateSecrets}
+            variant="secondary"
+            className="text-xs"
+          >
+            Generate Secrets
+          </Button>
+          <br />
+          <br />
         </div>
         <div>
           {secrets && (
             <>
-              <div>Secret 1: {secrets["secret 1"]}</div>
-              <div>Secret 2: {secrets["secret 2"]}</div>
-              <div>Hash: {secrets.hash}</div>
-              <div>Nullifier: {secrets.nullifier}</div>
+              <div>Secret: {secrets["secret"]}</div>
+              <div>Nullifier: {secrets["nullifier"]}</div>
+              <div>Nullifier Hash: {secrets["nullifierHash"]}</div>
+              <div>Preimage: {secrets["preimage"]}</div>
+              <div>Hex: {secrets["preimageHash"]}</div>
+              <div className="text-violet-500">
+                reconstructed_nullifier: {secrets["reconstructed_nullifier"]}
+              </div>
+              <div>reconstructed_secret: {secrets["reconstructed_secret"]}</div>
+              <br />
+              <div>
+                Use the Commitment in the parameter field when calling the
+                Deposit function on the ZK contract. After you have made your
+                deposit and waited an appropriate amount of time, proceed to
+                generate the proof that allows you to withdraw your funds
+                anonymously
+              </div>
+              <br />
+
+              <Tabs defaultValue="account" className="w-[500px]">
+                <TabsList>
+                  <TabsTrigger value="manual">
+                    Prove Manually (No Fee)
+                  </TabsTrigger>
+                  <TabsTrigger value="relayer">
+                    Use Relayer (.25% Fee)
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="manual">
+                  <ZKProofGenerator />
+                </TabsContent>
+                <TabsContent value="relayer">
+                  <Relayer />
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>

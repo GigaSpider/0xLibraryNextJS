@@ -41,10 +41,10 @@ export default function NonProxyInterface() {
   }
 
   return (
-    <div>
+    <div className="text-gray-500">
       {" "}
       {}
-      <div className="text-violet-500">{SELECTED_CONTRACT?.name}</div>
+      <div>{SELECTED_CONTRACT?.name}</div>
       <br />
       <div>Address: {SELECTED_CONTRACT?.address}</div>
       <br />

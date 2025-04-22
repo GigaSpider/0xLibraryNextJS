@@ -4,7 +4,7 @@ export default function ContractOutputs() {
   const { outputs } = useContractStore();
 
   return (
-    <div>
+    <div className="text-gray-500">
       <div>Function outputs:</div>
       {outputs ? (
         Object.entries(outputs).map(([functionName, receipts]) => (

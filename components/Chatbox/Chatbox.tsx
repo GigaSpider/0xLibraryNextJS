@@ -82,7 +82,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.MAIN)}
                       >
                         {channel === Channel.MAIN ? (
-                          <span className="text-violet-500">#main</span>
+                          <span className="text-green-400">#main</span>
                         ) : (
                           <>#main</>
                         )}
@@ -94,7 +94,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.BUSINESS)}
                       >
                         {channel === Channel.BUSINESS ? (
-                          <span className="text-violet-500">#business</span>
+                          <span className="text-green-400">#business</span>
                         ) : (
                           <>#business</>
                         )}
@@ -106,7 +106,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.POLITICS)}
                       >
                         {channel === Channel.POLITICS ? (
-                          <span className="text-violet-500">#politics</span>
+                          <span className="text-green-400">#politics</span>
                         ) : (
                           <>#politics</>
                         )}
@@ -118,7 +118,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.CRYPTOCURRENCY)}
                       >
                         {channel === Channel.CRYPTOCURRENCY ? (
-                          <span className="text-violet-500">#crypto</span>
+                          <span className="text-green-400">#crypto</span>
                         ) : (
                           <>#crypto</>
                         )}

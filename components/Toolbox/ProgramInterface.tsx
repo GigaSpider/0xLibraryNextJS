@@ -2,13 +2,10 @@ interface Tool {
   name: string;
 }
 
-const zkProofGenerator: Tool = {
-  name: "ZKProofGenerator",
-};
-const zkSecretGenerator: Tool = {
-  name: "ZKSecretGenerator",
+const zk: Tool = {
+  name: "ZK-snark tool",
 };
 
-export const Tools: Tool[] = [zkProofGenerator, zkSecretGenerator];
+export const Tools: Tool[] = [zk];
 
 // export default function ProgramInterface({ Program }: { Program: Program }) {}

@@ -204,7 +204,7 @@ export default function ContractDashboard() {
     callable_functions.filter((func) => func.payable == false);
 
   return (
-    <ScrollArea className="h-full w-full">
+    <ScrollArea className="h-full w-full text-gray-500">
       {payable_functions.length > 0 ? (
         <>
           <div>Payable functions</div>

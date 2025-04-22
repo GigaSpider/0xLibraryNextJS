@@ -88,7 +88,7 @@ export default function Messages({ channel }: { channel: Channel }) {
         {filtered_messages!.map((msg) => (
           <div key={`${msg.timestamp}`} className="p-2">
             <strong className="text-gray-500 text-xs">{msg.author}</strong>{" "}
-            <span className="text-violet-500 text-xs">{msg.text}</span>
+            <span className="text-green-400 text-xs">{msg.text}</span>
           </div>
         ))}
         <div ref={messagesEndRef} />

@@ -43,7 +43,7 @@ export default function Library() {
   return (
     <Drawer>
       <DrawerTrigger>Contract Library</DrawerTrigger>
-      <DrawerContent className="bg-black">
+      <DrawerContent className="bg-black border-green-400">
         <div className="mx-auto w-full">
           <DrawerHeader>
             <DrawerTitle>Contract Library</DrawerTitle>
@@ -52,7 +52,7 @@ export default function Library() {
               worked on and being added to the Library.
             </DrawerDescription>
           </DrawerHeader>
-          <Table className="text-violet-500">
+          <Table className="text-green-400">
             <TableHeader>
               <TableRow>
                 <TableHead>Contract Name</TableHead>

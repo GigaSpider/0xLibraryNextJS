@@ -4,6 +4,7 @@ import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
 import VariableProbabilityWager from "./contractdata/VariableProbabilityWager.json";
 import MASTER from "./contractdata/MASTER.json";
+import ZK from "./contractdata/ZK.json";
 
 export enum NetworkIndex {
   "Mainnet" = 0,
@@ -81,14 +82,14 @@ const xmreth: SmartContract = {
 
 const zksnark: SmartContract = {
   id: 3,
-  name: "Zero Knowledge SNARK Deposit and Withdrawal",
+  name: "Zero Knowledge Obfuscation Service",
   address: "not available yet",
   engineer: "Admin",
   network: "Optimism",
   proxy: false,
-  abi: VariableProbabilityWager.abi,
-  bytecode: VariableProbabilityWager.bytecode,
-  fee: 0.1,
+  abi: ZK.abi,
+  bytecode: ZK.bytecode,
+  fee: 1.0,
   description: "Contract description",
   instructions: "Instructions on usage: ",
 };

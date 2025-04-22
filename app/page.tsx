@@ -38,11 +38,11 @@ export default function Home() {
       <ResizablePanel>
         <Staging />
       </ResizablePanel>
-      <ResizableHandle className="border-x border-violet-500" />
+      <ResizableHandle className="border-x border-green-400" />
       <ResizablePanel>
         <Inputs />
       </ResizablePanel>
-      <ResizableHandle className="border-x border-violet-500" />
+      <ResizableHandle className="border-x border-green-400" />
       <ResizablePanel>
         <Outputs />
       </ResizablePanel>

@@ -33,7 +33,7 @@ export default function EventListener() {
   }
 
   return (
-    <div>
+    <div className="text-gray-500">
       {array ? (
         array.map((event) => (
           <div key={event[0].name}>

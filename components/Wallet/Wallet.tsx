@@ -221,38 +221,7 @@ export default function Wallet() {
   };
 
   return (
-    <div className="flex-col text-xs text-gray-400">
-      <div className="text-xs">
-        address <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
-      </div>
-      <div className="text-xs">
-        main net balance{" "}
-        {wallet ? (
-          <span>{formatWei(balance.Main.amount)}</span>
-        ) : (
-          <>[no wallet detected]</>
-        )}{" "}
-        ETH
-      </div>
-      <div className="text-xs">
-        optimism balance{" "}
-        {wallet ? (
-          <span>{formatWei(balance.Optimism.amount)}</span>
-        ) : (
-          <>[no wallet detected]</>
-        )}{" "}
-        ETH
-      </div>
-      <div className="text-xs">
-        arbitrum balance{" "}
-        {wallet ? (
-          <span>{formatWei(balance.Arbitrum.amount)}</span>
-        ) : (
-          <>[no wallet detected]</>
-        )}{" "}
-        ETH
-      </div>
-
+    <div className="fixed right-4 top-2 text-xs text-green-400">
       {/* Wallet Actions Section */}
       <Popover>
         <PopoverTrigger asChild>
@@ -260,7 +229,7 @@ export default function Wallet() {
             Wallet Actions
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full max-w-2xl p-6 border-violet-500 bg-black">
+        <PopoverContent className="w-full max-w-2xl p-6 border-green-400 bg-black">
           <div className="space-y-8">
             {/* Wallet Management Section */}
             <div>
@@ -529,6 +498,39 @@ export default function Wallet() {
           </div>
         </PopoverContent>
       </Popover>
+      {/* <div className="flex items-end px-5">
+        <div className="text-xs">
+          address{" "}
+          <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
+        </div>
+        <div className="text-xs">
+          main net balance{" "}
+          {wallet ? (
+            <span>{formatWei(balance.Main.amount)}</span>
+          ) : (
+            <>[no wallet detected]</>
+          )}{" "}
+          ETH
+        </div>
+        <div className="text-xs">
+          optimism balance{" "}
+          {wallet ? (
+            <span>{formatWei(balance.Optimism.amount)}</span>
+          ) : (
+            <>[no wallet detected]</>
+          )}{" "}
+          ETH
+        </div>
+        <div className="text-xs">
+          arbitrum balance{" "}
+          {wallet ? (
+            <span>{formatWei(balance.Arbitrum.amount)}</span>
+          ) : (
+            <>[no wallet detected]</>
+          )}{" "}
+          ETH
+        </div>
+      </div> */}
     </div>
   );
 }

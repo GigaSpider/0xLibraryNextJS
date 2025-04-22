@@ -2,9 +2,7 @@
 
 import { Rnd } from "react-rnd";
 import { Button } from "@/components/ui/button";
-
 import { Tools } from "@/components/Toolbox/ProgramInterface";
-import ZKProofGenerator from "@/components/Toolbox/zksnark/ZKProofGenerator";
 import ZKSecretGenerator from "@/components/Toolbox/zksnark/ZKSecretGenerator";
 
 import React, { useState } from "react";
@@ -87,7 +85,7 @@ export default function ToolBox() {
                               setToolState(tool.name);
                             }}
                           >
-                            <span className="text-violet-500">{tool.name}</span>
+                            <span className="text-green-400">{tool.name}</span>
                           </Button>
                         </div>
                       );
@@ -97,10 +95,9 @@ export default function ToolBox() {
                   <ResizablePanel defaultSize={75}>
                     {(() => {
                       switch (toolState) {
-                        case "ZKProofGenerator":
-                          return <ZKProofGenerator />;
-                        case "ZKSecretGenerator":
+                        case "ZK-snark tool":
                           return <ZKSecretGenerator />;
+
                         default:
                           return null;
                       }
@@ -117,7 +114,7 @@ export default function ToolBox() {
         <Button
           onClick={() => setIsOpen(true)}
           variant="link"
-          className="text-xs hover:text-violet-500 transition-colors no-underline"
+          className="text-xs hover:text-green-400 transition-colors no-underline"
         >
           Encryption Tools
         </Button>
