@@ -2,7 +2,7 @@ import { utils } from "ffjavascript";
 import { buildPedersenHash, buildBabyjub } from "circomlibjs";
 import { Contract, Interface, Log, isAddress } from "ethers";
 import { randomBytes } from "crypto";
-import { MerkleTree } from "fixed-merkle-tree";
+import { Element, MerkleTree } from "fixed-merkle-tree";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
 import * as snarkjs from "snarkjs";
+import { Toast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface Groth16Proof {
   pi_a: string[];
@@ -28,9 +30,21 @@ interface Groth16Proof {
   curve: string;
 }
 
+interface GrothInputParameters {
+  root: Element;
+  nullifierHash: bigint;
+  recipient: string;
+  fee: number;
+  refund: string;
+  nullifier: bigint;
+  secret: bigint;
+  pathElements: Element[];
+  pathIndices: number[];
+}
+
 const formSchema = z.object({
-  commitment: z.string(),
-  destination: z.string(),
+  preimage: z.string().nonempty({ message: "Required" }),
+  destination: z.string().nonempty({ message: "Required" }),
 });
 
 type RelayForm = z.infer<typeof formSchema>;
@@ -38,9 +52,11 @@ type RelayForm = z.infer<typeof formSchema>;
 const MERKLE_TREE_HEIGHT = 32;
 
 export default function Relayer() {
+  const { toast } = useToast();
   const { contracts } = useContractStore();
   const { providers } = useWalletStore();
 
+  let result;
   // Helper functions that need crypto libraries
 
   const contract = contracts[2];
@@ -57,7 +73,7 @@ export default function Relayer() {
   const RelayForm = useForm<RelayForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      commitment: "",
+      preimage: "",
       destination: "",
     },
   });
@@ -65,7 +81,7 @@ export default function Relayer() {
   async function onRelaySubmit(data: RelayForm) {
     console.log(data);
 
-    const { commitment, destination } = data;
+    const { preimage, destination } = data;
 
     const pedersen = await buildPedersenHash();
     const babyJubs = await buildBabyjub();
@@ -74,35 +90,41 @@ export default function Relayer() {
       return babyJubs.unpackPoint(pedersen.hash(data))[0];
     };
 
-    const toHex = (number, length = 32) =>
-      "0x" +
-      (number instanceof Buffer
-        ? number.toString("hex")
-        : BigInt(number).toString(16)
-      ).padStart(length * 2, "0");
+    if (!isAddress(destination)) {
+      return; // Exit the function early
+    }
+    const recipient = destination;
 
-    const recipient = isAddress(destination) ? destination : null;
+    if (!preimage || !isAddress(destination)) return;
 
-    if (!commitment || !isAddress(destination)) return;
+    const buf = Buffer.from(preimage);
 
-    // Generate necessary values
-    const buf = Buffer.from(commitment, "hex");
+    const commitment = pedersenHash(preimage);
 
-    const nullifier = utils.leBuff2int(buf.slice(0, 31));
-    const secret = utils.leBuff2int(buf.slice(31, 62));
+    const secret = utils.leBuff2int(buf.subarray(0, 31));
+    const nullifier = utils.leBuff2int(buf.subarray(31));
 
-    // First get merkle tree data
-    const { pathElements, pathIndices, root } =
-      await getMerkleTreeData(commitment);
+    const merkleTreeData = await getMerkleTreeData(commitment);
 
-    // Calculate nullifier hash
-    const nullifierHash = pedersenHash(utils.leInt2Buff(nullifier, 31));
+    if (!merkleTreeData) {
+      console.error("failed to get merkle tree data");
+      return;
+    }
 
-    // Generate proof
-    const proof: Groth16Proof = await generateProof({
+    const { pathElements, pathIndices, root } = merkleTreeData;
+
+    const fee = 5;
+
+    const refund = contract.address;
+
+    const nullifierHash = BigInt(pedersenHash(utils.leInt2Buff(nullifier, 31)));
+
+    const proof = await generateProof({
       root,
       nullifierHash,
       recipient,
+      fee,
+      refund,
       nullifier,
       secret,
       pathElements,
@@ -135,59 +157,99 @@ export default function Relayer() {
   }
 
   async function getMerkleTreeData(commitment: string) {
-    const event_logs = await ethers_contract.queryFilter(
-      "DepositEvent",
-      0,
-      "latest",
-    );
+    try {
+      const event_logs = await ethers_contract.queryFilter(
+        "DepositEvent",
+        0,
+        "latest",
+      );
 
-    const parsed_logs = event_logs
-      .map((log) => {
-        const parsed_log = contract_interface.parseLog(log);
-        if (parsed_log) {
-          return {
-            ...log,
-            name: parsed_log.name,
-            args: parsed_log.args,
-          };
-        }
-        return null;
-      })
-      .filter((log) => log !== null);
+      const parsed_logs = event_logs
+        .map((log) => {
+          const parsed_log = contract_interface.parseLog(log);
+          if (parsed_log) {
+            return {
+              ...log,
+              name: parsed_log.name,
+              args: parsed_log.args,
+            };
+          }
+          return null;
+        })
+        .filter((log) => log !== null);
 
-    const leaves = parsed_logs
-      .sort((a, b) => a.args.leafIndex - b.args.leafIndex)
-      .map((event) => event.args.commitment);
+      const leaves = parsed_logs
+        .sort((a, b) => a.args.leafIndex - b.args.leafIndex)
+        .map((event) => event.args.commitment);
 
-    const depositEvent = parsed_logs.find(
-      (e) => e.args.commitment === toHex(commitment),
-    );
+      const depositEvent = parsed_logs.find(
+        (e) => e.args.commitment === commitment,
+      );
 
-    const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
+      const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
 
-    const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
+      const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
 
-    const { pathElements, pathIndices } = tree.path(leafIndex);
+      const { pathElements, pathIndices } = tree.path(leafIndex);
 
-    const root = tree.root;
+      const root = tree.root;
 
-    return { pathElements, pathIndices, root };
+      return { pathElements, pathIndices, root };
+    } catch (error) {
+      toast({
+        title: "Merkle Tree sError",
+        variant: "destructive",
+        description: "Failed to get Merkle Tree Data",
+      });
+      console.error(error);
+      return;
+    }
   }
 
-  async function generateProof(input_parameters) {
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-      input_parameters,
-      "./withdraw.wasm",
-      "./withdraw_final.zkey",
-    );
+  async function generateProof(input: GrothInputParameters) {
+    try {
+      const circuit_input = {
+        root: input.root,
+        nullifierHash: input.nullifierHash,
+        recipient: input.recipient,
+        relayer: contract.address,
+        fee: input.fee,
+        refund: input.refund,
+        nullifier: input.nullifier,
+        secret: input.secret,
+        pathElements: input.pathElements,
+        pathIndicies: input.pathIndices,
+      };
 
-    console.log(proof, publicSignals);
+      const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+        circuit_input,
+        "./withdraw.wasm",
+        "./withdraw_final.zkey",
+      );
 
-    return proof;
+      console.log(proof, publicSignals);
+
+      return proof;
+    } catch (error) {
+      toast({
+        title: "Proof Error",
+        variant: "destructive",
+        description: "Failed to generate proof",
+      });
+      console.error(error);
+      return;
+    }
   }
 
   return (
     <div className="flex flex-col h-full">
+      <div>
+        Using the relayer service abstracts away some of the security hurdles
+        and allows you to withdraw ethereum to an empty wallet. If you would
+        like to pay the gas fees yourself and deposit to a non empty wallet feel
+        free to prove manually and interact with the contract directly
+      </div>
+      <br />
       <Form {...RelayForm}>
         <form
           onSubmit={RelayForm.handleSubmit(onRelaySubmit)}
@@ -195,12 +257,12 @@ export default function Relayer() {
         >
           <FormField
             control={RelayForm.control}
-            name="commitment"
+            name="preimage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Commitment</FormLabel>
+                <FormLabel>Preimage</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter commitment" {...field} />
+                  <Input placeholder="Enter preimage" {...field} />
                 </FormControl>
               </FormItem>
             )}

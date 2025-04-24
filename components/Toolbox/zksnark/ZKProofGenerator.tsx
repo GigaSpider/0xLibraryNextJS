@@ -1,7 +1,10 @@
+"use client";
+
 import * as snarkjs from "snarkjs";
+import { Toast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { utils } from "ffjavascript";
-import { hexlify, toBeHex } from "ethers";
-import { buildPedersenHash } from "circomlibjs";
+import { buildPedersenHash, buildBabyjub } from "circomlibjs";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
@@ -15,8 +18,7 @@ import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Contract, Interface } from "ethers";
 import { MerkleTree } from "fixed-merkle-tree";
-// import { createSecretKey } from "node:crypto";
-// import { Root } from "@radix-ui/react-dialog";
+import { Title } from "@radix-ui/react-toast";
 
 // Define the Groth16Proof type
 interface Groth16Proof {
@@ -30,14 +32,13 @@ interface Groth16Proof {
 const MERKLE_TREE_HEIGHT = 32;
 
 const formSchema = z.object({
-  secret: z.string(),
-  nullifier: z.string(),
-  nullifierHash: z.string(),
-  commitment: z.string(),
-  recipient: z.string(),
+  preimage: z.string().nonempty({ message: "Required" }),
+  destination: z.string().nonempty({ message: "Required" }),
 });
 
 type GenerateProofForm = z.infer<typeof formSchema>;
+
+function base64Decode(input): bigint {}
 
 export default function ZKProofGenerator() {
   const [response, setResponse] = useState<Groth16Proof | null>(null);
@@ -45,35 +46,55 @@ export default function ZKProofGenerator() {
   const { contracts } = useContractStore();
   const { providers } = useWalletStore();
 
+  const { toast } = useToast();
+
   const contract_object = contracts[2];
 
   const contract: Contract = new Contract(
-    contract_object!.address,
+    "0x715ee67c54bba24a05f256aedb4f6bb0ad2e06f3",
     contract_object!.abi,
     providers![1],
   );
 
+  // const contract: Contract = new Contract(
+  //   contract_object!.address,
+  //   contract_object!.abi,
+  //   providers![1],
+  // );
+
   const GenerateForm = useForm<GenerateProofForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      secret: "",
-      nullifier: "",
-      nullifierHash: "",
-      commitment: "",
-      recipient: "",
+      preimage: "",
+      destination: "",
     },
   });
 
   async function onGenerateSubmit(data: GenerateProofForm) {
     const pedersen = await buildPedersenHash();
+    const babyJubs = await buildBabyjub();
+
+    const pedersenHash = (data) => {
+      return babyJubs.unpackPoint(pedersen.hash(data))[0];
+    };
 
     console.log(
       "First try catch block checkpoint: fetching merkle tree data from the contract",
     );
 
+    const { preimage, destination } = data;
+
     const event_logs = await contract.queryFilter("DepositEvent", 0, "latest");
 
     const contract_interface: Interface = contract.interface;
+
+    const buf = Buffer.from(preimage);
+
+    const secret = utils.leBuff2int(buf.subarray(0, 31));
+    const nullifier = utils.leBuff2int(buf.subarray(31));
+    const nullifierHash = BigInt(pedersenHash(utils.leInt2Buff(nullifier, 31)));
+
+    const commitment = pedersenHash(preimage);
 
     const parsed_logs = event_logs.map((log) => {
       const parsed_log = contract_interface.parseLog(log);
@@ -83,6 +104,12 @@ export default function ZKProofGenerator() {
           name: parsed_log.name,
           args: parsed_log.args,
         };
+      } else {
+        toast({
+          title: "Error gathering merkle tree data",
+          variant: "destructive",
+          description: "no deposit events detected on the contract",
+        });
       }
     });
 
@@ -93,19 +120,16 @@ export default function ZKProofGenerator() {
     const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
 
     const depositEvent = parsed_logs.find(
-      (e) => e!.args.commitment === hexlify(data.commitment),
+      (e) => e!.args.commitment === commitment,
     );
     const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
 
     const { pathElements, pathIndices } = tree.path(leafIndex);
     const root = tree.root;
-    const recipient = data.recipient;
-    const relayer = "";
-    const fee = "";
+    const recipient = destination;
+    const relayer = "none";
+    const fee = "0";
     const refund = "";
-    const nullifier = data.nullifier;
-    const nullifierHash = data.nullifierHash;
-    const secret = data.secret;
 
     try {
       console.log("checkpoint: attempting to resolve proof");
@@ -151,12 +175,12 @@ export default function ZKProofGenerator() {
           >
             <FormField
               control={GenerateForm.control}
-              name="secret"
+              name="preimage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Secret</FormLabel>
+                  <FormLabel>Preimage</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter secret" {...field} />
+                    <Input placeholder="Enter Preimage" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -164,51 +188,12 @@ export default function ZKProofGenerator() {
 
             <FormField
               control={GenerateForm.control}
-              name="nullifier"
+              name="destination"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nullifier</FormLabel>
+                  <FormLabel>Destination Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter nullifier" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={GenerateForm.control}
-              name="nullifierHash"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nullifier Hash</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter nullifier hash" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={GenerateForm.control}
-              name="commitment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Commitment</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter commitment" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={GenerateForm.control}
-              name="recipient"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Recipient Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter recipient address" {...field} />
+                    <Input placeholder="Enter Destination Address" {...field} />
                   </FormControl>
                 </FormItem>
               )}
