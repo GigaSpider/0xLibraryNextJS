@@ -1,7 +1,7 @@
-import { Scalar, utils } from "ffjavascript";
-import { utils as web3utils } from "web3";
+import { utils } from "ffjavascript";
 import { toBigInt, toBeHex, BigNumberish } from "ethers";
 import { buildPedersenHash, buildBabyjub } from "circomlibjs";
+import bigInt from "big-integer";
 import { randomBytes } from "crypto";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -10,12 +10,24 @@ import ZKProofGenerator from "./ZKProofGenerator";
 import Relayer from "./Relayer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Redo, RedoIcon } from "lucide-react";
+import { Redo, RedoIcon, CopyIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+export function bigInt2BytesLE(_a, len) {
+  const b = Array(len);
+  let v = bigInt(_a);
+  for (let i = 0; i < len; i++) {
+    b[i] = v.and(0xff).toJSNumber();
+    v = v.shiftRight(8);
+  }
+  return b;
+}
 
 export default function ZKSecretGenerator() {
   const [secrets, setSecrets] = useState<{
-    [key: string]: bigint | Buffer<ArrayBuffer> | string;
+    [key: string]: string | Buffer;
   } | null>(null);
+  const { toast } = useToast();
 
   async function handleGenerateSecrets() {
     const pedersen = await buildPedersenHash();
@@ -27,8 +39,12 @@ export default function ZKSecretGenerator() {
       return babyJub.unpackPoint(pedersen.hash(data))[0];
     };
 
-    const secret = rbigint(31);
+    const pedersenNoJub = (data) => {
+      return pedersen.hash(data);
+    };
+
     const nullifier = rbigint(31);
+    const secret = rbigint(31);
 
     const preimage = Buffer.concat([
       utils.leInt2Buff(nullifier, 31),
@@ -37,26 +53,42 @@ export default function ZKSecretGenerator() {
 
     const preimageEncoded = "0x" + preimage.toString("hex");
     const commitment = pedersenHash(preimage);
-    const commitmentBuffer = Buffer.from(commitment);
-    const commitmentEncoded = commitment.toString("base64");
-    const nullifierHash = pedersenHash(utils.leInt2Buff(nullifier, 31));
+    const bufferCommitment = Buffer.from(commitment);
+    const commitmentEncoded = "0x" + bufferCommitment.toString("hex");
 
-    const reconstructed_nullifier = utils.leBuff2int(preimage.subarray(0, 31));
-    const reconstructed_secret = utils.leBuff2int(preimage.subarray(31));
+    const nullifierBits = bigInt2BytesLE(nullifier, 31);
+    const nullifierHash1 = pedersenHash(nullifierBits);
+    const nullifierHash2: bigint = utils.leBuff2int(
+      Buffer.from(pedersenHash(utils.leInt2Buff(nullifier, 31))),
+    );
+
+    const reconstructedPreimage = Buffer.from(preimageEncoded.slice(2), "hex");
+    const reconstructedCommitment = Buffer.from(
+      commitmentEncoded.slice(2),
+      "hex",
+    );
+
+    const reconstructedNullifier = utils.leBuff2int(preimage.subarray(0, 31));
+    const reconstructedSecret = utils.leBuff2int(preimage.subarray(31));
 
     const output = {
       secret: secret,
       nullifier: nullifier,
-      preimage: preimageEncoded,
-      commitment: commitmentEncoded,
-      nullifierHash: nullifierHash,
-      reconstructed_nullifier: reconstructed_nullifier,
-      reconstructed_secret: reconstructed_secret,
+      preimage: preimage,
+      preimageEncoded: preimageEncoded,
+      commitmentEncoded: commitmentEncoded,
+      commitment: commitment,
+      reconstructedPreimage: reconstructedPreimage,
+      reconstructedCommitment: reconstructedCommitment,
+      nullifierHash1: nullifierHash1,
+      nullifierHash2: nullifierHash2,
+      reconstructedNullifier: reconstructedNullifier,
+      reconstructedSecret: reconstructedSecret,
     };
 
     console.log(output);
 
-    setSecrets({ preimage: preimageEncoded, commitment: commitmentEncoded });
+    setSecrets(output);
     return output;
   }
 
@@ -77,9 +109,69 @@ export default function ZKSecretGenerator() {
         <div>
           {secrets && (
             <>
-              <div>Preimage: {secrets["preimage"]}</div>
+              {Object.entries(secrets).map(([key, value]) => {
+                return (
+                  <div key={key}>
+                    {key}: {value}
+                  </div>
+                );
+              })}
               <br />
-              <div>Commitment: {secrets["commitment"]}</div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      secrets["commitmentEncoded"].toString(),
+                    );
+                    toast({
+                      description: "Commitment copied to clipboard",
+                      duration: 2000,
+                    });
+                  }}
+                >
+                  <CopyIcon className="h-3 w-3 mr-1" />
+                  Copy
+                </Button>
+                <span>
+                  Commitment: {secrets["commitmentEncoded"].toString()}
+                </span>
+              </div>
+              <br />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      secrets["preimageEncoded"].toString(),
+                    );
+                    toast({
+                      description: "Preimage copied to clipboard",
+                      duration: 2000,
+                    });
+                  }}
+                >
+                  <CopyIcon className="h-3 w-3 mr-1" />
+                  Copy
+                </Button>
+                <span>
+                  Secret (Do not share): {secrets["preimageEncoded"].toString()}
+                </span>
+              </div>
+              <br />
+              <br />
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-6 px-2 text-xs text-green-400"
+              >
+                Download Secrets
+              </Button>
+              <br />
               <br />
               <div>
                 Use the Commitment in the parameter field when calling the

@@ -75,7 +75,7 @@ export default function ToolBox() {
                   direction="horizontal"
                   className="h-full border"
                 >
-                  <ResizablePanel defaultSize={25} minSize={25}>
+                  <ResizablePanel defaultSize={15} minSize={10}>
                     {Tools.map((tool) => {
                       return (
                         <div key={tool.name}>

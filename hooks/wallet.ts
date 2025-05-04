@@ -21,10 +21,15 @@ export function useWalletHook() {
       process.env.NEXT_PUBLIC_ARBITRUM_URI!,
     );
 
+    const LOCAL_PROVIDER = new JsonRpcProvider(
+      process.env.NEXT_PUBLIC_LOCAL_URI!,
+    );
+
     const providers: JsonRpcProvider[] = [
       MAIN_PROVIDER,
       OPTIMISM_PROVIDER,
       ARBITRUM_PROVIDER,
+      LOCAL_PROVIDER,
     ];
 
     set_providers(providers);
@@ -35,10 +40,12 @@ export function useWalletHook() {
         const MAIN_BALANCE = await MAIN_PROVIDER.getBalance(address);
         const OPTIMISM_BALANCE = await OPTIMISM_PROVIDER.getBalance(address);
         const ARBITRUM_BALANCE = await ARBITRUM_PROVIDER.getBalance(address);
+        const LOCAL_BALANCE = await LOCAL_PROVIDER.getBalance(address);
         const balances = [
           parseFloat(formatEther(MAIN_BALANCE)),
           parseFloat(formatEther(OPTIMISM_BALANCE)),
           parseFloat(formatEther(ARBITRUM_BALANCE)),
+          parseFloat(formatEther(LOCAL_BALANCE)),
         ];
         console.log("balances: ", balances);
 
@@ -50,6 +57,9 @@ export function useWalletHook() {
         });
         set_balance(Network.Arbitrum, {
           amount: ARBITRUM_BALANCE,
+        });
+        set_balance(Network.Local, {
+          amount: LOCAL_BALANCE,
         });
       } catch (error) {
         console.log("Error fetching balances: ", error);

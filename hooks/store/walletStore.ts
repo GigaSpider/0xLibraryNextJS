@@ -6,6 +6,7 @@ export enum Network {
   Main = "Main",
   Optimism = "Optimism",
   Arbitrum = "Arbitrum",
+  Local = "Local",
 }
 
 interface BalanceInfo {
@@ -14,12 +15,13 @@ interface BalanceInfo {
 
 type Balances = Record<Network, BalanceInfo>;
 
-interface WalletHistory {
-  public_address: string;
-  private_key: string;
-  date: string;
-  isActive: boolean;
-}
+// implement at a later date
+// interface WalletHistory {
+//   public_address: string;
+//   private_key: string;
+//   date: string;
+//   isActive: boolean;
+// }
 
 interface WalletStore {
   balance: Balances;
@@ -39,6 +41,7 @@ export const useWalletStore = create<WalletStore>()(
         [Network.Main]: { amount: BigInt(0) },
         [Network.Optimism]: { amount: BigInt(0) },
         [Network.Arbitrum]: { amount: BigInt(0) },
+        [Network.Local]: { amount: BigInt(0) },
       },
       wallet: null,
       private_key: null,

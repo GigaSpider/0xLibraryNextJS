@@ -40,6 +40,7 @@ export enum Network {
   Mainnet = "Mainnet",
   Optimism = "Optimism",
   Arbitrum = "Arbitrum",
+  Local = "Local",
 }
 
 // Zod schemas for each form
@@ -58,6 +59,7 @@ const sendSchema = z.object({
 const connectSchema = z.object({
   key: z.string().nonempty({ message: "private key required" }),
 });
+
 // const bridgeSchema = z.object({
 //   fromNetwork: z.string().nonempty("field required"),
 //   toNetwork: z.string().nonempty("field required"),
@@ -221,7 +223,7 @@ export default function Wallet() {
   };
 
   return (
-    <div className="fixed right-4 top-2 text-xs text-green-400">
+    <div className="flex fixed left-4 top-2 text-xs text-green-400">
       {/* Wallet Actions Section */}
       <Popover>
         <PopoverTrigger asChild>
@@ -498,7 +500,10 @@ export default function Wallet() {
           </div>
         </PopoverContent>
       </Popover>
-      {/* <div className="flex items-end px-5">
+      <div className=" text-xs">
+        address s<span>{wallet ? wallet.address : "[no wallet detected]"}</span>
+      </div>
+      <div className="flex items-end px-5">
         <div className="text-xs">
           address{" "}
           <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
@@ -530,7 +535,16 @@ export default function Wallet() {
           )}{" "}
           ETH
         </div>
-      </div> */}
+        <div className="text-xs">
+          local balance{" "}
+          {wallet ? (
+            <span>{formatWei(balance.Local.amount)}</span>
+          ) : (
+            <>[no wallet detected]</>
+          )}{" "}
+          ETH
+        </div>
+      </div>
     </div>
   );
 }

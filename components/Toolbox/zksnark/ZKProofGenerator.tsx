@@ -17,8 +17,7 @@ import { Separator } from "@/components/ui/separator"; // Changed to correct imp
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Contract, Interface } from "ethers";
-import { MerkleTree } from "fixed-merkle-tree";
-import { Title } from "@radix-ui/react-toast";
+import { MerkleTree, Element } from "fixed-merkle-tree";
 
 // Define the Groth16Proof type
 interface Groth16Proof {
@@ -29,7 +28,7 @@ interface Groth16Proof {
   curve: string;
 }
 
-const MERKLE_TREE_HEIGHT = 32;
+const MERKLE_TREE_HEIGHT = 20;
 
 const formSchema = z.object({
   preimage: z.string().nonempty({ message: "Required" }),
@@ -38,10 +37,8 @@ const formSchema = z.object({
 
 type GenerateProofForm = z.infer<typeof formSchema>;
 
-function base64Decode(input): bigint {}
-
 export default function ZKProofGenerator() {
-  const [response, setResponse] = useState<Groth16Proof | null>(null);
+  const [response, setResponse] = useState<string | null>(null);
 
   const { contracts } = useContractStore();
   const { providers } = useWalletStore();
@@ -55,12 +52,6 @@ export default function ZKProofGenerator() {
     contract_object!.abi,
     providers![1],
   );
-
-  // const contract: Contract = new Contract(
-  //   contract_object!.address,
-  //   contract_object!.abi,
-  //   providers![1],
-  // );
 
   const GenerateForm = useForm<GenerateProofForm>({
     resolver: zodResolver(formSchema),
@@ -84,77 +75,216 @@ export default function ZKProofGenerator() {
 
     const { preimage, destination } = data;
 
-    const event_logs = await contract.queryFilter("DepositEvent", 0, "latest");
+    const decodedBuffer = Buffer.from(preimage.trim().slice(2), "hex");
 
-    const contract_interface: Interface = contract.interface;
-
-    const buf = Buffer.from(preimage);
-
-    const secret = utils.leBuff2int(buf.subarray(0, 31));
-    const nullifier = utils.leBuff2int(buf.subarray(31));
-    const nullifierHash = BigInt(pedersenHash(utils.leInt2Buff(nullifier, 31)));
-
-    const commitment = pedersenHash(preimage);
-
-    const parsed_logs = event_logs.map((log) => {
-      const parsed_log = contract_interface.parseLog(log);
-      if (parsed_log) {
-        return {
-          ...log,
-          name: parsed_log.name,
-          args: parsed_log.args,
-        };
-      } else {
-        toast({
-          title: "Error gathering merkle tree data",
-          variant: "destructive",
-          description: "no deposit events detected on the contract",
-        });
-      }
-    });
-
-    const leaves = parsed_logs
-      .sort((a, b) => a!.args.leafIndex - b!.args.leafIndex)
-      .map((event) => event!.args.commitment);
-
-    const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
-
-    const depositEvent = parsed_logs.find(
-      (e) => e!.args.commitment === commitment,
+    const nullifier = utils.leBuff2int(decodedBuffer.subarray(0, 31));
+    const secret = utils.leBuff2int(decodedBuffer.subarray(31));
+    const nullifierHash: bigint = utils.leBuff2int(
+      Buffer.from(pedersenHash(utils.leInt2Buff(nullifier, 31))),
     );
-    const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
 
-    const { pathElements, pathIndices } = tree.path(leafIndex);
-    const root = tree.root;
+    const commitment: bigint = utils.leBuff2int(
+      Buffer.from(pedersenHash(decodedBuffer)),
+    );
+
+    console.log("preimage", decodedBuffer);
+
+    console.log("nullifier", nullifier);
+
+    console.log("nullifier hash", nullifierHash);
+
+    console.log("secret", secret);
+
+    console.log(
+      "commitment non converted",
+      Buffer.from(pedersenHash(decodedBuffer)).toString(),
+    );
+
+    console.log("commitment", commitment);
+
+    const { root, pathElements, pathIndices } = await getMerkleTreeData();
+
     const recipient = destination;
     const relayer = "none";
     const fee = "0";
     const refund = "";
 
     try {
-      console.log("checkpoint: attempting to resolve proof");
+      console.log("entering try block for proof");
+      const input = {
+        root: "4545153141916386162143836192259102769882368778106746794036952022827171450289",
+        nullifierHash:
+          "19027137175049743803623751962941766172362255419566664209740033119765472965258",
+        recipient: "0xD8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        relayer: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+        fee: "1000000000000000",
+        refund: "0",
+        nullifier:
+          "344410142378928871436301712867274033804306130921771574934151126616008408896",
+        secret:
+          "53388718127289800018449053091626962393684120531648523656289837560003367174",
+        pathElements: [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+        ],
+        pathIndices: [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+        ],
+      };
+
+      // const circuitResponse = await fetch("/api/withdraw_constraints.json");
+      // const circuit = await circuitResponse.json();
+      // console.log("Circuit fetched", circuit);
+      // const zkeyResponse = await fetch("/api/withdraw_constraints.json");
+      // const zkey = await zkeyResponse.arrayBuffer();
+      // console.log("zkey fetched", zkey);
 
       const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-        {
-          root: root,
-          nullifierHash: nullifierHash,
-          recipient: recipient,
-          relayer: relayer,
-          fee: fee,
-          refund: refund,
-          nullifier: nullifier,
-          secret: secret,
-          pathElements: pathElements,
-          pathIndices: pathIndices,
-        },
-        "./withdraw.wasm",
-        "./withdraw_final.zkey",
+        input,
+        "/withdraw.wasm",
+        "/withdraw_0001.zkey",
       );
+
+      console.log("response successful");
+
+      const calldata = await snarkjs.groth16.exportSolidityCallData(
+        proof,
+        publicSignals,
+      );
+
       console.log("Proof output:", proof);
-      console.log("Public Signals output:", publicSignals);
-      setResponse(proof);
+      console.log("Solidity Inputs:", calldata);
+      setResponse(calldata);
     } catch (error) {
       console.error("Error generating proof:", error);
+    }
+
+    async function getMerkleTreeData() {
+      console.log("Checkpoint, parsing logs from contract");
+      try {
+        const event_logs = await contract.queryFilter("DepositEvent");
+
+        const contract_interface: Interface = contract.interface;
+
+        console.log(contract_interface);
+
+        const parsed_logs = event_logs.map((log) => {
+          const parsed_log = contract_interface.parseLog(log);
+          if (parsed_log) {
+            return {
+              ...log,
+              name: parsed_log.name,
+              args: parsed_log.args,
+            };
+          } else {
+            toast({
+              title: "Error gathering merkle tree data",
+              variant: "destructive",
+              description: "no deposit events detected on the contract",
+            });
+          }
+        });
+
+        console.log("parsed_logs", parsed_logs);
+
+        const depositEvent = parsed_logs.find(
+          (e) => e!.args.commitment === commitment,
+        );
+
+        console.log("depositEvent", depositEvent);
+
+        const leaves = parsed_logs
+          .sort((a, b) => a!.args.leafIndex - b!.args.leafIndex)
+          .map((event) => event!.args.commitment);
+
+        console.log("leaves", leaves);
+
+        // const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
+
+        const ecommitment: Element = commitment.toString();
+        const tree = new MerkleTree(MERKLE_TREE_HEIGHT, [ecommitment]);
+
+        const proof = tree.proof(commitment.toString());
+
+        const pathElements = proof.pathElements;
+        const pathIndices = proof.pathIndices;
+
+        const treelen = tree.elements.length;
+
+        // console.log("checkpoint 1");
+        const root = tree.root;
+        // console.log("checkpoint 1");
+        // const pathElements = proof.pathElements;
+        // console.log("checkpoint 1");
+        // const pathIndices = proof.pathIndices;
+
+        console.log({
+          tree: tree,
+          levels: tree.levels,
+          elements: tree.elements,
+          treelen: treelen,
+          proof: proof,
+          pathElements: pathElements,
+          pathIndices: pathIndices,
+          // proof: proof,
+          root: root,
+          // pathElements: pathElements,
+          // pathIndices: pathIndices,
+        });
+
+        // const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
+
+        return {
+          root: root,
+          pathElements: pathElements,
+          pathIndices: pathIndices,
+        };
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Error getting Merkle Data",
+          description: `${error}`,
+          variant: "destructive",
+        });
+        return { error: error };
+      }
     }
   }
 
@@ -203,11 +333,8 @@ export default function ZKProofGenerator() {
           </form>
         </Form>
         <Separator className="my-4" />
-        {response && (
-          <div className="mt-4 p-4 bg-gray-100 rounded">
-            {JSON.stringify(response)}
-          </div>
-        )}
+        Proof Generated:
+        {response && <div className="mt-4 p-4">{JSON.stringify(response)}</div>}
         <br />
         <Separator />
       </div>
