@@ -1,19 +1,19 @@
 import { utils } from "ffjavascript";
-import { toBigInt, toBeHex, BigNumberish } from "ethers";
+// import { toBigInt, toBeHex, BigNumberish } from "ethers";
 import { buildPedersenHash, buildBabyjub } from "circomlibjs";
 import bigInt from "big-integer";
 import { randomBytes } from "crypto";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ZKProofGenerator from "./ZKProofGenerator";
 import Relayer from "./Relayer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Redo, RedoIcon, CopyIcon } from "lucide-react";
+import { CopyIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export function bigInt2BytesLE(_a, len) {
+export function bigInt2BytesLE(_a: bigint, len: number) {
   const b = Array(len);
   let v = bigInt(_a);
   for (let i = 0; i < len; i++) {
@@ -25,7 +25,7 @@ export function bigInt2BytesLE(_a, len) {
 
 export default function ZKSecretGenerator() {
   const [secrets, setSecrets] = useState<{
-    [key: string]: string | Buffer;
+    [key: string]: string | Buffer | Buffer<ArrayBufferLike> | bigint;
   } | null>(null);
   const { toast } = useToast();
 
@@ -35,12 +35,8 @@ export default function ZKSecretGenerator() {
 
     const rbigint = (nbytes: number) => utils.leBuff2int(randomBytes(nbytes));
 
-    const pedersenHash = (data) => {
+    const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
       return babyJub.unpackPoint(pedersen.hash(data))[0];
-    };
-
-    const pedersenNoJub = (data) => {
-      return pedersen.hash(data);
     };
 
     const nullifier = rbigint(31);
@@ -56,8 +52,8 @@ export default function ZKSecretGenerator() {
     const bufferCommitment = Buffer.from(commitment);
     const commitmentEncoded = "0x" + bufferCommitment.toString("hex");
 
-    const nullifierBits = bigInt2BytesLE(nullifier, 31);
-    const nullifierHash1 = pedersenHash(nullifierBits);
+    // const nullifierBits = bigInt2BytesLE(nullifier, 31);
+    // const nullifierHash1 = pedersenHash(nullifierBits);
     const nullifierHash2: bigint = utils.leBuff2int(
       Buffer.from(pedersenHash(utils.leInt2Buff(nullifier, 31))),
     );
@@ -80,7 +76,6 @@ export default function ZKSecretGenerator() {
       commitment: commitment,
       reconstructedPreimage: reconstructedPreimage,
       reconstructedCommitment: reconstructedCommitment,
-      nullifierHash1: nullifierHash1,
       nullifierHash2: nullifierHash2,
       reconstructedNullifier: reconstructedNullifier,
       reconstructedSecret: reconstructedSecret,

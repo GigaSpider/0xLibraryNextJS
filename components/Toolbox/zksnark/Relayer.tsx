@@ -1,7 +1,6 @@
 import { utils } from "ffjavascript";
 import { buildPedersenHash, buildBabyjub } from "circomlibjs";
-import { Contract, Interface, Log, isAddress } from "ethers";
-import { randomBytes } from "crypto";
+import { Contract, isAddress } from "ethers";
 import { Element, MerkleTree } from "fixed-merkle-tree";
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
@@ -19,16 +18,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
 import * as snarkjs from "snarkjs";
-import { Toast } from "@/components/ui/toast";
+// import { Toast } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 
-interface Groth16Proof {
-  pi_a: string[];
-  pi_b: string[][];
-  pi_c: string[];
-  protocol: string;
-  curve: string;
-}
+// interface Groth16Proof {
+//   pi_a: string[];
+//   pi_b: string[][];
+//   pi_c: string[];
+//   protocol: string;
+//   curve: string;
+// }
 
 interface GrothInputParameters {
   root: Element;
@@ -86,7 +85,7 @@ export default function Relayer() {
     const pedersen = await buildPedersenHash();
     const babyJubs = await buildBabyjub();
 
-    const pedersenHash = (data) => {
+    const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
       return babyJubs.unpackPoint(pedersen.hash(data))[0];
     };
 

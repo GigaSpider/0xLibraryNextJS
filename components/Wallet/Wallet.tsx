@@ -223,65 +223,66 @@ export default function Wallet() {
   };
 
   return (
-    <div className="flex fixed left-4 top-2 text-xs text-green-400">
+    <div className="flex text-xs text-green-400">
       {/* Wallet Actions Section */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="text-xs">
-            Wallet Actions
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full max-w-2xl p-6 border-green-400 bg-black">
-          <div className="space-y-8">
-            {/* Wallet Management Section */}
-            <div>
-              <h3 className="font-semibold mb-4">Manage Wallet</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex flex-col gap-2">
-                  <Label>Create New Wallet</Label>
-                  <Button onClick={handleCreateNewWallet}>Create</Button>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Reveal Private Key</Label>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: "Private Key",
-                        description: (
-                          <div className="flex items-center justify-between w-full">
-                            <span className="max-w-xs break-words whitespace-pre-wrap">
-                              {private_key}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.clipboard.writeText(private_key!);
-                              }}
-                            >
-                              Copy
-                            </Button>
-                          </div>
-                        ),
-                      });
-                    }}
-                  >
-                    Reveal
-                  </Button>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Previous Wallets</Label>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      // Get wallet data from local storage
-                      const wallets = JSON.parse(
-                        localStorage.getItem("wallet-store") || "{}",
-                      );
+      <div className="fixed left-4 top-2 ">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="text-xs">
+              Wallet Interface
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full max-w-2xl p-6 border-green-400 bg-black">
+            <div className="space-y-8">
+              {/* Wallet Management Section */}
+              <div>
+                <h3 className="font-semibold mb-4">Manage Wallet</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <Label>Create New Wallet</Label>
+                    <Button onClick={handleCreateNewWallet}>Create</Button>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Reveal Private Key</Label>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        toast({
+                          title: "Private Key",
+                          description: (
+                            <div className="flex items-center justify-between w-full">
+                              <span className="max-w-xs break-words whitespace-pre-wrap">
+                                {private_key}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(private_key!);
+                                }}
+                              >
+                                Copy
+                              </Button>
+                            </div>
+                          ),
+                        });
+                      }}
+                    >
+                      Reveal
+                    </Button>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>Previous Wallets</Label>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Get wallet data from local storage
+                        const wallets = JSON.parse(
+                          localStorage.getItem("wallet-store") || "{}",
+                        );
 
-                      // Create a Blob containing the HTML content
-                      const htmlContent = `
+                        // Create a Blob containing the HTML content
+                        const htmlContent = `
                         <html>
                           <head>
                             <title>Stored Wallets</title>
@@ -312,108 +313,124 @@ export default function Wallet() {
                         </html>
                       `;
 
-                      const blob = new Blob([htmlContent], {
-                        type: "text/html",
-                      });
-                      const url = URL.createObjectURL(blob);
+                        const blob = new Blob([htmlContent], {
+                          type: "text/html",
+                        });
+                        const url = URL.createObjectURL(blob);
 
-                      // Open in new tab
-                      window.open(url, "_blank");
+                        // Open in new tab
+                        window.open(url, "_blank");
 
-                      // Clean up the URL object after the tab is opened
-                      setTimeout(() => URL.revokeObjectURL(url), 0);
-                    }}
-                  >
-                    Show
-                  </Button>
-                </div>
-                <div className="flex flex-col gap-2 md:col-span-3">
-                  <Label>Use Another Wallet</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter private key"
-                      {...connectForm.register("key")}
-                    />
-                    <Button
-                      variant="outline"
-                      type="submit"
-                      onClick={connectForm.handleSubmit(onConnectSubmit)}
+                        // Clean up the URL object after the tab is opened
+                        setTimeout(() => URL.revokeObjectURL(url), 0);
+                      }}
                     >
-                      Submit
+                      Show
                     </Button>
                   </div>
-                </div>
-              </div>
-            </div>
-            {/* Send Ethereum Section */}
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">Send Ethereum</h3>
-              <Form {...sendForm}>
-                <form onSubmit={sendForm.handleSubmit(onSendSubmit)}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Network Select */}
-                    <div className="flex flex-col gap-2">
-                      <Label>Network</Label>
-                      <Controller
-                        name="network"
-                        control={sendForm.control}
-                        render={({ field }) => (
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select network" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Networks</SelectLabel>
-                                <SelectItem value="Main">
-                                  Mainnet(L1)
-                                </SelectItem>
-                                <SelectItem value="Optimism">
-                                  Optimism(L2)
-                                </SelectItem>
-                                <SelectItem value="Arbitrum">
-                                  Arbitrum(L2)
-                                </SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                    {/* Destination Address */}
-                    <div className="flex flex-col gap-2">
-                      <Label>Destination Address</Label>
+                  <div className="flex flex-col gap-2 md:col-span-3">
+                    <Label>Use Another Wallet</Label>
+                    <div className="flex gap-2">
                       <Input
-                        placeholder="Enter destination address"
-                        {...sendForm.register("destination")}
+                        placeholder="Enter private key"
+                        {...connectForm.register("key")}
                       />
-                    </div>
-                    {/* Amount */}
-                    <div className="flex flex-col gap-2">
-                      <Label>Amount in Wei</Label>
-                      <Input
-                        placeholder="Enter amount"
-                        {...sendForm.register("amount")}
-                      />
-                    </div>
-                    {/* Send Button */}
-                    <div className="flex flex-col gap-2">
-                      <Label>Send</Label>
-                      <Button type="submit" variant="outline">
-                        Send
+                      <Button
+                        variant="outline"
+                        type="submit"
+                        onClick={connectForm.handleSubmit(onConnectSubmit)}
+                      >
+                        Submit
                       </Button>
                     </div>
                   </div>
-                </form>
-              </Form>
-            </div>
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">Bridge Networks</h3>
-              <div>Coming soon, maybe like a week</div>
-              {/*
+                  {/* <div className="flex flex-col gap-2 md:col-span-3">
+                    <Label>Use Custom RPC Node</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter RPC URI"
+                        {...connectForm.register("key")}
+                      />
+                      <Button
+                        variant="outline"
+                        type="submit"
+                        onClick={connectForm.handleSubmit(onConnectSubmit)}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </div> */}
+                </div>
+              </div>
+              {/* Send Ethereum Section */}
+              <div className="border-t pt-6">
+                <h3 className="font-semibold mb-4">Send Ethereum</h3>
+                <Form {...sendForm}>
+                  <form onSubmit={sendForm.handleSubmit(onSendSubmit)}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Network Select */}
+                      <div className="flex flex-col gap-2">
+                        <Label>Network</Label>
+                        <Controller
+                          name="network"
+                          control={sendForm.control}
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select network" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <SelectLabel>Networks</SelectLabel>
+                                  <SelectItem value="Main">
+                                    Mainnet(L1)
+                                  </SelectItem>
+                                  <SelectItem value="Optimism">
+                                    Optimism(L2)
+                                  </SelectItem>
+                                  <SelectItem value="Arbitrum">
+                                    Arbitrum(L2)
+                                  </SelectItem>
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                      {/* Destination Address */}
+                      <div className="flex flex-col gap-2">
+                        <Label>Destination Address</Label>
+                        <Input
+                          placeholder="Enter destination address"
+                          {...sendForm.register("destination")}
+                        />
+                      </div>
+                      {/* Amount */}
+                      <div className="flex flex-col gap-2">
+                        <Label>Amount in Wei</Label>
+                        <Input
+                          placeholder="Enter amount"
+                          {...sendForm.register("amount")}
+                        />
+                      </div>
+                      {/* Send Button */}
+                      <div className="flex flex-col gap-2">
+                        <Label>Send</Label>
+                        <Button type="submit" variant="outline">
+                          Send
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+              <div className="border-t pt-6">
+                <h3 className="font-semibold mb-4">Bridge Networks</h3>
+                <div>Coming soon, maybe like a week</div>
+                {/*
               <Form {...bridgeForm}>
                 <form onSubmit={bridgeForm.handleSubmit(onBridgeSubmit)}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -496,54 +513,73 @@ export default function Wallet() {
                 </form>
               </Form>
               */}
+              </div>
             </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      <div className=" text-xs">
-        address s<span>{wallet ? wallet.address : "[no wallet detected]"}</span>
+          </PopoverContent>
+        </Popover>
       </div>
-      <div className="flex items-end px-5">
-        <div className="text-xs">
-          address{" "}
-          <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
-        </div>
-        <div className="text-xs">
-          main net balance{" "}
-          {wallet ? (
-            <span>{formatWei(balance.Main.amount)}</span>
-          ) : (
-            <>[no wallet detected]</>
-          )}{" "}
-          ETH
-        </div>
-        <div className="text-xs">
-          optimism balance{" "}
-          {wallet ? (
-            <span>{formatWei(balance.Optimism.amount)}</span>
-          ) : (
-            <>[no wallet detected]</>
-          )}{" "}
-          ETH
-        </div>
-        <div className="text-xs">
-          arbitrum balance{" "}
-          {wallet ? (
-            <span>{formatWei(balance.Arbitrum.amount)}</span>
-          ) : (
-            <>[no wallet detected]</>
-          )}{" "}
-          ETH
-        </div>
-        <div className="text-xs">
-          local balance{" "}
-          {wallet ? (
-            <span>{formatWei(balance.Local.amount)}</span>
-          ) : (
-            <>[no wallet detected]</>
-          )}{" "}
-          ETH
-        </div>
+      <div className="fixed right-4 top-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="text-xs">
+              Wallet Balances
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full max-w-2xl p-6 border-green-400 bg-black">
+            {/* Remove this duplicate address line */}
+            {/* <div className="text-xs">
+              address s
+              <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
+            </div> */}
+
+            <div className="flex flex-col space-y-2 px-5">
+              <div className="text-xs">
+                address{" "}
+                <span>{wallet ? wallet.address : "[no wallet detected]"}</span>
+              </div>
+
+              <div className="text-xs">
+                main net balance{" "}
+                {wallet ? (
+                  <span>{formatWei(balance.Main.amount)}</span>
+                ) : (
+                  <>[no wallet detected]</>
+                )}{" "}
+                ETH
+              </div>
+
+              <div className="text-xs">
+                optimism balance{" "}
+                {wallet ? (
+                  <span>{formatWei(balance.Optimism.amount)}</span>
+                ) : (
+                  <>[no wallet detected]</>
+                )}{" "}
+                ETH
+              </div>
+
+              <div className="text-xs">
+                arbitrum balance{" "}
+                {wallet ? (
+                  <span>{formatWei(balance.Arbitrum.amount)}</span>
+                ) : (
+                  <>[no wallet detected]</>
+                )}{" "}
+                ETH
+              </div>
+
+              <div className="text-xs">
+                local balance{" "}
+                {wallet ? (
+                  <span>{formatWei(balance.Local.amount)}</span>
+                ) : (
+                  <>[no wallet detected]</>
+                )}{" "}
+                ETH
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

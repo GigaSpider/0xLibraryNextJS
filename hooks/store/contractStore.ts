@@ -83,14 +83,14 @@ const xmreth: SmartContract = {
 const zksnark: SmartContract = {
   id: 3,
   name: "Zero Knowledge Obfuscation Service",
-  address: "not available yet",
+  address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
   engineer: "Admin",
-  network: "Optimism",
+  network: "Local",
   proxy: false,
   abi: ZK.abi,
   bytecode: ZK.bytecode,
   fee: 1.0,
-  description: "Contract description",
+  description: "Zero Knowledge Snark Deposit and Withdrawal",
   instructions: "Instructions on usage: ",
 };
 
