@@ -22,8 +22,11 @@ export default function NonProxyInterface() {
       case "Arbitrum":
         network_index = 2;
         break;
-      case "Local":
+      case "Sepolia":
         network_index = 3;
+        break;
+      case "Local":
+        network_index = 4;
         break;
       default:
         network_index = 0;

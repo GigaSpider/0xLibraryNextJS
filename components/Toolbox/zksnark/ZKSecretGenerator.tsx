@@ -1,89 +1,105 @@
+"use client";
+
 import { utils } from "ffjavascript";
-// import { toBigInt, toBeHex, BigNumberish } from "ethers";
-import { buildPedersenHash, buildBabyjub } from "circomlibjs";
-import bigInt from "big-integer";
 import { randomBytes } from "crypto";
 import { ScrollArea } from "@/components/ui/scroll-area";
-// import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ZKProofGenerator from "./ZKProofGenerator";
 import Relayer from "./Relayer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { buildBabyjub, buildPedersenHash } from "circomlibjs";
 
-export function bigInt2BytesLE(_a: bigint, len: number) {
-  const b = Array(len);
-  let v = bigInt(_a);
-  for (let i = 0; i < len; i++) {
-    b[i] = v.and(0xff).toJSNumber();
-    v = v.shiftRight(8);
-  }
-  return b;
+async function pedersen(buff: Buffer) {
+  const hasher = await buildPedersenHash();
+  const babyJub = await buildBabyjub();
+  const hashBytes = hasher.hash(buff);
+  const unpack = babyJub.unpackPoint(hashBytes);
+  const hash = babyJub.F.toString(unpack[0]);
+  return BigInt(hash);
 }
 
 export default function ZKSecretGenerator() {
+  const [isGenerateLoading, setIsGenerateLoading] = useState(false);
   const [secrets, setSecrets] = useState<{
     [key: string]: string | Buffer | Buffer<ArrayBufferLike> | bigint;
   } | null>(null);
   const { toast } = useToast();
 
   async function handleGenerateSecrets() {
-    const pedersen = await buildPedersenHash();
-    const babyJub = await buildBabyjub();
+    setIsGenerateLoading(true);
+    // const jub = await buildBabyjub();
 
-    const rbigint = (nbytes: number) => utils.leBuff2int(randomBytes(nbytes));
+    const x = utils.leBuff2int(randomBytes(31));
+    const y = utils.leBuff2int(randomBytes(31));
 
-    const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
-      return babyJub.unpackPoint(pedersen.hash(data))[0];
-    };
+    // Hardcoded values for testing
 
-    const nullifier = rbigint(31);
-    const secret = rbigint(31);
+    // const x = BigInt(
+    //   "344410142378928871436301712867274033804306130921771574934151126616008408896",
+    // );
+    // const y = BigInt(
+    //   "53388718127289800018449053091626962393684120531648523656289837560003367174",
+    // );
 
-    const preimage = Buffer.concat([
-      utils.leInt2Buff(nullifier, 31),
-      utils.leInt2Buff(secret, 31),
+    // Encode preimage and commitment for output
+
+    const hashX = await pedersen(utils.leInt2Buff(x));
+    const buff = Buffer.concat([
+      utils.leInt2Buff(x, 31),
+      utils.leInt2Buff(y, 31),
+    ]);
+    const commitment = await pedersen(buff);
+
+    // let hashX;
+    // let commitment;
+
+    // try {
+    //   const input = {
+    //     nullifier: x.toString(),
+    //     secret: y.toString(),
+    //   };
+    //   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+    //     input,
+    //     "/pedersenhasher.wasm",
+    //     "/pedersenhasher_0001.zkey",
+    //   );
+
+    //   hashX = publicSignals[0];
+    //   commitment = publicSignals[1];
+
+    //   console.log({ hashX, commitment });
+    // } catch (error) {
+    //   console.error(error);
+    // }
+
+    const commitmentEncoded =
+      "0x" + BigInt(commitment).toString(16).padStart(32, "0");
+
+    const privateKeyBuffer = Buffer.concat([
+      utils.leInt2Buff(x, 31),
+      utils.leInt2Buff(y, 31),
+      utils.leInt2Buff(BigInt(hashX), 32),
+      utils.leInt2Buff(BigInt(commitment), 32),
     ]);
 
-    const preimageEncoded = "0x" + preimage.toString("hex");
-    const commitment = pedersenHash(preimage);
-    const bufferCommitment = Buffer.from(commitment);
-    const commitmentEncoded = "0x" + bufferCommitment.toString("hex");
-
-    // const nullifierBits = bigInt2BytesLE(nullifier, 31);
-    // const nullifierHash1 = pedersenHash(nullifierBits);
-    const nullifierHash2: bigint = utils.leBuff2int(
-      Buffer.from(pedersenHash(utils.leInt2Buff(nullifier, 31))),
-    );
-
-    const reconstructedPreimage = Buffer.from(preimageEncoded.slice(2), "hex");
-    const reconstructedCommitment = Buffer.from(
-      commitmentEncoded.slice(2),
-      "hex",
-    );
-
-    const reconstructedNullifier = utils.leBuff2int(preimage.subarray(0, 31));
-    const reconstructedSecret = utils.leBuff2int(preimage.subarray(31));
+    const privateKeyEncoded = "0x" + privateKeyBuffer.toString("hex");
+    // Reconstruct for verification
 
     const output = {
-      secret: secret,
-      nullifier: nullifier,
-      preimage: preimage,
-      preimageEncoded: preimageEncoded,
-      commitmentEncoded: commitmentEncoded,
+      x: x,
+      y: y,
+      hashX: hashX,
       commitment: commitment,
-      reconstructedPreimage: reconstructedPreimage,
-      reconstructedCommitment: reconstructedCommitment,
-      nullifierHash2: nullifierHash2,
-      reconstructedNullifier: reconstructedNullifier,
-      reconstructedSecret: reconstructedSecret,
+      commitmentEncoded: commitmentEncoded,
+      privateKeyEncoded: privateKeyEncoded,
     };
 
-    console.log(output);
-
+    console.log("Output:", output);
     setSecrets(output);
+    setIsGenerateLoading(false);
     return output;
   }
 
@@ -91,12 +107,15 @@ export default function ZKSecretGenerator() {
     <div className="flex flex-col h-full text-xs text-green-400">
       <ScrollArea className="flex overflow-y-auto m-2">
         <div>
-          <Button
-            onClick={handleGenerateSecrets}
-            variant="secondary"
-            className="text-xs"
-          >
-            Generate Secrets
+          <Button type="submit" onClick={handleGenerateSecrets}>
+            {isGenerateLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Generate Secrets"
+            )}
           </Button>
           <br />
           <br />
@@ -104,13 +123,13 @@ export default function ZKSecretGenerator() {
         <div>
           {secrets && (
             <>
-              {Object.entries(secrets).map(([key, value]) => {
+              {/* {Object.entries(secrets).map(([key, value]) => {
                 return (
                   <div key={key}>
                     {key}: {value}
                   </div>
                 );
-              })}
+              })} */}
               <br />
               <div className="flex items-center gap-2">
                 <Button
@@ -131,7 +150,7 @@ export default function ZKSecretGenerator() {
                   Copy
                 </Button>
                 <span>
-                  Commitment: {secrets["commitmentEncoded"].toString()}
+                  Public Key: {secrets["commitmentEncoded"].toString()}
                 </span>
               </div>
               <br />
@@ -142,7 +161,7 @@ export default function ZKSecretGenerator() {
                   className="h-6 px-2 text-xs"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      secrets["preimageEncoded"].toString(),
+                      secrets["privateKeyEncoded"].toString(),
                     );
                     toast({
                       description: "Preimage copied to clipboard",
@@ -154,7 +173,8 @@ export default function ZKSecretGenerator() {
                   Copy
                 </Button>
                 <span>
-                  Secret (Do not share): {secrets["preimageEncoded"].toString()}
+                  Private Key (Do not share):{" "}
+                  {secrets["privateKeyEncoded"].toString()}
                 </span>
               </div>
               <br />

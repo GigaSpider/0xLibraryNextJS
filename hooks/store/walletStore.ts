@@ -6,7 +6,7 @@ export enum Network {
   Main = "Main",
   Optimism = "Optimism",
   Arbitrum = "Arbitrum",
-  Local = "Local",
+  Sepolia = "Sepolia",
 }
 
 interface BalanceInfo {
@@ -41,7 +41,7 @@ export const useWalletStore = create<WalletStore>()(
         [Network.Main]: { amount: BigInt(0) },
         [Network.Optimism]: { amount: BigInt(0) },
         [Network.Arbitrum]: { amount: BigInt(0) },
-        [Network.Local]: { amount: BigInt(0) },
+        [Network.Sepolia]: { amount: BigInt(0) },
       },
       wallet: null,
       private_key: null,

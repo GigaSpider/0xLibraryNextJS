@@ -1,10 +1,9 @@
 "use client";
 
 import * as snarkjs from "snarkjs";
-// import { Toast } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 import { utils } from "ffjavascript";
-import { buildPedersenHash, buildBabyjub } from "circomlibjs";
+import { buildMimcSponge } from "circomlibjs";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
@@ -14,10 +13,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator"; // Changed to correct import
-// import { useContractStore } from "@/hooks/store/contractStore";
-// import { useWalletStore } from "@/hooks/store/walletStore";
-import { AbiCoder } from "ethers";
-// import { MerkleTree, Element } from "fixed-merkle-tree";
+import { useContractStore } from "@/hooks/store/contractStore";
+import { useWalletStore } from "@/hooks/store/walletStore";
+import {
+  AbiCoder,
+  Contract,
+  Interface,
+  ZeroAddress,
+  isAddress,
+  hexlify,
+  zeroPadValue,
+  toBeArray,
+} from "ethers";
+import { MerkleTree } from "fixed-merkle-tree";
 import { CopyIcon, Loader2 } from "lucide-react";
 
 // import { wasmsnark_bn128 } from "wasmsnark";
@@ -31,7 +39,7 @@ import { CopyIcon, Loader2 } from "lucide-react";
 //   curve: string;
 // }
 
-// const MERKLE_TREE_HEIGHT = 20;
+const MERKLE_TREE_HEIGHT = 20;
 
 const formSchema = z.object({
   preimage: z.string().nonempty({ message: "Required" }),
@@ -43,19 +51,19 @@ type GenerateProofForm = z.infer<typeof formSchema>;
 export default function ZKProofGenerator() {
   const [response, setResponse] = useState<string | null>(null);
   const [isGenerateLoading, setIsGenerateLoading] = useState(false);
-
-  // const { contracts } = useContractStore();
-  // const { providers } = useWalletStore();
+  const { contracts } = useContractStore();
+  const { providers } = useWalletStore();
 
   const { toast } = useToast();
 
-  // const contract_object = contracts[2];
+  const contract_object = contracts[2];
 
-  // const contract: Contract = new Contract(
-  //   "0x715ee67c54bba24a05f256aedb4f6bb0ad2e06f3",
-  //   contract_object!.abi,
-  //   providers![1],
-  // );
+  const contract: Contract = new Contract(
+    contract_object!.address,
+    contract_object!.abi,
+    providers![3],
+    // currently set to Sepolia
+  );
 
   const GenerateForm = useForm<GenerateProofForm>({
     resolver: zodResolver(formSchema),
@@ -67,47 +75,39 @@ export default function ZKProofGenerator() {
 
   async function onGenerateSubmit(data: GenerateProofForm) {
     setIsGenerateLoading(true);
-    const pedersen = await buildPedersenHash();
-    const babyJubs = await buildBabyjub();
+    // const pedersen = await buildPedersenHash();
+    // const babyJubs = await buildBabyjub();
 
-    const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
-      return babyJubs.unpackPoint(pedersen.hash(data))[0];
-    };
+    if (!isAddress(data.destination)) {
+      toast({
+        title: "Form Error",
+        description: "invalid address",
+        variant: "destructive",
+      });
+      setIsGenerateLoading(false);
+      return;
+    }
 
-    console.log(
-      "First try catch block checkpoint: fetching merkle tree data from the contract",
-    );
+    // const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
+    //   return babyJubs.unpackPoint(pedersen.hash(data))[0];
+    // };
 
-    const { preimage } = data;
+    // console.log(
+    //   "First try catch block checkpoint: fetching merkle tree data from the contract",
+    // );
+
+    const { preimage, destination } = data;
 
     const decodedBuffer = Buffer.from(preimage.trim().slice(2), "hex");
 
-    const nullifier = utils.leBuff2int(decodedBuffer.subarray(0, 31));
-    const secret = utils.leBuff2int(decodedBuffer.subarray(31));
-    const nullifierHash: bigint = utils.leBuff2int(
-      Buffer.from(pedersenHash(utils.leInt2Buff(nullifier, 31))),
-    );
+    const x = utils.leBuff2int(decodedBuffer.subarray(0, 31));
+    const y = utils.leBuff2int(decodedBuffer.subarray(31, 62));
+    const hashX = utils.leBuff2int(decodedBuffer.subarray(62, 94));
+    const commitment = utils.leBuff2int(decodedBuffer.subarray(94));
 
-    const commitment: bigint = utils.leBuff2int(
-      Buffer.from(pedersenHash(decodedBuffer)),
-    );
-
-    console.log("preimage", decodedBuffer);
-
-    console.log("nullifier", nullifier);
-
-    console.log("nullifier hash", nullifierHash);
-
-    console.log("secret", secret);
-
-    console.log(
-      "commitment non converted",
-      Buffer.from(pedersenHash(decodedBuffer)).toString(),
-    );
-
-    console.log("commitment", commitment);
-
-    // const { root, pathElements, pathIndices } = await getMerkleTreeData();
+    // const { root } = await getMerkleTreeData();
+    const { root, pathElements, pathIndices } = await getMerkleTreeData();
+    console.log({ root });
 
     // const recipient = destination;
     // const relayer = "none";
@@ -118,69 +118,19 @@ export default function ZKProofGenerator() {
       console.log("entering try block for proof");
 
       const input = {
-        root: "4545153141916386162143836192259102769882368778106746794036952022827171450289",
-        nullifierHash:
-          "19027137175049743803623751962941766172362255419566664209740033119765472965258",
-        recipient: "0xD8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-        relayer: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-        fee: "1000000000000000",
-        refund: "0",
-        nullifier:
-          "344410142378928871436301712867274033804306130921771574934151126616008408896",
-        secret:
-          "53388718127289800018449053091626962393684120531648523656289837560003367174",
-        pathElements: [
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-        ],
-        pathIndices: [
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-          "0",
-        ],
+        root: root!.toString(),
+        nullifierHash: hashX.toString(),
+        recipient: destination,
+        relayer: "",
+        fee: "",
+        refund: "",
+        nullifier: x.toString(),
+        secret: y.toString(),
+        pathElements: pathElements!.map((e) => e.toString()),
+        pathIndices: pathIndices!.map((i) => i.toString()),
       };
 
-      // const circuitResponse = await fetch("/api/withdraw_constraints.json");
-      // const circuit = await circuitResponse.json();
-      // console.log("Circuit fetched", circuit);
-      // const zkeyResponse = await fetch("/api/withdraw_constraints.json");
-      // const zkey = await zkeyResponse.arrayBuffer();
-      // console.log("zkey fetched", zkey);
+      console.log("getting Merkle Tree Data from contract...");
 
       const { proof, publicSignals } = await snarkjs.groth16.fullProve(
         input,
@@ -190,124 +140,213 @@ export default function ZKProofGenerator() {
 
       console.log("response successful");
 
+      console.log("Proof output:", proof);
+
       setIsGenerateLoading(false);
 
-      const callData = await snarkjs.groth16.exportSolidityCallData(
+      // 1. Prepare the proof bytes correctly
+      const rawCalldata = await snarkjs.groth16.exportSolidityCallData(
         proof,
         publicSignals,
       );
+      const calldata = JSON.parse("[" + rawCalldata + "]");
+      console.log("Parsed calldata:", JSON.stringify(calldata, null, 2));
 
-      const parsedCallData = JSON.parse("[" + callData + "]");
+      // Check the structure of proof parts
+      // const pi_a = calldata[0];
+      // const pi_b = calldata[1];
+      // const pi_c = calldata[2];
 
-      const pA = parsedCallData[0];
-      const pB = parsedCallData[1];
-      const pC = parsedCallData[2];
+      let proofBytes = "";
 
-      const coder = AbiCoder.defaultAbiCoder();
-      const encodedProof = coder.encode(
-        ["uint256[2]", "uint256[2][2]", "uint256[2]"],
-        [pA, pB, pC],
+      // Add pi_a (first two values)
+      proofBytes += calldata[0][0].slice(2); // Remove 0x prefix
+      proofBytes += calldata[0][1].slice(2);
+
+      // Add pi_b (2x2 matrix)
+      proofBytes += calldata[1][0][0].slice(2);
+      proofBytes += calldata[1][0][1].slice(2);
+      proofBytes += calldata[1][1][0].slice(2);
+      proofBytes += calldata[1][1][1].slice(2);
+
+      // Add pi_c (last two values)
+      proofBytes += calldata[2][0].slice(2);
+      proofBytes += calldata[2][1].slice(2);
+
+      // Add 0x prefix to complete the bytes value
+      const solidityProof = "0x" + proofBytes;
+
+      console.log("Constructed solidityProof:", solidityProof);
+      // 2. Convert root and nullifierHash to bytes32
+      const rootBytes32 = hexlify(
+        zeroPadValue(toBeArray(BigInt(input.root)), 32),
+      );
+      const nullifierHashBytes32 = hexlify(
+        zeroPadValue(toBeArray(BigInt(input.nullifierHash)), 32),
       );
 
-      console.log("Proof output:", proof);
+      // 3. Use proper address types
+      const recipientAddress = data.destination; // Already an address
+      const relayerAddress = ZeroAddress; // Use zero address if empty
+
+      const fee = 0;
+      const refund = 0;
+
+      // 4. Encode with correct types
+      const encodedProof = AbiCoder.defaultAbiCoder().encode(
+        [
+          "bytes", // Combined proof
+          "bytes32", // Root
+          "bytes32", // NullifierHash
+          "address", // Recipient
+          "address", // Relayer
+          "uint256", // Fees
+          "uint256", // Refunds
+        ],
+        [
+          solidityProof,
+          rootBytes32,
+          nullifierHashBytes32,
+          recipientAddress,
+          relayerAddress,
+          fee,
+          refund,
+        ],
+      );
+
       console.log("Solidity Inputs:", encodedProof);
 
       setResponse(encodedProof);
+
+      //for litmus checking purposes
+
+      const decodedProof = AbiCoder.defaultAbiCoder().decode(
+        [
+          "bytes", // Combined proof
+          "bytes32", // Root
+          "bytes32", // NullifierHash
+          "address", // Recipient
+          "address", // Relayer
+          "uint256", // Fees
+          "uint256", // Refunds
+        ],
+        encodedProof,
+      );
+      console.log({ decodedProof });
     } catch (error) {
       console.error("Error generating proof:", error);
       setIsGenerateLoading(false);
     }
 
-    // async function getMerkleTreeData() {
-    //   console.log("Checkpoint, parsing logs from contract");
-    //   try {
-    //     const event_logs = await contract.queryFilter("DepositEvent");
+    async function getMerkleTreeData() {
+      console.log("Checkpoint, parsing logs from contract");
 
-    //     const contract_interface: Interface = contract.interface;
+      const mimcSponge = await buildMimcSponge();
+      const mimcHasher = (
+        left: string | number | bigint,
+        right: string | number | bigint,
+      ) => {
+        return mimcSponge.F.toString(
+          mimcSponge.multiHash([BigInt(left), BigInt(right)]),
+        );
+      };
 
-    //     console.log(contract_interface);
+      try {
+        const event_logs = await contract.queryFilter("DepositEvent");
 
-    //     const parsed_logs = event_logs.map((log) => {
-    //       const parsed_log = contract_interface.parseLog(log);
-    //       if (parsed_log) {
-    //         return {
-    //           ...log,
-    //           name: parsed_log.name,
-    //           args: parsed_log.args,
-    //         };
-    //       } else {
-    //         toast({
-    //           title: "Error gathering merkle tree data",
-    //           variant: "destructive",
-    //           description: "no deposit events detected on the contract",
-    //         });
-    //       }
-    //     });
+        const contract_interface: Interface = contract.interface;
 
-    //     console.log("parsed_logs", parsed_logs);
+        console.log(contract_interface);
 
-    //     const depositEvent = parsed_logs.find(
-    //       (e) => e!.args.commitment === commitment,
-    //     );
+        const parsed_logs = event_logs.map((log) => {
+          const parsed_log = contract_interface.parseLog(log);
+          if (parsed_log) {
+            return {
+              ...log,
+              name: parsed_log.name,
+              args: parsed_log.args,
+            };
+          } else {
+            toast({
+              title: "Error gathering merkle tree data",
+              variant: "destructive",
+              description: "no deposit events detected on the contract",
+            });
+          }
+        });
 
-    //     console.log("depositEvent", depositEvent);
+        console.log("parsed_logs", parsed_logs);
 
-    //     const leaves = parsed_logs
-    //       .sort((a, b) => a!.args.leafIndex - b!.args.leafIndex)
-    //       .map((event) => event!.args.commitment);
+        const leaves = parsed_logs
+          .sort((a, b) => Number(a!.args.leafIndex) - Number(b!.args.leafIndex))
+          .map((event) => event!.args.commitment);
 
-    //     console.log("leaves", leaves);
+        console.log("leaves", leaves);
 
-    //     // const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
+        const depositEvent = parsed_logs.find(
+          (e) => e!.args.commitment === "0x" + commitment.toString(16),
+        );
 
-    //     const ecommitment: Element = commitment.toString();
-    //     const tree = new MerkleTree(MERKLE_TREE_HEIGHT, [ecommitment]);
+        console.log("depositEvent", depositEvent);
 
-    //     const proof = tree.proof(commitment.toString());
+        const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves, {
+          hashFunction: mimcHasher,
+          zeroElement: "0",
+        });
 
-    //     const pathElements = proof.pathElements;
-    //     const pathIndices = proof.pathIndices;
+        // let depositEvent = parsed_logs.find(
+        //   (e) => e.returnValues.commitment === "0x" + commitment.toString(16),
+        // );
+        // let leafIndex = depositEvent ? depositEvent.returnValues.leafIndex : -1;
 
-    //     const treelen = tree.elements.length;
+        const leafIndex: number = depositEvent
+          ? Number(depositEvent.args[1])
+          : -1;
 
-    //     // console.log("checkpoint 1");
-    //     const root = tree.root;
-    //     // console.log("checkpoint 1");
-    //     // const pathElements = proof.pathElements;
-    //     // console.log("checkpoint 1");
-    //     // const pathIndices = proof.pathIndices;
+        console.log({ leafIndex });
 
-    //     console.log({
-    //       tree: tree,
-    //       levels: tree.levels,
-    //       elements: tree.elements,
-    //       treelen: treelen,
-    //       proof: proof,
-    //       pathElements: pathElements,
-    //       pathIndices: pathIndices,
-    //       // proof: proof,
-    //       root: root,
-    //       // pathElements: pathElements,
-    //       // pathIndices: pathIndices,
-    //     });
+        // const ecommitment: Element = ("0x" +
+        //   BigInt(commitment!).toString(16).padStart(32, "0")) as Element;
 
-    //     // const leafIndex = depositEvent ? depositEvent.args.leafIndex : -1;
+        // const proof = tree.proof(ecommitment);
 
-    //     return {
-    //       root: root,
-    //       pathElements: pathElements,
-    //       pathIndices: pathIndices,
-    //     };
-    //   } catch (error) {
-    //     console.error(error);
-    //     toast({
-    //       title: "Error getting Merkle Data",
-    //       description: `${error}`,
-    //       variant: "destructive",
-    //     });
-    //     return { error: error };
-    //   }
-    // }
+        // const pathElements = proof.pathElements;
+        const { pathElements, pathIndices } = tree.path(leafIndex);
+        const treelen = tree.elements.length;
+        const root = tree.root;
+
+        console.log({
+          tree,
+          treelen,
+          // proof,
+          pathElements,
+          pathIndices,
+          root,
+        });
+
+        // const tree = new MerkleTree(20, []);
+        // console.log({ commitment });
+        // const ecommitment: Element = ("0x" +
+        //   BigInt(commitment!).toString(16).padStart(32, "0")) as Element;
+        // tree.insert(ecommitment);
+        // const path = tree.proof(ecommitment);
+        // console.log(path);
+
+        return {
+          root,
+          pathElements,
+          pathIndices,
+        };
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Error getting Merkle Data",
+          description: `${error}`,
+          variant: "destructive",
+        });
+        return { error: error };
+      }
+    }
   }
 
   return (
@@ -325,9 +364,9 @@ export default function ZKProofGenerator() {
               name="preimage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preimage</FormLabel>
+                  <FormLabel>Private Key</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter Preimage" {...field} />
+                    <Input placeholder="Enter PrivateKey" {...field} />
                   </FormControl>
                 </FormItem>
               )}
@@ -393,3 +432,9 @@ export default function ZKProofGenerator() {
     </div>
   );
 }
+
+// proof in progress
+//
+// public commitment 0x1a7d8adf18ef007e7e0474f9ba4eed8b9f33d19e480afa948f8a47e3d8f8204a
+//
+// private key 0x0ecdc87477b73bf4494bad31a90e72b1b30cc620877921fcc627d36c180b151edf757e2957bf96819da1651458a24a0940b32d538d1b479b277eb3ebf294b586abbb780ec361c3db7816adf7a6430d582fb8e08e63e0aeb55efe6e4aac274a20f8d8e3478a8f94fa0a489ed1339f8bed4ebaf974047e7e00ef18df8a7d1a

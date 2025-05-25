@@ -4,23 +4,13 @@ import XMR_ETH from "./contractdata/XMR_ETH.json";
 import ETH_XMR from "./contractdata/ETH_XMR.json";
 import VariableProbabilityWager from "./contractdata/VariableProbabilityWager.json";
 import MASTER from "./contractdata/MASTER.json";
-import ZK from "./contractdata/ZK.json";
+import ETHZK from "./contractdata/ETHZK.json";
 
 export enum NetworkIndex {
   "Mainnet" = 0,
   "Optimism" = 1,
   "Arbitrum" = 2,
-}
-
-interface OffchainSoftware {
-  name: string;
-  files: {
-    [filename: string]: {
-      inputs: string[];
-      outputs: string[];
-      source: string;
-    };
-  };
+  "Sepolia" = 3,
 }
 
 export type SmartContract = {
@@ -82,13 +72,13 @@ const xmreth: SmartContract = {
 
 const zksnark: SmartContract = {
   id: 3,
-  name: "Zero Knowledge Obfuscation Service",
-  address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  name: "Zero Knowledge Ethereum Mixer",
+  address: "0x1dCA0958b494193687cF7ED8C1B617649b628579",
   engineer: "Admin",
-  network: "Local",
+  network: "Sepolia",
   proxy: false,
-  abi: ZK.abi,
-  bytecode: ZK.bytecode,
+  abi: ETHZK.abi,
+  bytecode: ETHZK.bytecode,
   fee: 1.0,
   description: "Zero Knowledge Snark Deposit and Withdrawal",
   instructions: "Instructions on usage: ",

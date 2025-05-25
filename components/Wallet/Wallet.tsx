@@ -40,7 +40,7 @@ export enum Network {
   Mainnet = "Mainnet",
   Optimism = "Optimism",
   Arbitrum = "Arbitrum",
-  Local = "Local",
+  Local = "Sepolia",
 }
 
 // Zod schemas for each form
@@ -183,6 +183,9 @@ export default function Wallet() {
           break;
         case "Arbitrum":
           provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_ARBITRUM_URI!);
+          break;
+        case "Sepolia":
+          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_SEPOLIA_URI!);
           break;
         default:
           console.log("error, network out of bounds");
@@ -569,9 +572,9 @@ export default function Wallet() {
               </div>
 
               <div className="text-xs">
-                local balance{" "}
+                sepolia balance{" "}
                 {wallet ? (
-                  <span>{formatWei(balance.Local.amount)}</span>
+                  <span>{formatWei(balance.Sepolia.amount)}</span>
                 ) : (
                   <>[no wallet detected]</>
                 )}{" "}

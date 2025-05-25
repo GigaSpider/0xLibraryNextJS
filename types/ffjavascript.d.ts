@@ -1,7 +1,7 @@
 declare module "ffjavascript" {
   export namespace utils {
     function leBuff2int(buff: Buffer): bigint;
-    function leInt2Buff(int: bigint, size: number): Buffer;
+    function leInt2Buff(int: bigint, size?: number): Buffer;
   }
   export namespace Scalar {
     function fromString(str: string, radix?: number): bigint;
