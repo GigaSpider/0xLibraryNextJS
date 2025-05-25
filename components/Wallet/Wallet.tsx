@@ -397,6 +397,9 @@ export default function Wallet() {
                                   <SelectItem value="Arbitrum">
                                     Arbitrum(L2)
                                   </SelectItem>
+                                  <SelectItem value="Sepolia">
+                                    Sepolia(test)
+                                  </SelectItem>
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
