@@ -6,7 +6,7 @@ import { useWalletStore } from "./store/walletStore";
 
 export function useEventListener() {
   const { INITIALIZED_CONTRACT, SELECTED_CONTRACT } = useContractStore();
-  const { providers, private_key } = useWalletStore();
+  const { networks, wallet } = useWalletStore();
   const { toast } = useToast();
   const [events, setEvents] = useState<
     Map<EventFragment, Array<EventLog | Log>>
@@ -39,7 +39,7 @@ export function useEventListener() {
         break;
     }
 
-    const provider = providers![index];
+    const provider = networks![index].provider;
 
     const contract = INITIALIZED_CONTRACT;
 
@@ -119,7 +119,7 @@ export function useEventListener() {
       clearInterval(interval);
       contract.removeAllListeners();
     };
-  }, [INITIALIZED_CONTRACT, SELECTED_CONTRACT, private_key, toast, providers]);
+  }, [INITIALIZED_CONTRACT, SELECTED_CONTRACT, wallet, toast, networks]);
 
   return { events };
 }

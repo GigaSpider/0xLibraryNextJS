@@ -18,17 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full">
-      <body className="bg-black font-mono text-sm">
-        <div>
-          <Header />
-        </div>
-
-        <main className="min-h-full">{children}</main>
-        <div>
-          <ConvexClientProvider>
-            <Footer />
-          </ConvexClientProvider>
-        </div>
+      <body className="bg-black font-mono text-sm h-full m-0 flex flex-col">
+        <Header />
+        <main className="flex-1 w-full overflow-hidden">{children}</main>
+        <ConvexClientProvider>
+          <Footer />
+        </ConvexClientProvider>
         <Toaster />
         <Analytics />
       </body>

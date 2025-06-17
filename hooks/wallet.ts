@@ -1,78 +1,125 @@
-import { useWalletStore, Network } from "./store/walletStore";
-import { JsonRpcProvider, formatEther } from "ethers";
-import { useEffect } from "react";
+import { useWalletStore } from "./store/walletStore";
+import { Contract, formatEther } from "ethers";
+import { useEffect, useState } from "react";
 
 export function useWalletHook() {
-  const { wallet, set_balance, set_providers } = useWalletStore();
+  const { wallet, networks, update_balance, update_price } = useWalletStore();
+  const [timeUntilUpdate, setTimeUntilUpdate] = useState(30); // Initialize to 30 seconds
+
+  const priceFeed = new Contract(
+    ETH_USD_PRICE_ADDRESS,
+    aggregatorV3InterfaceABI,
+    networks[0].provider,
+  );
 
   useEffect(() => {
     if (!wallet) return;
-    const address = wallet.address;
+    const address = wallet.wallet.address;
 
     console.log("checkpoint, starting wallet hook");
 
-    const MAIN_PROVIDER = new JsonRpcProvider(
-      process.env.NEXT_PUBLIC_MAINNET_URI!,
-    );
-    const OPTIMISM_PROVIDER = new JsonRpcProvider(
-      process.env.NEXT_PUBLIC_OPTIMISM_URI!,
-    );
-    const ARBITRUM_PROVIDER = new JsonRpcProvider(
-      process.env.NEXT_PUBLIC_ARBITRUM_URI!,
-    );
+    fetchData();
 
-    const SEPOLIA_PROVIDER = new JsonRpcProvider(
-      process.env.NEXT_PUBLIC_SEPOLIA_URI!,
-    );
-
-    const providers: JsonRpcProvider[] = [
-      MAIN_PROVIDER,
-      OPTIMISM_PROVIDER,
-      ARBITRUM_PROVIDER,
-      SEPOLIA_PROVIDER,
-    ];
-
-    set_providers(providers);
+    async function fetchPrice() {
+      await priceFeed.latestRoundData().then((data) => {
+        const usdEth = data[1];
+        console.log({ usdEth });
+        update_price(usdEth);
+      });
+    }
 
     async function fetchBalances() {
-      console.log("Getting blockchain data every 10 seconds...");
-      try {
-        const MAIN_BALANCE = await MAIN_PROVIDER.getBalance(address);
-        const OPTIMISM_BALANCE = await OPTIMISM_PROVIDER.getBalance(address);
-        const ARBITRUM_BALANCE = await ARBITRUM_PROVIDER.getBalance(address);
-        const SEPOLIA_BALANCE = await SEPOLIA_PROVIDER.getBalance(address);
-        const balances = [
-          parseFloat(formatEther(MAIN_BALANCE)),
-          parseFloat(formatEther(OPTIMISM_BALANCE)),
-          parseFloat(formatEther(ARBITRUM_BALANCE)),
-          parseFloat(formatEther(SEPOLIA_BALANCE)),
-        ];
-        console.log("balances: ", balances);
-
-        set_balance(Network.Main, {
-          amount: MAIN_BALANCE,
-        });
-        set_balance(Network.Optimism, {
-          amount: OPTIMISM_BALANCE,
-        });
-        set_balance(Network.Arbitrum, {
-          amount: ARBITRUM_BALANCE,
-        });
-        set_balance(Network.Arbitrum, {
-          amount: SEPOLIA_BALANCE,
-        });
-      } catch (error) {
-        console.log("Error fetching balances: ", error);
-      }
+      networks.forEach(async (network) => {
+        try {
+          const balance = await network.provider.getBalance(address);
+          const name = network.network_name;
+          console.log({ name, balance });
+          if (balance != network.balance) {
+            update_balance(network, balance);
+          }
+        } catch (error) {
+          console.log(
+            "Error fetching balances for network",
+            network.network_name,
+          );
+        }
+      });
     }
-    fetchBalances();
 
-    const interval = setInterval(fetchBalances, 10000);
+    async function fetchData() {
+      console.log("refreshing data every 30 seconds:");
+      await fetchPrice();
+      await fetchBalances();
+      setTimeUntilUpdate(30); // Reset countdown after fetch
+    }
+
+    const dataInterval = setInterval(fetchData, 30000);
+
+    // Countdown timer interval
+    const countdownInterval = setInterval(() => {
+      setTimeUntilUpdate((prev) => {
+        if (prev <= 1) return 0; // Prevent negative countdown
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
-      clearInterval(interval);
+      clearInterval(dataInterval);
+      clearInterval(countdownInterval);
     };
-  }, [wallet, set_balance, set_providers]);
+  }, [wallet, update_balance, networks, update_price]);
+
+  return { timeUntilUpdate };
 }
 
-export async function connect() {}
+const ETH_USD_PRICE_ADDRESS = "0x5147eA642CAEF7BD9c1265AadcA78f997AbB9649";
+
+const aggregatorV3InterfaceABI = [
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "description",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+    name: "getRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "latestRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "version",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];

@@ -15,11 +15,12 @@ import { z } from "zod";
 import { Separator } from "@/components/ui/separator"; // Changed to correct import
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
+// import verification_key from "./verification_key.json";
+
 import {
   AbiCoder,
   Contract,
   Interface,
-  ZeroAddress,
   isAddress,
   hexlify,
   zeroPadValue,
@@ -28,22 +29,11 @@ import {
 import { MerkleTree } from "fixed-merkle-tree";
 import { CopyIcon, Loader2 } from "lucide-react";
 
-// import { wasmsnark_bn128 } from "wasmsnark";
-
-// // Define the Groth16Proof type
-// interface Groth16Proof {
-//   pi_a: string[];
-//   pi_b: string[][];
-//   pi_c: string[];
-//   protocol: string;
-//   curve: string;
-// }
-
 const MERKLE_TREE_HEIGHT = 20;
 
 const formSchema = z.object({
   preimage: z.string().nonempty({ message: "Required" }),
-  destination: z.string().nonempty({ message: "Required" }),
+  contractAddress: z.string().nonempty({ message: "Required" }),
 });
 
 type GenerateProofForm = z.infer<typeof formSchema>;
@@ -52,51 +42,31 @@ export default function ZKProofGenerator() {
   const [response, setResponse] = useState<string | null>(null);
   const [isGenerateLoading, setIsGenerateLoading] = useState(false);
   const { contracts } = useContractStore();
-  const { providers } = useWalletStore();
+  const { networks } = useWalletStore();
 
   const { toast } = useToast();
 
   const contract_object = contracts[2];
 
-  const contract: Contract = new Contract(
-    contract_object!.address,
-    contract_object!.abi,
-    providers![3],
-    // currently set to Sepolia
-  );
-
   const GenerateForm = useForm<GenerateProofForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       preimage: "",
-      destination: "",
+      contractAddress: "",
     },
   });
 
   async function onGenerateSubmit(data: GenerateProofForm) {
-    setIsGenerateLoading(true);
-    // const pedersen = await buildPedersenHash();
-    // const babyJubs = await buildBabyjub();
-
-    if (!isAddress(data.destination)) {
+    if (!isAddress(data.contractAddress)) {
       toast({
-        title: "Form Error",
-        description: "invalid address",
         variant: "destructive",
+        title: "Input Error",
+        description: "invalid contract address",
       });
-      setIsGenerateLoading(false);
-      return;
     }
+    setIsGenerateLoading(true);
 
-    // const pedersenHash = (data: string | Buffer<ArrayBufferLike>) => {
-    //   return babyJubs.unpackPoint(pedersen.hash(data))[0];
-    // };
-
-    // console.log(
-    //   "First try catch block checkpoint: fetching merkle tree data from the contract",
-    // );
-
-    const { preimage, destination } = data;
+    const { preimage } = data;
 
     const decodedBuffer = Buffer.from(preimage.trim().slice(2), "hex");
 
@@ -105,14 +75,18 @@ export default function ZKProofGenerator() {
     const hashX = utils.leBuff2int(decodedBuffer.subarray(62, 94));
     const commitment = utils.leBuff2int(decodedBuffer.subarray(94));
 
-    // const { root } = await getMerkleTreeData();
-    const { root, pathElements, pathIndices } = await getMerkleTreeData();
-    console.log({ root });
+    const result = await getMerkleTreeData(data.contractAddress);
 
-    // const recipient = destination;
-    // const relayer = "none";
-    // const fee = "0";
-    // const refund = "";
+    if (!result) {
+      throw new Error("getMerkleTreeData returned undefined");
+    } else if (result.error) {
+      throw new Error(`getMerkleTreeData failed: ${result.error}`);
+    }
+
+    const { root, pathElements, pathIndices } = result;
+    console.log({ root });
+    const rootBytes = "0x" + BigInt(root as string).toString(16);
+    console.log({ rootBytes });
 
     try {
       console.log("entering try block for proof");
@@ -120,10 +94,6 @@ export default function ZKProofGenerator() {
       const input = {
         root: root!.toString(),
         nullifierHash: hashX.toString(),
-        recipient: destination,
-        relayer: "",
-        fee: "",
-        refund: "",
         nullifier: x.toString(),
         secret: y.toString(),
         pathElements: pathElements!.map((e) => e.toString()),
@@ -138,108 +108,80 @@ export default function ZKProofGenerator() {
         "/withdraw_0001.zkey",
       );
 
-      console.log("response successful");
-
-      console.log("Proof output:", proof);
-
-      setIsGenerateLoading(false);
-
-      // 1. Prepare the proof bytes correctly
-      const rawCalldata = await snarkjs.groth16.exportSolidityCallData(
+      const calldata = await snarkjs.groth16.exportSolidityCallData(
         proof,
         publicSignals,
       );
-      const calldata = JSON.parse("[" + rawCalldata + "]");
-      console.log("Parsed calldata:", JSON.stringify(calldata, null, 2));
 
-      // Check the structure of proof parts
-      // const pi_a = calldata[0];
-      // const pi_b = calldata[1];
-      // const pi_c = calldata[2];
+      console.log({ calldata });
 
-      let proofBytes = "";
+      const pA = proof.pi_a.slice(0, 2);
+      const pB = proof.pi_b.slice(0, 2);
+      const pC = proof.pi_c.slice(0, 2);
+      const pubSignals = publicSignals;
 
-      // Add pi_a (first two values)
-      proofBytes += calldata[0][0].slice(2); // Remove 0x prefix
-      proofBytes += calldata[0][1].slice(2);
+      console.log({ pA });
 
-      // Add pi_b (2x2 matrix)
-      proofBytes += calldata[1][0][0].slice(2);
-      proofBytes += calldata[1][0][1].slice(2);
-      proofBytes += calldata[1][1][0].slice(2);
-      proofBytes += calldata[1][1][1].slice(2);
-
-      // Add pi_c (last two values)
-      proofBytes += calldata[2][0].slice(2);
-      proofBytes += calldata[2][1].slice(2);
-
-      // Add 0x prefix to complete the bytes value
-      const solidityProof = "0x" + proofBytes;
-
-      console.log("Constructed solidityProof:", solidityProof);
-      // 2. Convert root and nullifierHash to bytes32
-      const rootBytes32 = hexlify(
-        zeroPadValue(toBeArray(BigInt(input.root)), 32),
-      );
-      const nullifierHashBytes32 = hexlify(
-        zeroPadValue(toBeArray(BigInt(input.nullifierHash)), 32),
+      const pAHex = pA.map((number) =>
+        hexlify(zeroPadValue(toBeArray(BigInt(number)), 32)),
       );
 
-      // 3. Use proper address types
-      const recipientAddress = data.destination; // Already an address
-      const relayerAddress = ZeroAddress; // Use zero address if empty
-
-      const fee = 0;
-      const refund = 0;
-
-      // 4. Encode with correct types
-      const encodedProof = AbiCoder.defaultAbiCoder().encode(
-        [
-          "bytes", // Combined proof
-          "bytes32", // Root
-          "bytes32", // NullifierHash
-          "address", // Recipient
-          "address", // Relayer
-          "uint256", // Fees
-          "uint256", // Refunds
-        ],
-        [
-          solidityProof,
-          rootBytes32,
-          nullifierHashBytes32,
-          recipientAddress,
-          relayerAddress,
-          fee,
-          refund,
-        ],
+      console.log({ pAHex });
+      const pBHex = pB.map((row) => {
+        return row
+          .reverse()
+          .map((column) =>
+            hexlify(zeroPadValue(toBeArray(BigInt(column)), 32)),
+          );
+      });
+      const pCHex = pC.map((number) =>
+        hexlify(zeroPadValue(toBeArray(BigInt(number)), 32)),
+      );
+      const signalsHex = pubSignals.map((number) =>
+        hexlify(zeroPadValue(toBeArray(BigInt(number)), 32)),
       );
 
-      console.log("Solidity Inputs:", encodedProof);
+      // ABI types matching verifier contract
+      const types = ["uint256[2]", "uint256[2][2]", "uint256[2]", "uint256[2]"];
+
+      // Encode into byte array
+      const encodedProof = AbiCoder.defaultAbiCoder().encode(types, [
+        pAHex,
+        pBHex,
+        pCHex,
+        signalsHex,
+      ]);
+
+      console.log({ encodedProof });
+
+      const decodedProof = AbiCoder.defaultAbiCoder().decode(
+        types,
+        encodedProof,
+      );
+
+      console.log({ decodedProof });
+
+      console.log({ proof, publicSignals });
 
       setResponse(encodedProof);
 
-      //for litmus checking purposes
-
-      const decodedProof = AbiCoder.defaultAbiCoder().decode(
-        [
-          "bytes", // Combined proof
-          "bytes32", // Root
-          "bytes32", // NullifierHash
-          "address", // Recipient
-          "address", // Relayer
-          "uint256", // Fees
-          "uint256", // Refunds
-        ],
-        encodedProof,
-      );
-      console.log({ decodedProof });
+      setIsGenerateLoading(false);
     } catch (error) {
       console.error("Error generating proof:", error);
       setIsGenerateLoading(false);
     }
 
-    async function getMerkleTreeData() {
-      console.log("Checkpoint, parsing logs from contract");
+    async function getMerkleTreeData(contractAddress: string) {
+      const contract: Contract = new Contract(
+        contractAddress,
+        contract_object!.abi,
+        networks![2].provider,
+        // currently set to Sepolia
+      );
+
+      console.log("Checkpoint, parsing logs from contract: ", {
+        contractAddress,
+      });
 
       const mimcSponge = await buildMimcSponge();
       const mimcHasher = (
@@ -284,33 +226,36 @@ export default function ZKProofGenerator() {
         console.log("leaves", leaves);
 
         const depositEvent = parsed_logs.find(
-          (e) => e!.args.commitment === "0x" + commitment.toString(16),
+          (e) =>
+            e!.args.commitment ===
+            hexlify(zeroPadValue(toBeArray(BigInt(commitment)), 32)),
         );
 
         console.log("depositEvent", depositEvent);
 
         const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves, {
           hashFunction: mimcHasher,
-          zeroElement: "0",
+          zeroElement:
+            "21663839004416932945382355908790599225266501822907911457504978515578255421292",
         });
 
-        // let depositEvent = parsed_logs.find(
-        //   (e) => e.returnValues.commitment === "0x" + commitment.toString(16),
-        // );
-        // let leafIndex = depositEvent ? depositEvent.returnValues.leafIndex : -1;
+        // const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
 
         const leafIndex: number = depositEvent
           ? Number(depositEvent.args[1])
           : -1;
 
+        if (leafIndex == -1) {
+          toast({
+            title: "Merkle Tree Error",
+            description: "Commitment not found in tree",
+            variant: "destructive",
+          });
+          return;
+        }
+
         console.log({ leafIndex });
 
-        // const ecommitment: Element = ("0x" +
-        //   BigInt(commitment!).toString(16).padStart(32, "0")) as Element;
-
-        // const proof = tree.proof(ecommitment);
-
-        // const pathElements = proof.pathElements;
         const { pathElements, pathIndices } = tree.path(leafIndex);
         const treelen = tree.elements.length;
         const root = tree.root;
@@ -318,19 +263,19 @@ export default function ZKProofGenerator() {
         console.log({
           tree,
           treelen,
-          // proof,
           pathElements,
           pathIndices,
           root,
         });
 
-        // const tree = new MerkleTree(20, []);
-        // console.log({ commitment });
-        // const ecommitment: Element = ("0x" +
-        //   BigInt(commitment!).toString(16).padStart(32, "0")) as Element;
-        // tree.insert(ecommitment);
-        // const path = tree.proof(ecommitment);
-        // console.log(path);
+        const rootBytes = hexlify(zeroPadValue(toBeArray(BigInt(root)), 32));
+
+        const rootIndex = await contract.currentRootIndex();
+        const lastRoot = await contract.getLastRoot();
+        const rootCheck = await contract.isKnownRoot(rootBytes);
+        const zeroRoot = await contract.roots(0);
+
+        console.log({ rootIndex, lastRoot, rootCheck, rootBytes, zeroRoot });
 
         return {
           root,
@@ -338,7 +283,7 @@ export default function ZKProofGenerator() {
           pathIndices,
         };
       } catch (error) {
-        console.error(error);
+        console.log(error);
         toast({
           title: "Error getting Merkle Data",
           description: `${error}`,
@@ -364,7 +309,7 @@ export default function ZKProofGenerator() {
               name="preimage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Private Key</FormLabel>
+                  <FormLabel>Proving Key</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter PrivateKey" {...field} />
                   </FormControl>
@@ -374,12 +319,15 @@ export default function ZKProofGenerator() {
 
             <FormField
               control={GenerateForm.control}
-              name="destination"
+              name="contractAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Destination Address</FormLabel>
+                  <FormLabel>zero knowledge snark Contract Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter Destination Address" {...field} />
+                    <Input
+                      placeholder="Enter address for contract you deposited to"
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -424,6 +372,41 @@ export default function ZKProofGenerator() {
                 {JSON.stringify(response)}
               </pre>
             </div>
+            <br />
+            <div>
+              <div>READ CAREFULLY: how to use your proof</div>
+              <div>
+                There are two ways to use this proof in order to withdraw your
+                funds:
+              </div>
+              <div>OPTION 0</div>
+              <div>
+                Calling smart contract functions requires paying a small amount
+                of ethereum to the network, otherwise known as a gas fee. If you
+                have funds in another wallet to pay the gas fees to cover the
+                WITHDRAW function call from the ZK deposit withdraw contract, go
+                ahead and paste this proof into the WITHDRAW function using the
+                wallet you used.{" "}
+                <span className="text-red-500">
+                  Make sure that the wallet you are withdrawing to has never
+                  interacted with the wallet you deposited from!{" "}
+                </span>
+              </div>
+              <div>OPTION 1</div>
+              <div>
+                If you dont have another secure ethereum wallet that can pay for
+                the gas fees to withdraw your funds from the contract. You will
+                need to use the{" "}
+                <span className="text-violet-500">zk withdrawal agent</span>{" "}
+                from the encryption tools menu. Using it is easy. Paste your
+                proof and the address to your empty ethereum wallet that you are
+                sending the funds to into the agents interface. The agent will
+                send a smart contract function call on your behalf from a secure
+                AWS lambda function and pay for the gas fees. 0xlibrary makes it
+                easy to generate and manage multiple wallets from within the
+                client.
+              </div>
+            </div>
           </div>
         )}
         <br />
@@ -432,9 +415,3 @@ export default function ZKProofGenerator() {
     </div>
   );
 }
-
-// proof in progress
-//
-// public commitment 0x1a7d8adf18ef007e7e0474f9ba4eed8b9f33d19e480afa948f8a47e3d8f8204a
-//
-// private key 0x0ecdc87477b73bf4494bad31a90e72b1b30cc620877921fcc627d36c180b151edf757e2957bf96819da1651458a24a0940b32d538d1b479b277eb3ebf294b586abbb780ec361c3db7816adf7a6430d582fb8e08e63e0aeb55efe6e4aac274a20f8d8e3478a8f94fa0a489ed1339f8bed4ebaf974047e7e00ef18df8a7d1a

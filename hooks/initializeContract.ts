@@ -5,13 +5,13 @@ import { useToast } from "./use-toast";
 
 export function useInitializeContract() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT } = ContractStore();
-  const { private_key, providers, wallet } = useWalletStore();
+  const { wallet, networks } = useWalletStore();
   const { toast } = useToast();
 
   const deployProxyContract = async (
     data: unknown,
   ): Promise<Result[] | Error> => {
-    if (!providers || !private_key) {
+    if (!networks || !wallet) {
       throw new Error("providers or wallet not available");
     }
 
@@ -30,7 +30,10 @@ export function useInitializeContract() {
         network_index = 0;
     }
 
-    const wallet = new Wallet(private_key!, providers![network_index]);
+    const etherswallet = new Wallet(
+      wallet.private_key!,
+      networks![network_index].provider,
+    );
 
     const master_address = SELECTED_CONTRACT?.master_address;
     const proxy_abi = SELECTED_CONTRACT?.abi;
@@ -41,7 +44,7 @@ export function useInitializeContract() {
     const master_contract = new Contract(
       master_address!,
       master_abi as any,
-      wallet,
+      etherswallet,
     );
 
     console.log("checkpoint, calling deploy proxy function on blockchain");
@@ -83,7 +86,7 @@ export function useInitializeContract() {
       const proxy_contract = new Contract(
         proxy_address,
         proxy_abi as any,
-        wallet,
+        etherswallet,
       );
       set_INITIALIZED_CONTRACT(proxy_contract);
 
@@ -121,12 +124,15 @@ export function useInitializeContract() {
     }
 
     try {
-      const wallet = new Wallet(private_key!, providers![network_index]);
+      const etherswallet = new Wallet(
+        wallet!.private_key!,
+        networks![network_index].provider,
+      );
 
       const master_contract = new Contract(
         SELECTED_CONTRACT?.master_address!,
         SELECTED_CONTRACT?.master_abi as any,
-        wallet,
+        etherswallet,
       );
 
       // Add verification that mapping exists
@@ -138,11 +144,11 @@ export function useInitializeContract() {
         const result =
           await master_contract[SELECTED_CONTRACT.mapping_name](address);
 
-        if (result === wallet.address) {
+        if (result === etherswallet.address) {
           const proxy_contract = new Contract(
             address,
             SELECTED_CONTRACT?.abi as any,
-            wallet,
+            etherswallet,
           );
           set_INITIALIZED_CONTRACT(proxy_contract);
           return proxy_contract;

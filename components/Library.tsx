@@ -1,4 +1,5 @@
-import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -19,40 +20,47 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 // Import shadcn’s built-in pagination components
-import {
-  Pagination,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
+// import {
+//   Pagination,
+//   PaginationItem,
+//   PaginationPrevious,
+//   PaginationNext,
+//   PaginationLink,
+// } from "@/components/ui/pagination";
 import { useContractStore, SmartContract } from "@/hooks/store/contractStore";
+// import { Separator } from "@/components/ui/separator";
 
 export default function Library() {
   const { set_SELECTED_CONTRACT, contracts, set_INITIALIZED_CONTRACT } =
     useContractStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(contracts.length / itemsPerPage);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const itemsPerPage = 10;
+  // const totalPages = Math.ceil(contracts.length / itemsPerPage);
 
   // Calculate indices for the current page
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentContracts = contracts.slice(indexOfFirstItem, indexOfLastItem);
+  // const indexOfLastItem = currentPage * itemsPerPage;
+  // const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentContracts = contracts; //.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <Drawer>
-      <DrawerTrigger>Contract Library</DrawerTrigger>
-      <DrawerContent className="bg-black border-green-400">
+      <DrawerTrigger>
+        <Button
+          variant="outline"
+          className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black"
+        >
+          📝 Contract Library 📚
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="bg-black border-cyan-400">
         <div className="mx-auto w-full">
-          <DrawerHeader>
+          <DrawerHeader className="justify-center ">
             <DrawerTitle>Contract Library</DrawerTitle>
             <DrawerDescription>
-              Choose an Ethereum Smart Contract to interact with. More being
-              worked on and being added to the Library.
+              Choose an Ethereum Smart Contract to interact with.
             </DrawerDescription>
           </DrawerHeader>
-          <Table className="text-green-400">
+          <Table className="text-gray-600">
             <TableHeader>
               <TableRow>
                 <TableHead>Contract Name</TableHead>
@@ -85,7 +93,7 @@ export default function Library() {
             </TableBody>
           </Table>
 
-          <Pagination className="mt-4">
+          {/* <Pagination className="mt-4">
             <PaginationPrevious
               onClick={() => {
                 if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -106,11 +114,42 @@ export default function Library() {
                 if (currentPage < totalPages) setCurrentPage(currentPage + 1);
               }}
             />
-          </Pagination>
+          </Pagination> */}
 
-          <DrawerFooter>
+          <br />
+
+          <div className="flex ml-9">
+            <div>
+              <Image
+                src="/git.png"
+                alt="Library icon"
+                width={50}
+                height={50}
+                className=""
+              />
+            </div>
+
+            <div className="ml-9 mr-9 text-center text-gray-400">
+              Smart contracts featured in the library are open source and can be
+              viewed{" "}
+              <Link
+                href="https://github.com/GigaSpider/0xLibrary-Contracts"
+                target="_blank"
+                className="text-orange-500"
+              >
+                here
+              </Link>
+              . Pull requests to this repository are highly encouraged and will
+              be reviewed ASAP. Any for-profit contract which is merged into the
+              0xlibrary contracts repository will share profits with the
+              engineer at a 5:95 split.
+            </div>
+          </div>
+          <DrawerFooter className="flex justify-center items-center">
             <DrawerClose asChild>
-              <Button variant="ghost">Close Menu</Button>
+              <Button variant="ghost" className="w-40">
+                Close Library
+              </Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

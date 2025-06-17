@@ -1,71 +1,162 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Wallet, JsonRpcProvider, JsonRpcSigner } from "ethers";
-
-export enum Network {
-  Main = "Main",
-  Optimism = "Optimism",
-  Arbitrum = "Arbitrum",
-  Sepolia = "Sepolia",
-}
-
-interface BalanceInfo {
-  amount: bigint;
-}
-
-type Balances = Record<Network, BalanceInfo>;
+import { Wallet, JsonRpcProvider } from "ethers";
 
 // implement at a later date
-// interface WalletHistory {
-//   public_address: string;
-//   private_key: string;
-//   date: string;
-//   isActive: boolean;
-// }
+interface WalletObject {
+  wallet: Wallet;
+  private_key: string;
+}
+
+interface NetworkObject {
+  network_name: string;
+  provider: JsonRpcProvider;
+  balance: bigint;
+}
+
+const MAIN_PROVIDER = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
+const OPTIMISM_PROVIDER = new JsonRpcProvider(
+  process.env.NEXT_PUBLIC_OPTIMISM_URI!,
+);
+const SEPOLIA_PROVIDER = new JsonRpcProvider(
+  process.env.NEXT_PUBLIC_SEPOLIA_URI!,
+);
+
+const default_networks: NetworkObject[] = [
+  { network_name: "mainnet", provider: MAIN_PROVIDER, balance: BigInt(0) },
+  {
+    network_name: "optimism",
+    provider: OPTIMISM_PROVIDER,
+    balance: BigInt(0),
+  },
+  {
+    network_name: "sepolia test net",
+    provider: SEPOLIA_PROVIDER,
+    balance: BigInt(0),
+  },
+];
 
 interface WalletStore {
-  balance: Balances;
-  wallet: Wallet | null;
-  private_key: string | null;
-  providers: JsonRpcProvider[] | null;
-  signers: JsonRpcSigner[] | null;
-  set_balance: (network: Network, balance: BalanceInfo) => void;
-  set_wallet: (wallet: Wallet) => void;
-  set_providers: (providers: JsonRpcProvider[]) => void;
+  wallet: WalletObject | null;
+  price: bigint | null;
+  networks: NetworkObject[];
+  stored_wallets: WalletObject[];
+  set_wallet: (wallet: WalletObject) => void;
+  new_wallet: () => void;
+  update_balance: (network: NetworkObject, balance: bigint) => void;
+  update_price: (price: bigint) => void;
+  delete_wallet: (wallet: WalletObject) => void;
+  add_network: (network: NetworkObject) => void;
+  remove_network: (network: NetworkObject) => void;
+  reset_networks: () => void;
 }
 
 export const useWalletStore = create<WalletStore>()(
   persist(
-    (set) => ({
-      balance: {
-        [Network.Main]: { amount: BigInt(0) },
-        [Network.Optimism]: { amount: BigInt(0) },
-        [Network.Arbitrum]: { amount: BigInt(0) },
-        [Network.Sepolia]: { amount: BigInt(0) },
-      },
+    (set, get) => ({
+      balances: [],
+      price: null,
       wallet: null,
-      private_key: null,
-      providers: null,
-      signers: null,
-      set_balance: (network: Network, balance: BalanceInfo) =>
+      stored_wallets: [],
+      networks: default_networks,
+      set_wallet: (wallet: WalletObject) => {
+        set((state) => {
+          if (
+            state.stored_wallets.some(
+              (w) => w.wallet.address === wallet.wallet.address,
+            )
+          ) {
+            return {};
+          }
+          return {
+            wallet: wallet,
+            stored_wallets: [...state.stored_wallets, wallet],
+          };
+        });
+      },
+      new_wallet: () => {
+        const private_key = Wallet.createRandom().privateKey;
+        const wallet = new Wallet(private_key);
+        const wallet_object: WalletObject = {
+          wallet,
+          private_key,
+        };
+        get().set_wallet(wallet_object);
+      },
+      delete_wallet: (walletObj: WalletObject) => {
+        set((state) => {
+          const updatedWallets = state.stored_wallets.filter(
+            (w) => w.wallet.address !== walletObj.wallet.address,
+          );
+          const isCurrentWallet =
+            state.wallet &&
+            state.wallet.wallet.address === walletObj.wallet.address;
+          if (isCurrentWallet) {
+            const nextWallet = updatedWallets[0] || null;
+            return {
+              stored_wallets: updatedWallets,
+              wallet: nextWallet, // Keep as WalletObject | null
+              private_key: nextWallet ? nextWallet.private_key : null,
+            };
+          }
+          return {
+            stored_wallets: updatedWallets, // Only update stored_wallets, leave wallet unchanged
+          };
+        });
+      },
+      add_network: (network: NetworkObject) => {
         set((state) => ({
-          balance: {
-            ...state.balance,
-            [network]: balance,
-          },
-        })),
-      set_wallet: (wallet: Wallet) =>
-        set({ wallet: wallet, private_key: wallet.privateKey }),
-      set_providers: async (providers: JsonRpcProvider[]) => {
-        console.log(providers);
-        set({ providers: providers });
+          networks: [...state.networks, network],
+        }));
+      },
+      remove_network: (network: NetworkObject) => {
+        set((state) => {
+          const updatedNetworks = state.networks.filter(
+            (n) => n.network_name != network.network_name,
+          );
+
+          return {
+            networks: updatedNetworks,
+          };
+        });
+      },
+      reset_networks: () => {
+        set(() => {
+          return {
+            networks: default_networks,
+          };
+        });
+      },
+      update_balance: (network: NetworkObject, balance: bigint) => {
+        set((state) => {
+          const updated_network: NetworkObject = {
+            network_name: network.network_name,
+            provider: network.provider,
+            balance: balance,
+          };
+          const networks = state.networks;
+          const updated_networks = networks.map((item) =>
+            item.network_name === network.network_name ? updated_network : item,
+          );
+
+          return {
+            networks: updated_networks,
+          };
+        });
+      },
+      update_price: (price: bigint) => {
+        set(() => {
+          return {
+            price: price,
+          };
+        });
       },
     }),
     {
-      name: "wallet-store", // unique key in localStorage
+      name: "wallet-store",
       partialize: (state) => ({
         wallet: state.wallet,
-        private_key: state.private_key,
+        stored_wallets: state.stored_wallets,
       }),
     },
   ),

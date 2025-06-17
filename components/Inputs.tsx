@@ -14,7 +14,7 @@ import { useContractStore } from "@/hooks/store/contractStore";
 export default function Inputs() {
   const { INITIALIZED_CONTRACT } = useContractStore();
   return (
-    <ScrollArea>
+    <ScrollArea className="h-full w-full">
       <CardHeader>
         <CardTitle className="text-center">Contract Execution</CardTitle>
         <CardDescription className="text-center">

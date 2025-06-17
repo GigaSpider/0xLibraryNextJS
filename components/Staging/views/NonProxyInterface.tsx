@@ -8,7 +8,7 @@ export default function NonProxyInterface() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT, INITIALIZED_CONTRACT } =
     useContractStore();
   // const offchain_software = SELECTED_CONTRACT?.offchain_software;
-  const { providers, private_key } = useWalletStore();
+  const { networks, wallet } = useWalletStore();
 
   async function handleInitialization() {
     let network_index;
@@ -19,28 +19,23 @@ export default function NonProxyInterface() {
       case "Optimism":
         network_index = 1;
         break;
-      case "Arbitrum":
-        network_index = 2;
-        break;
       case "Sepolia":
-        network_index = 3;
-        break;
-      case "Local":
-        network_index = 4;
+        network_index = 2;
         break;
       default:
         network_index = 0;
         break;
     }
 
-    const provider = providers![network_index];
-
-    const wallet = new Wallet(private_key!, provider);
+    const walletObject = new Wallet(
+      wallet!.private_key,
+      networks[network_index].provider,
+    );
 
     const initialized = new Contract(
       SELECTED_CONTRACT!.address,
       SELECTED_CONTRACT!.abi,
-      wallet,
+      walletObject,
     );
 
     set_INITIALIZED_CONTRACT(initialized);

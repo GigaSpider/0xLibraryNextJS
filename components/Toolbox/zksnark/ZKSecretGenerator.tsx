@@ -2,15 +2,12 @@
 
 import { utils } from "ffjavascript";
 import { randomBytes } from "crypto";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ZKProofGenerator from "./ZKProofGenerator";
-import Relayer from "./Relayer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CopyIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { buildBabyjub, buildPedersenHash } from "circomlibjs";
+import { hexlify, toBeArray, zeroPadValue } from "ethers";
 
 async function pedersen(buff: Buffer) {
   const hasher = await buildPedersenHash();
@@ -30,21 +27,9 @@ export default function ZKSecretGenerator() {
 
   async function handleGenerateSecrets() {
     setIsGenerateLoading(true);
-    // const jub = await buildBabyjub();
 
     const x = utils.leBuff2int(randomBytes(31));
     const y = utils.leBuff2int(randomBytes(31));
-
-    // Hardcoded values for testing
-
-    // const x = BigInt(
-    //   "344410142378928871436301712867274033804306130921771574934151126616008408896",
-    // );
-    // const y = BigInt(
-    //   "53388718127289800018449053091626962393684120531648523656289837560003367174",
-    // );
-
-    // Encode preimage and commitment for output
 
     const hashX = await pedersen(utils.leInt2Buff(x));
     const buff = Buffer.concat([
@@ -53,30 +38,7 @@ export default function ZKSecretGenerator() {
     ]);
     const commitment = await pedersen(buff);
 
-    // let hashX;
-    // let commitment;
-
-    // try {
-    //   const input = {
-    //     nullifier: x.toString(),
-    //     secret: y.toString(),
-    //   };
-    //   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-    //     input,
-    //     "/pedersenhasher.wasm",
-    //     "/pedersenhasher_0001.zkey",
-    //   );
-
-    //   hashX = publicSignals[0];
-    //   commitment = publicSignals[1];
-
-    //   console.log({ hashX, commitment });
-    // } catch (error) {
-    //   console.error(error);
-    // }
-
-    const commitmentEncoded =
-      "0x" + BigInt(commitment).toString(16).padStart(32, "0");
+    const commitmentEncoded = hexlify(zeroPadValue(toBeArray(commitment), 32));
 
     const privateKeyBuffer = Buffer.concat([
       utils.leInt2Buff(x, 31),
@@ -85,16 +47,15 @@ export default function ZKSecretGenerator() {
       utils.leInt2Buff(BigInt(commitment), 32),
     ]);
 
-    const privateKeyEncoded = "0x" + privateKeyBuffer.toString("hex");
-    // Reconstruct for verification
+    const privateKeyEncoded = hexlify(zeroPadValue(privateKeyBuffer, 126));
 
     const output = {
-      x: x,
-      y: y,
-      hashX: hashX,
-      commitment: commitment,
-      commitmentEncoded: commitmentEncoded,
-      privateKeyEncoded: privateKeyEncoded,
+      x,
+      y,
+      hashX,
+      commitment,
+      commitmentEncoded,
+      privateKeyEncoded,
     };
 
     console.log("Output:", output);
@@ -103,120 +64,143 @@ export default function ZKSecretGenerator() {
     return output;
   }
 
+  // Function to download keys as a text file
+  const downloadKeys = () => {
+    if (!secrets) {
+      toast({
+        description: "No keys available to download. Generate secrets first.",
+        duration: 2000,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Format the content for the text file
+    const content = `Zero Knowledge Keys
+==================
+WARNING: Do not share your Proving Key (privateKeyEncoded) with anyone. Keep it secure!
+
+Public Deposit Identifier: ${secrets.commitmentEncoded}
+Proving Key (Private): ${secrets.privateKeyEncoded}
+
+Instructions:
+1. Use the Public Deposit Identifier when calling the deposit function on the Zero Knowledge Deposit and Withdraw contract.
+2. Use the Proving Key with the contract address in the ZK Proving tool to generate a proof for anonymous withdrawal.
+`;
+
+    // Create and download the text file
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `zk_keys_${new Date().toISOString().slice(0, 10)}.txt`; // Unique filename with date
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col h-full text-xs text-green-400">
-      <ScrollArea className="flex overflow-y-auto m-2">
-        <div>
-          <Button type="submit" onClick={handleGenerateSecrets}>
-            {isGenerateLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate Secrets"
-            )}
-          </Button>
-          <br />
-          <br />
-        </div>
-        <div>
-          {secrets && (
+      <div>
+        <Button type="submit" onClick={handleGenerateSecrets}>
+          {isGenerateLoading ? (
             <>
-              {/* {Object.entries(secrets).map(([key, value]) => {
-                return (
-                  <div key={key}>
-                    {key}: {value}
-                  </div>
-                );
-              })} */}
-              <br />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      secrets["commitmentEncoded"].toString(),
-                    );
-                    toast({
-                      description: "Commitment copied to clipboard",
-                      duration: 2000,
-                    });
-                  }}
-                >
-                  <CopyIcon className="h-3 w-3 mr-1" />
-                  Copy
-                </Button>
-                <span>
-                  Public Key: {secrets["commitmentEncoded"].toString()}
-                </span>
-              </div>
-              <br />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      secrets["privateKeyEncoded"].toString(),
-                    );
-                    toast({
-                      description: "Preimage copied to clipboard",
-                      duration: 2000,
-                    });
-                  }}
-                >
-                  <CopyIcon className="h-3 w-3 mr-1" />
-                  Copy
-                </Button>
-                <span>
-                  Private Key (Do not share):{" "}
-                  {secrets["privateKeyEncoded"].toString()}
-                </span>
-              </div>
-              <br />
-              <br />
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-6 px-2 text-xs text-green-400"
-              >
-                Download Secrets
-              </Button>
-              <br />
-              <br />
-              <div>
-                Use the Commitment in the parameter field when calling the
-                Deposit function on the ZK contract. After you have made your
-                deposit and waited an appropriate amount of time, proceed to
-                generate the proof that allows you to withdraw your funds
-                anonymously
-              </div>
-              <br />
-
-              <Tabs defaultValue="account" className="w-[500px]">
-                <TabsList>
-                  <TabsTrigger value="manual">
-                    Prove Manually (No Fee)
-                  </TabsTrigger>
-                  <TabsTrigger value="relayer">
-                    Use Relayer (.25% Fee)
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="manual">
-                  <ZKProofGenerator />
-                </TabsContent>
-                <TabsContent value="relayer">
-                  <Relayer />
-                </TabsContent>
-              </Tabs>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
             </>
+          ) : (
+            "Generate Secrets"
           )}
-        </div>
-      </ScrollArea>
+        </Button>
+        <br />
+        <br />
+      </div>
+      <div>
+        {secrets && (
+          <>
+            <br />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    secrets["commitmentEncoded"].toString(),
+                  );
+                  toast({
+                    description: "Commitment copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+              >
+                <CopyIcon className="h-3 w-3 mr-1" />
+                Copy
+              </Button>
+              <span>
+                Public Deposit Identifier:{" "}
+                {secrets["commitmentEncoded"].toString()}
+              </span>
+            </div>
+            <br />
+            <div className="flex items-center gap-2 whitespace-pre-wrap break-all text-xs text-green-400 font-mono">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    secrets["privateKeyEncoded"].toString(),
+                  );
+                  toast({
+                    description: "Preimage copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+              >
+                <CopyIcon className="h-3 w-3 mr-1" />
+                Copy
+              </Button>
+              <span>
+                Proving Key (Do not share):{" "}
+                {secrets["privateKeyEncoded"].toString()}
+              </span>
+            </div>
+            <br />
+            <br />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-6 px-2 text-xs text-green-400"
+              onClick={downloadKeys}
+              disabled={!secrets} // Disable if no keys
+            >
+              Download Keys
+            </Button>
+            <br />
+            <br />
+            <div>
+              I.
+              <div>
+                Use your Public Deposit Identifier when calling the deposit
+                function on which ever of the Zero Knowledge Deposit and
+                Withdraw contracts that fits your denomination requirements.
+              </div>
+            </div>
+            <br />
+            <div>
+              II.
+              <div>
+                After making your deposit, use your proving key and the address
+                of the contract you deposited to in the next step of the
+                process, in the ZK Proving tool in order to generate the proof
+                that will allow you to withdraw your funds anonymously
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

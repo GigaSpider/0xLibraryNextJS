@@ -1,4 +1,3 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Contract,
   FunctionFragment,
@@ -6,10 +5,9 @@ import {
   parseEther,
 } from "ethers";
 import { useContractStore } from "@/hooks/store/contractStore";
-import { useWalletStore } from "@/hooks/store/walletStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -93,6 +91,9 @@ function DynamicForm({
         description: `${func.name} called successfully!`,
       });
     } catch (error) {
+      // const data = error.data;
+      // const iface = contract.interface;
+      // const errorParsed = iface.parseError(error.data);
       setIsCallLoading(false);
       console.log(error);
       toast({
@@ -107,7 +108,7 @@ function DynamicForm({
     // Spread the form instance so <Form> gets all the required props.
     <Form {...form}>
       <form className="space-y-4" onSubmit={handleSubmit(functionSubmit)}>
-        <h3 className="font-bold">
+        <h3 className="font-bold text-gray-500">
           {func.name.startsWith("USER") ? func.name.slice(4) : func.name}
         </h3>
         {func.payable && (
@@ -121,10 +122,10 @@ function DynamicForm({
             <Input
               id={`${func.name}-ethAmount`}
               type="number"
-              step="0.0001"
+              step="0.001"
               placeholder="0.0"
               {...register("ethAmount")}
-              className="border rounded p-1 w-full"
+              className="border rounded p-1 w-full border-gray-700"
             />
             {errors.ethAmount && (
               <span className="text-red-500 text-xs">
@@ -147,7 +148,7 @@ function DynamicForm({
                 id={`${func.name}-${fieldName}`}
                 type="text"
                 {...register(fieldName)}
-                className="border rounded p-1 w-full"
+                className="border rounded p-1 w-full border-gray-700"
               />
               {errors[fieldName] && (
                 <span className="text-red-500 text-xs">
@@ -157,17 +158,18 @@ function DynamicForm({
             </div>
           );
         })}
-        <Button variant="secondary" type="submit">
+        <Button
+          variant="outline"
+          type="submit"
+          className="text-cyan-500 hover:bg-cyan-500 hover:text-black border-cyan-500 "
+        >
           {isCallLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Deploying...
             </>
           ) : (
-            <>
-              Execute{" "}
-              {func.name.startsWith("USER") ? func.name.slice(4) : func.name}
-            </>
+            <>{func.name.startsWith("USER") ? func.name.slice(4) : func.name}</>
           )}
         </Button>
       </form>
@@ -177,7 +179,7 @@ function DynamicForm({
 
 export default function ContractDashboard() {
   const { INITIALIZED_CONTRACT } = useContractStore();
-  const { wallet } = useWalletStore();
+  const [showAdminControls, setShowAdminControls] = useState(false);
 
   const functions: FunctionFragment[] =
     INITIALIZED_CONTRACT?.interface.fragments.filter(
@@ -186,10 +188,7 @@ export default function ContractDashboard() {
 
   let callable_functions: FunctionFragment[] | null;
 
-  const user_address: string = wallet?.address as string;
-  const oracle_address: string = process.env.NEXT_PUBLIC_ORACLE_ADDRESS!;
-
-  if (user_address == oracle_address) {
+  if (showAdminControls == true) {
     callable_functions = functions;
   } else {
     callable_functions = functions.filter((func) =>
@@ -204,7 +203,7 @@ export default function ContractDashboard() {
     callable_functions.filter((func) => func.payable == false);
 
   return (
-    <ScrollArea className="h-full w-full text-gray-500">
+    <div>
       {payable_functions.length > 0 ? (
         <>
           <div>Payable functions</div>
@@ -212,7 +211,6 @@ export default function ContractDashboard() {
             <div key={index} className="p-2 border-gray-300">
               <DynamicForm func={func} contract={INITIALIZED_CONTRACT!} />
               <br />
-              <Separator />
             </div>
           ))}
         </>
@@ -227,13 +225,33 @@ export default function ContractDashboard() {
             <div key={index} className="p-2 border-gray-300">
               <DynamicForm func={func} contract={INITIALIZED_CONTRACT!} />
               <br />
-              <Separator />
             </div>
           ))}
         </>
       ) : (
         <></>
       )}
-    </ScrollArea>
+      {INITIALIZED_CONTRACT &&
+        (!showAdminControls ? (
+          <Button
+            variant="outline"
+            className="text-red-500 hover:text-black hover:bg-red-500 border-red-500"
+            onClick={() => setShowAdminControls(true)}
+          >
+            Show Admin Controls
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="text-red-500 hover:text-black hover:bg-red-500 border-red-500"
+            onClick={() => setShowAdminControls(false)}
+          >
+            Hide Admin Controls
+          </Button>
+        ))}
+      <br />
+      <br />
+      <br />
+    </div>
   );
 }

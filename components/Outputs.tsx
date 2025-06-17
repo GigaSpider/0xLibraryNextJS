@@ -11,15 +11,14 @@ import { useContractStore } from "@/hooks/store/contractStore";
 import { ScrollArea } from "./ui/scroll-area";
 import EventListener from "@/components/Outputs/views/EventListener";
 import ContractOutputs from "./Outputs/views/ContractOutputs";
-import { Separator } from "./ui/separator";
 
 export default function Outputs() {
   const { INITIALIZED_CONTRACT, SELECTED_CONTRACT } = useContractStore();
   return (
-    <ScrollArea>
+    <ScrollArea className="h-full w-full">
       <CardHeader>
         <CardTitle className="text-center">Contract Performance</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-center">
           {INITIALIZED_CONTRACT ? (
             <div></div>
           ) : (
@@ -31,7 +30,6 @@ export default function Outputs() {
         {INITIALIZED_CONTRACT ? (
           <ScrollArea className="h-full w-full">
             {SELECTED_CONTRACT!.proxy ? <EventListener /> : <></>}
-            <Separator />
             <br />
             <ContractOutputs />
           </ScrollArea>

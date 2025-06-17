@@ -59,7 +59,7 @@ type ConnectContractForm = z.infer<typeof connectContractSchema>;
 
 export default function ProxyInterface() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT } = useContractStore();
-  const { private_key, providers } = useWalletStore();
+  const { wallet, networks } = useWalletStore();
   const { toast } = useToast();
   const [isDeployLoading, setIsDeployLoading] = useState(false);
   const [isConnectLoading, setIsConnectLoading] = useState(false);
@@ -67,7 +67,7 @@ export default function ProxyInterface() {
   const deployProxyContract = async (
     data: Record<string, string>,
   ): Promise<Result[] | Error> => {
-    if (!providers || !private_key) {
+    if (!networks || !wallet) {
       throw new Error("providers or wallet not available");
     }
 
@@ -91,7 +91,10 @@ export default function ProxyInterface() {
         network_index = 0;
     }
 
-    const wallet = new Wallet(private_key, providers[network_index]);
+    const etherswallet = new Wallet(
+      wallet.private_key,
+      networks[network_index].provider,
+    );
 
     const master_address = selectedContract.master_address;
     const proxy_abi = selectedContract.abi;
@@ -99,7 +102,11 @@ export default function ProxyInterface() {
     const function_name = selectedContract.function_name;
     const event_name = selectedContract.event_name;
 
-    const master_contract = new Contract(master_address, master_abi, wallet);
+    const master_contract = new Contract(
+      master_address,
+      master_abi,
+      etherswallet,
+    );
 
     console.log("checkpoint, calling deploy proxy function on blockchain");
 
@@ -142,7 +149,11 @@ export default function ProxyInterface() {
         });
       }
 
-      const proxy_contract = new Contract(proxy_address, proxy_abi, wallet);
+      const proxy_contract = new Contract(
+        proxy_address,
+        proxy_abi,
+        etherswallet,
+      );
 
       console.log(
         "checkpoint 3, proxy contract address received: ",
@@ -191,17 +202,20 @@ export default function ProxyInterface() {
         return new Error("Invalid network");
     }
 
-    if (!providers || !private_key) {
+    if (!networks || !wallet) {
       return new Error("providers or wallet not available");
     }
 
     try {
-      const wallet = new Wallet(private_key, providers[network_index]);
+      const etherswallet = new Wallet(
+        wallet.private_key,
+        networks[network_index].provider,
+      );
 
       const master_contract = new Contract(
         selectedContract.master_address,
         selectedContract.master_abi as unknown as InterfaceAbi,
-        wallet,
+        etherswallet,
       );
 
       // Add verification that mapping exists
@@ -213,11 +227,11 @@ export default function ProxyInterface() {
         const result =
           await master_contract[selectedContract.mapping_name](address);
 
-        if (result === wallet.address) {
+        if (result === etherswallet.address) {
           const proxy_contract = new Contract(
             address,
             selectedContract.abi,
-            wallet,
+            etherswallet,
           );
           set_INITIALIZED_CONTRACT(proxy_contract);
           return proxy_contract;
@@ -342,10 +356,8 @@ export default function ProxyInterface() {
   }
 
   return (
-    <div>
-      <Label className="text-red-500">
-        {selectedContract?.name} proxy contract
-      </Label>
+    <div className="text-gray-400">
+      <Label>{selectedContract?.name} proxy contract</Label>
       <br />
       <br />
       <div>Master Contract: {selectedContract?.master_address}</div>
@@ -377,7 +389,7 @@ export default function ProxyInterface() {
               )}
             />
           ))}
-          <Button variant="default" type="submit" className="w-full">
+          <Button variant="outline" type="submit" className="w-full">
             {isDeployLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -410,7 +422,7 @@ export default function ProxyInterface() {
               </FormItem>
             )}
           />
-          <Button variant="secondary" type="submit" className="w-full">
+          <Button variant="outline" type="submit" className="w-full">
             {isConnectLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -16,12 +16,12 @@ import {
 
 export default function Chatbox() {
   const [size, setSize] = useState({ width: 700, height: 500 });
-  const [position, setPosition] = useState({ x: -700, y: -500 });
+  const [position, setPosition] = useState({ x: -550, y: -450 });
   const [isOpen, setIsOpen] = useState(false);
   const [channel, setChannel] = useState(Channel.MAIN);
 
   return (
-    <div className="fixed bottom-0 right-0 z-[1000]">
+    <div className="z-[1000]">
       {isOpen && (
         <>
           <Rnd
@@ -136,15 +136,13 @@ export default function Chatbox() {
         </>
       )}
 
-      {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          variant="link"
-          className="text-xs hover:text-violet-500 transition-colors no-underline"
-        >
-          Public Messaging & Support
-        </Button>
-      )}
+      <Button
+        onClick={() => setIsOpen(true)}
+        variant="outline"
+        className="text-gray-500 border-gray-500 transition-colors no-underline"
+      >
+        💬 Trollbox
+      </Button>
     </div>
   );
 }

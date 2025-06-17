@@ -31,21 +31,31 @@ export default function Home() {
   // );
 
   return (
-    <ResizablePanelGroup
-      direction="horizontal"
-      className="w-full h-full rounded-lg"
-    >
-      <ResizablePanel>
-        <Staging />
-      </ResizablePanel>
-      <ResizableHandle className="border-x border-green-400" />
-      <ResizablePanel>
-        <Inputs />
-      </ResizablePanel>
-      <ResizableHandle className="border-x border-green-400" />
-      <ResizablePanel>
-        <Outputs />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <div className="h-full w-full pt-[85px] flex flex-col">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="w-full h-full flex-1"
+      >
+        <ResizablePanel className="h-full flex flex-col">
+          <div className="h-full">
+            <Staging />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle className="border-x border-cyan-500" />
+        <ResizablePanel className="h-full flex flex-col">
+          <div className="h-full">
+            <Inputs />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle className="border-x border-cyan-500" />
+        <ResizablePanel className="h-full flex flex-col">
+          <div className="h-full">
+            <Outputs />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 }
+
+//A fantastic tool for managing many ethereum wallets and interacting with smart contracts

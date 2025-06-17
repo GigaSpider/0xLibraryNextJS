@@ -22,7 +22,7 @@ export default function Messages({ channel }: { channel: Channel }) {
     if (input.trim()) {
       const message = {
         channelId: channel,
-        author: wallet ? wallet.address : "anonymous",
+        author: wallet ? wallet.wallet.address : "anonymous",
         text: input,
       };
       sendMessage(message);

@@ -71,7 +71,11 @@ body {
   }
 }
 
-
+@layer components {
+  .button1 {
+    @apply border-green-400 text-green-400 hover:bg-green-400 hover:text-black;
+  }
+}
 
 @layer base {
   * {

@@ -3,122 +3,153 @@
 import { Rnd } from "react-rnd";
 import { Button } from "@/components/ui/button";
 import { Tools } from "@/components/Toolbox/ProgramInterface";
-import ZKSecretGenerator from "@/components/Toolbox/zksnark/ZKSecretGenerator";
+import { Loader2 } from "lucide-react";
 
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Separator } from "@/components/ui/separator";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
+const ZKSecretGenerator = lazy(
+  () => import("@/components/Toolbox/zksnark/ZKSecretGenerator"),
+);
+const ZKProofGenerator = lazy(
+  () => import("@/components/Toolbox/zksnark/ZKProofGenerator"),
+);
+const ZKWithdrawalAgent = lazy(
+  () => import("@/components/Toolbox/zksnark/ZKWithdrawalAgent"),
+);
+
 export default function ToolBox() {
-  const [size, setSize] = useState({ width: 700, height: 500 });
-  const [position, setPosition] = useState({ x: 0, y: -500 });
+  const [size, setSize] = useState({ width: 500, height: 400 });
+  const [position, setPosition] = useState({ x: -16, y: -350 }); // Visible position
   const [isOpen, setIsOpen] = useState(false);
   const [toolState, setToolState] = useState("");
 
   return (
-    <div className="fixed bottom-0 left-0 z-[1000]">
-      {isOpen && (
-        <>
-          <Rnd
-            default={{
-              width: 500,
-              height: 800,
-              x: 0,
-              y: -800,
-            }}
-            size={{ width: size.width, height: size.height }}
-            position={position}
-            enableResizing={{
-              top: true,
-              right: true,
-              bottom: false,
-              left: false,
-              topRight: true,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            disableDragging={true}
-            minWidth={200}
-            minHeight={200}
-            onResize={(e, direction, ref, delta, position) => {
-              setSize({
-                width: parseInt(ref.style.width),
-                height: parseInt(ref.style.height),
-              });
-              setPosition(position);
-            }}
-            onDrag={(e, d) => {
-              setPosition({ x: d.x, y: d.y });
-            }}
-          >
-            <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
-              <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
-              <div className="relative h-10">
-                <Button
-                  onClick={() => setIsOpen(false)}
-                  className="absolute right-1 z-[1002]"
-                  variant="ghost"
-                >
-                  Hide Tools
-                </Button>
-                <Separator className="absolute bottom-0 w-full" />
-              </div>
+    <div className="z-[1000]">
+      {/* Rnd is always mounted, visibility toggled */}
+      <Rnd
+        size={{ width: size.width, height: size.height }}
+        position={position}
+        enableResizing={{
+          top: true,
+          right: true,
+          bottom: false,
+          left: false,
+          topRight: true,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false,
+        }}
+        disableDragging={true}
+        minWidth={500}
+        minHeight={400}
+        onResize={(e, direction, ref, delta, position) => {
+          setSize({
+            width: parseInt(ref.style.width),
+            height: parseInt(ref.style.height),
+          });
+          setPosition(position);
+        }}
+        onDrag={(e, d) => {
+          setPosition({ x: d.x, y: d.y });
+        }}
+        style={{
+          visibility: isOpen ? "visible" : "hidden", // Use visibility instead of display
+          zIndex: 1000,
+        }}
+      >
+        <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
+          <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
+          <div className="relative h-10">
+            <Button
+              onClick={() => setIsOpen(false)}
+              className="absolute right-1 z-[1002]"
+              variant="ghost"
+            >
+              Hide Tools
+            </Button>
+            <Separator className="absolute bottom-0 w-full" />
+          </div>
 
-              <div className="flex-1 overflow-hidden">
-                <ResizablePanelGroup
-                  direction="horizontal"
-                  className="h-full border"
-                >
-                  <ResizablePanel defaultSize={15} minSize={10}>
-                    {Tools.map((tool) => {
-                      return (
-                        <div key={tool.name}>
-                          <Button
-                            variant="ghost"
-                            onClick={() => {
-                              setToolState(tool.name);
-                            }}
-                          >
-                            <span className="text-green-400">{tool.name}</span>
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </ResizablePanel>
-                  <ResizableHandle />
-                  <ResizablePanel defaultSize={75}>
-                    {(() => {
-                      switch (toolState) {
-                        case "ZK-snark tool":
-                          return <ZKSecretGenerator />;
+          <div className="flex-1 overflow-hidden">
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="h-full border"
+            >
+              <ResizablePanel defaultSize={15} minSize={10}>
+                {Tools.map((tool) => (
+                  <div key={tool.name}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setToolState(tool.name)}
+                    >
+                      <span className="text-green-400">{tool.description}</span>
+                    </Button>
+                  </div>
+                ))}
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={75}>
+                <ScrollArea className="h-full overflow-y-auto">
+                  <Suspense
+                    fallback={
+                      <div className="p-4 text-gray-400 flex items-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading tool...
+                      </div>
+                    }
+                  >
+                    <div
+                      style={{
+                        display:
+                          toolState === "ZK Secret Generator"
+                            ? "block"
+                            : "none",
+                      }}
+                    >
+                      <ZKSecretGenerator />
+                    </div>
+                    <div
+                      style={{
+                        display:
+                          toolState === "ZK Proof Generator" ? "block" : "none",
+                      }}
+                    >
+                      <ZKProofGenerator />
+                    </div>
+                    <div
+                      style={{
+                        display: toolState === "ZK Agent" ? "block" : "none",
+                      }}
+                    >
+                      <ZKWithdrawalAgent />
+                    </div>
+                    {toolState === "" && (
+                      <div className="p-4 text-gray-400">
+                        Select a tool to get started.
+                      </div>
+                    )}
+                  </Suspense>
+                </ScrollArea>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        </div>
+      </Rnd>
 
-                        default:
-                          return null;
-                      }
-                    })()}
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </div>
-            </div>
-          </Rnd>
-        </>
-      )}
-
-      {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          variant="link"
-          className="text-xs hover:text-green-400 transition-colors no-underline"
-        >
-          Encryption Tools
-        </Button>
-      )}
+      <Button
+        onClick={() => setIsOpen(!isOpen)}
+        variant="outline"
+        className="text-xs text-green-500 transition-colors no-underline border-green-500 hover:bg-green-500 hover:text-black"
+      >
+        Encryption Tools 🛠
+      </Button>
     </div>
   );
 }

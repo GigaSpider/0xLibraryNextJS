@@ -6,14 +6,14 @@ import Chatbox from "@/components/Chatbox/Chatbox";
 
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 w-full py-4 px-6 flex justify-between items-center bg-black">
-      <div className="flex-1 justify-start">
+    <footer className="fixed bottom-0 w-full py-4 px-4 flex justify-between items-center bg-black">
+      <div className="justify-start">
         <ToolBox />
       </div>
-      <div className="flex-1 flex justify-center">
+      <div className="justify-center">
         <Library />
       </div>
-      <div className="flex-1 flex justify-end">
+      <div className="justify-end">
         <Chatbox />
       </div>
     </footer>
