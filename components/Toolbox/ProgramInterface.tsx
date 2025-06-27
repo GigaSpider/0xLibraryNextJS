@@ -18,10 +18,22 @@ const zkWithdrawalAgent: Tool = {
   description: "Withdraw Agent",
 };
 
+const EcDSAEncrypt = {
+  name: "EcDSA Encrypt",
+  description: "EcDSA Encrypt",
+};
+
+const EcDSADecrypt: Tool = {
+  name: "EcDSA Decrypt",
+  description: "EcDSA Decrypt",
+};
+
 export const Tools: Tool[] = [
   zkSecretGenerator,
   zkProofGenerator,
   zkWithdrawalAgent,
+  EcDSAEncrypt,
+  EcDSADecrypt,
 ];
 
 // export default function ProgramInterface({ Program }: { Program: Program }) {}

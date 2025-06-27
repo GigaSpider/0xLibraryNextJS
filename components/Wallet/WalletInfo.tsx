@@ -28,12 +28,34 @@ export default function WalletInfo() {
   const { networks, wallet, price } = useWalletStore();
   const { timeUntilUpdate } = useWalletHook();
 
+  function handleNetworkRowClick(chainId: number) {
+    let openlink;
+    switch (chainId) {
+      case 1:
+        openlink = `https://etherscan.io/address/${wallet!.wallet.address}`;
+        break;
+      case 10:
+        openlink = `https://optimistic.etherscan.io/address/${wallet!.wallet.address}`;
+        break;
+      case 11155111:
+        openlink = `https://sepolia.etherscan.io/address/${wallet!.wallet.address}`;
+        break;
+      default:
+        return;
+    }
+    window.open(openlink, "_blank");
+  }
+
   return (
     <div className="flex items-center gap-4 text-gray-500">
       <div>
-        {wallet
-          ? wallet.wallet.address
-          : "Load or create new wallet using Wallet Actions"}
+        {wallet ? (
+          <div>
+            <span className="text-green-400">{wallet.wallet.address}</span>
+          </div>
+        ) : (
+          "Load or create new wallet using Wallet Actions"
+        )}
       </div>
       <Separator orientation="vertical" className="h-6 border-l-2" />
       <div>${(Number(price) / 1e8).toFixed(2)}/eth</div>
@@ -42,7 +64,7 @@ export default function WalletInfo() {
         <PopoverTrigger>
           <Button
             variant="outline"
-            className="text-yellow-400 transition-colors no-underline border-yellow-400  hover:bg-yellow-500 hover:text-black"
+            className="text-yellow-400 transition-colors no-underline border-gray-600  hover:bg-yellow-500 hover:text-black"
           >
             💰 Balances
           </Button>
@@ -61,7 +83,10 @@ export default function WalletInfo() {
                 </TableHeader>
                 <TableBody>
                   {networks.map((network) => (
-                    <TableRow key={network.network_name}>
+                    <TableRow
+                      key={network.network_name}
+                      onClick={() => handleNetworkRowClick(network.chainId)}
+                    >
                       <TableCell>
                         {!price ? (
                           <span className="text-red-400">err</span>

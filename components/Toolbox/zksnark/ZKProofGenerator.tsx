@@ -3,7 +3,6 @@
 import * as snarkjs from "snarkjs";
 import { useToast } from "@/hooks/use-toast";
 import { utils } from "ffjavascript";
-import { buildMimcSponge } from "circomlibjs";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
@@ -14,22 +13,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator"; // Changed to correct import
 import { useContractStore } from "@/hooks/store/contractStore";
-import { useWalletStore } from "@/hooks/store/walletStore";
-// import verification_key from "./verification_key.json";
+import { CardTitle } from "@/components/ui/card";
 
-import {
-  AbiCoder,
-  Contract,
-  Interface,
-  isAddress,
-  hexlify,
-  zeroPadValue,
-  toBeArray,
-} from "ethers";
-import { MerkleTree } from "fixed-merkle-tree";
+import { AbiCoder, isAddress, hexlify, zeroPadValue, toBeArray } from "ethers";
 import { CopyIcon, Loader2 } from "lucide-react";
-
-const MERKLE_TREE_HEIGHT = 20;
 
 const formSchema = z.object({
   preimage: z.string().nonempty({ message: "Required" }),
@@ -42,7 +29,6 @@ export default function ZKProofGenerator() {
   const [response, setResponse] = useState<string | null>(null);
   const [isGenerateLoading, setIsGenerateLoading] = useState(false);
   const { contracts } = useContractStore();
-  const { networks } = useWalletStore();
 
   const { toast } = useToast();
 
@@ -96,8 +82,8 @@ export default function ZKProofGenerator() {
         nullifierHash: hashX.toString(),
         nullifier: x.toString(),
         secret: y.toString(),
-        pathElements: pathElements!.map((e) => e.toString()),
-        pathIndices: pathIndices!.map((i) => i.toString()),
+        pathElements: pathElements!.map((e: Element) => e.toString()),
+        pathIndices: pathIndices!.map((i: Element) => i.toString()),
       };
 
       console.log("getting Merkle Tree Data from contract...");
@@ -172,110 +158,34 @@ export default function ZKProofGenerator() {
     }
 
     async function getMerkleTreeData(contractAddress: string) {
-      const contract: Contract = new Contract(
-        contractAddress,
-        contract_object!.abi,
-        networks![2].provider,
-        // currently set to Sepolia
-      );
-
-      console.log("Checkpoint, parsing logs from contract: ", {
-        contractAddress,
-      });
-
-      const mimcSponge = await buildMimcSponge();
-      const mimcHasher = (
-        left: string | number | bigint,
-        right: string | number | bigint,
-      ) => {
-        return mimcSponge.F.toString(
-          mimcSponge.multiHash([BigInt(left), BigInt(right)]),
-        );
-      };
-
       try {
-        const event_logs = await contract.queryFilter("DepositEvent");
+        const response = await fetch("/api/GetMerkleTreeData", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chainId: contract_object.chainId,
+            contract_address: contractAddress,
+            commitment: commitment.toString(),
+          }),
+        });
 
-        const contract_interface: Interface = contract.interface;
+        const result = await response.json();
 
-        console.log(contract_interface);
+        console.log({ result });
 
-        const parsed_logs = event_logs.map((log) => {
-          const parsed_log = contract_interface.parseLog(log);
-          if (parsed_log) {
-            return {
-              ...log,
-              name: parsed_log.name,
-              args: parsed_log.args,
-            };
-          } else {
+        if (!response.ok) {
+          if (result.error) {
             toast({
-              title: "Error gathering merkle tree data",
+              title: "Merkle Tree Error",
+              description: `${result.reason}`,
               variant: "destructive",
-              description: "no deposit events detected on the contract",
             });
           }
-        });
-
-        console.log("parsed_logs", parsed_logs);
-
-        const leaves = parsed_logs
-          .sort((a, b) => Number(a!.args.leafIndex) - Number(b!.args.leafIndex))
-          .map((event) => event!.args.commitment);
-
-        console.log("leaves", leaves);
-
-        const depositEvent = parsed_logs.find(
-          (e) =>
-            e!.args.commitment ===
-            hexlify(zeroPadValue(toBeArray(BigInt(commitment)), 32)),
-        );
-
-        console.log("depositEvent", depositEvent);
-
-        const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves, {
-          hashFunction: mimcHasher,
-          zeroElement:
-            "21663839004416932945382355908790599225266501822907911457504978515578255421292",
-        });
-
-        // const tree = new MerkleTree(MERKLE_TREE_HEIGHT, leaves);
-
-        const leafIndex: number = depositEvent
-          ? Number(depositEvent.args[1])
-          : -1;
-
-        if (leafIndex == -1) {
-          toast({
-            title: "Merkle Tree Error",
-            description: "Commitment not found in tree",
-            variant: "destructive",
-          });
-          return;
         }
 
-        console.log({ leafIndex });
-
-        const { pathElements, pathIndices } = tree.path(leafIndex);
-        const treelen = tree.elements.length;
-        const root = tree.root;
-
-        console.log({
-          tree,
-          treelen,
-          pathElements,
-          pathIndices,
-          root,
-        });
-
-        const rootBytes = hexlify(zeroPadValue(toBeArray(BigInt(root)), 32));
-
-        const rootIndex = await contract.currentRootIndex();
-        const lastRoot = await contract.getLastRoot();
-        const rootCheck = await contract.isKnownRoot(rootBytes);
-        const zeroRoot = await contract.roots(0);
-
-        console.log({ rootIndex, lastRoot, rootCheck, rootBytes, zeroRoot });
+        const { root, pathElements, pathIndices } = result;
 
         return {
           root,
@@ -295,10 +205,13 @@ export default function ZKProofGenerator() {
   }
 
   return (
-    <div className="flex flex-col h-full text-green-400">
+    <div className="flex flex-col h-full m-2">
+      <CardTitle className="text-green-400">
+        Zero-Knowledge Succint Non-interactive Arguement of Knowledge — Proof
+        Generation Tool
+      </CardTitle>
+      <br />
       <div>
-        <br />
-        <br />
         <Form {...GenerateForm}>
           <form
             onSubmit={GenerateForm.handleSubmit(onGenerateSubmit)}
@@ -386,25 +299,20 @@ export default function ZKProofGenerator() {
                 have funds in another wallet to pay the gas fees to cover the
                 WITHDRAW function call from the ZK deposit withdraw contract, go
                 ahead and paste this proof into the WITHDRAW function using the
-                wallet you used.{" "}
-                <span className="text-red-500">
-                  Make sure that the wallet you are withdrawing to has never
-                  interacted with the wallet you deposited from!{" "}
-                </span>
+                wallet you used. Make sure that the wallet you are withdrawing
+                to has never interacted with the wallet you deposited from!
               </div>
               <div>OPTION 1</div>
               <div>
                 If you dont have another secure ethereum wallet that can pay for
                 the gas fees to withdraw your funds from the contract. You will
-                need to use the{" "}
-                <span className="text-violet-500">zk withdrawal agent</span>{" "}
-                from the encryption tools menu. Using it is easy. Paste your
-                proof and the address to your empty ethereum wallet that you are
-                sending the funds to into the agents interface. The agent will
-                send a smart contract function call on your behalf from a secure
-                AWS lambda function and pay for the gas fees. 0xlibrary makes it
-                easy to generate and manage multiple wallets from within the
-                client.
+                need to use the from the encryption tools menu. Using it is
+                easy. Paste your proof and the address to your empty ethereum
+                wallet that you are sending the funds to into the agents
+                interface. The agent will send a smart contract function call on
+                your behalf from a secure AWS lambda function and pay for the
+                gas fees. 0xlibrary makes it easy to generate and manage
+                multiple wallets from within the client.
               </div>
             </div>
           </div>

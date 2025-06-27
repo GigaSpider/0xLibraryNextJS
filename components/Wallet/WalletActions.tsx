@@ -216,12 +216,12 @@ WARNING: Do not share your private keys with anybody or someone could steal your
         <DropdownMenuTrigger>
           <Button
             variant="outline"
-            className="text-gray-600 border-gray-600 hover:text-black hover:bg-gray-600"
+            className="text-cyan-500 border-cyan-500 hover:text-black hover:bg-cyan-500"
           >
             Wallet Actions ⚡️
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="border-gray-700 background bg-black">
+        <DropdownMenuContent className="border-cyan-500 background bg-black">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Manage Wallets</DropdownMenuLabel>
             <DropdownMenuSub>
@@ -318,7 +318,9 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                       stored_wallets.map((walletObj, index) => (
                         <DropdownMenuSub key={index}>
                           <DropdownMenuSubTrigger>
-                            {walletObj.wallet.address || "Unnamed Wallet"}
+                            <span className="text-cyan-500">
+                              {walletObj.wallet.address || "Unnamed Wallet"}
+                            </span>
                           </DropdownMenuSubTrigger>
                           <DropdownMenuPortal>
                             <DropdownMenuSubContent>

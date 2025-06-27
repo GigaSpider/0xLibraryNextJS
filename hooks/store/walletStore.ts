@@ -1,38 +1,29 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Wallet, JsonRpcProvider } from "ethers";
+import { Wallet } from "ethers";
 
-// implement at a later date
-interface WalletObject {
+export interface WalletObject {
   wallet: Wallet;
   private_key: string;
 }
 
-interface NetworkObject {
+export interface NetworkObject {
   network_name: string;
-  provider: JsonRpcProvider;
-  balance: bigint;
+  chainId: number;
+  balance: string;
 }
 
-const MAIN_PROVIDER = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
-const OPTIMISM_PROVIDER = new JsonRpcProvider(
-  process.env.NEXT_PUBLIC_OPTIMISM_URI!,
-);
-const SEPOLIA_PROVIDER = new JsonRpcProvider(
-  process.env.NEXT_PUBLIC_SEPOLIA_URI!,
-);
-
 const default_networks: NetworkObject[] = [
-  { network_name: "mainnet", provider: MAIN_PROVIDER, balance: BigInt(0) },
+  { network_name: "mainnet", chainId: 1, balance: BigInt(0).toString() },
   {
     network_name: "optimism",
-    provider: OPTIMISM_PROVIDER,
-    balance: BigInt(0),
+    chainId: 10,
+    balance: BigInt(0).toString(),
   },
   {
     network_name: "sepolia test net",
-    provider: SEPOLIA_PROVIDER,
-    balance: BigInt(0),
+    chainId: 11155111,
+    balance: BigInt(0).toString(),
   },
 ];
 
@@ -43,7 +34,7 @@ interface WalletStore {
   stored_wallets: WalletObject[];
   set_wallet: (wallet: WalletObject) => void;
   new_wallet: () => void;
-  update_balance: (network: NetworkObject, balance: bigint) => void;
+  update_balance: (network: NetworkObject, balance: string) => void;
   update_price: (price: bigint) => void;
   delete_wallet: (wallet: WalletObject) => void;
   add_network: (network: NetworkObject) => void;
@@ -127,16 +118,16 @@ export const useWalletStore = create<WalletStore>()(
           };
         });
       },
-      update_balance: (network: NetworkObject, balance: bigint) => {
+      update_balance: (network: NetworkObject, balance: string) => {
         set((state) => {
           const updated_network: NetworkObject = {
             network_name: network.network_name,
-            provider: network.provider,
+            chainId: network.chainId,
             balance: balance,
           };
           const networks = state.networks;
           const updated_networks = networks.map((item) =>
-            item.network_name === network.network_name ? updated_network : item,
+            item.chainId === network.chainId ? updated_network : item,
           );
 
           return {

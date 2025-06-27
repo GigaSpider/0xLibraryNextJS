@@ -4,6 +4,7 @@ import { utils } from "ffjavascript";
 import { randomBytes } from "crypto";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CardTitle } from "@/components/ui/card";
 import { CopyIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { buildBabyjub, buildPedersenHash } from "circomlibjs";
@@ -101,7 +102,12 @@ Instructions:
   };
 
   return (
-    <div className="flex flex-col h-full text-xs text-green-400">
+    <div className="flex flex-col h-full m-2">
+      <CardTitle className="text-green-400">
+        Zero-Knowledge Succint Non-interactive Arguement of Knowledge — Key
+        Generation Tool
+      </CardTitle>
+      <br />
       <div>
         <Button type="submit" onClick={handleGenerateSecrets}>
           {isGenerateLoading ? (
@@ -144,7 +150,7 @@ Instructions:
               </span>
             </div>
             <br />
-            <div className="flex items-center gap-2 whitespace-pre-wrap break-all text-xs text-green-400 font-mono">
+            <div className="flex items-center gap-2 whitespace-pre-wrap break-all font-mono">
               <Button
                 variant="outline"
                 size="sm"
@@ -172,7 +178,7 @@ Instructions:
             <Button
               variant="secondary"
               size="sm"
-              className="h-6 px-2 text-xs text-green-400"
+              className="h-6 px-2 text-xs text-cyan-300"
               onClick={downloadKeys}
               disabled={!secrets} // Disable if no keys
             >

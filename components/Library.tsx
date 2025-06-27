@@ -46,13 +46,13 @@ export default function Library() {
     <Drawer>
       <DrawerTrigger>
         <Button
-          variant="outline"
-          className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black"
+          variant="default"
+          // className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black bg-black"
         >
           📝 Contract Library 📚
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-black border-cyan-400">
+      <DrawerContent className="bg-black">
         <div className="mx-auto w-full">
           <DrawerHeader className="justify-center ">
             <DrawerTitle>Contract Library</DrawerTitle>
@@ -82,9 +82,11 @@ export default function Library() {
                 >
                   <TableCell className="font-medium">{contract.name}</TableCell>
                   <TableCell>{contract.fee}%</TableCell>
-                  <TableCell>{contract.address}</TableCell>
+                  <TableCell className="text-green-400">
+                    {contract.address}
+                  </TableCell>
                   <TableCell>{contract.engineer}</TableCell>
-                  <TableCell>{contract.network}</TableCell>
+                  <TableCell>{contract.chainId}</TableCell>
                   <TableCell className="text-right">
                     {contract.proxy.toString()}
                   </TableCell>
@@ -135,7 +137,7 @@ export default function Library() {
               <Link
                 href="https://github.com/GigaSpider/0xLibrary-Contracts"
                 target="_blank"
-                className="text-orange-500"
+                className="text-green-400"
               >
                 here
               </Link>

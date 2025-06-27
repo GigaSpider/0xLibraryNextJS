@@ -6,7 +6,6 @@ import { Tools } from "@/components/Toolbox/ProgramInterface";
 import { Loader2 } from "lucide-react";
 
 import React, { useState, lazy, Suspense } from "react";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ResizableHandle,
@@ -23,10 +22,16 @@ const ZKProofGenerator = lazy(
 const ZKWithdrawalAgent = lazy(
   () => import("@/components/Toolbox/zksnark/ZKWithdrawalAgent"),
 );
+const ECDSAEncrypt = lazy(
+  () => import("@/components/Toolbox/ECDSA/ECDSAEncrypt"),
+);
+const ECDSADecrypt = lazy(
+  () => import("@/components/Toolbox/ECDSA/ECDSADecrypt"),
+);
 
 export default function ToolBox() {
-  const [size, setSize] = useState({ width: 500, height: 400 });
-  const [position, setPosition] = useState({ x: -16, y: -350 }); // Visible position
+  const [size, setSize] = useState({ width: 700, height: 500 });
+  const [position, setPosition] = useState({ x: -16, y: -450 }); // Visible position
   const [isOpen, setIsOpen] = useState(false);
   const [toolState, setToolState] = useState("");
 
@@ -60,12 +65,17 @@ export default function ToolBox() {
           setPosition({ x: d.x, y: d.y });
         }}
         style={{
-          visibility: isOpen ? "visible" : "hidden", // Use visibility instead of display
+          visibility: isOpen ? "visible" : "hidden",
           zIndex: 1000,
+          border: "2px solid cyan", // Light gray border for top and right
+          borderLeft: "none", // Remove left border
+          borderBottom: "none", // Remove bottom border
+          borderTopRightRadius: "16px", // Round top-right corner
+          overflow: "hidden", // Ensure content respects rounded corners
         }}
       >
-        <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
-          <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
+        <div className="flex flex-col h-full w-full bg-black relative">
+          <div className="absolute top-0 left-0 w-3 h-3" />
           <div className="relative h-10">
             <Button
               onClick={() => setIsOpen(false)}
@@ -74,15 +84,11 @@ export default function ToolBox() {
             >
               Hide Tools
             </Button>
-            <Separator className="absolute bottom-0 w-full" />
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="h-full border"
-            >
-              <ResizablePanel defaultSize={15} minSize={10}>
+            <ResizablePanelGroup direction="horizontal" className="h-full">
+              <ResizablePanel defaultSize={20}>
                 {Tools.map((tool) => (
                   <div key={tool.name}>
                     <Button
@@ -95,8 +101,8 @@ export default function ToolBox() {
                 ))}
               </ResizablePanel>
               <ResizableHandle />
-              <ResizablePanel defaultSize={75}>
-                <ScrollArea className="h-full overflow-y-auto">
+              <ResizablePanel defaultSize={80}>
+                <ScrollArea className="h-full">
                   <Suspense
                     fallback={
                       <div className="p-4 text-gray-400 flex items-center">
@@ -130,6 +136,22 @@ export default function ToolBox() {
                     >
                       <ZKWithdrawalAgent />
                     </div>
+                    <div
+                      style={{
+                        display:
+                          toolState === "EcDSA Encrypt" ? "block" : "none",
+                      }}
+                    >
+                      <ECDSAEncrypt />
+                    </div>
+                    <div
+                      style={{
+                        display:
+                          toolState === "EcDSA Decrypt" ? "block" : "none",
+                      }}
+                    >
+                      <ECDSADecrypt />
+                    </div>
                     {toolState === "" && (
                       <div className="p-4 text-gray-400">
                         Select a tool to get started.
@@ -146,7 +168,7 @@ export default function ToolBox() {
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant="outline"
-        className="text-xs text-green-500 transition-colors no-underline border-green-500 hover:bg-green-500 hover:text-black"
+        className="text-xs hover:bg-gray-600 hover:text-black text-gray-600 border-gray-600 transition-colors no-underline"
       >
         Encryption Tools 🛠
       </Button>

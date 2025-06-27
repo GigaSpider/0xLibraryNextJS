@@ -1,0 +1,46 @@
+import { NextApiRequest, NextApiResponse } from "next";
+import { JsonRpcProvider, Interface } from "ethers";
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  const { chainId, contractAddress, signature, params = [] } = req.body;
+
+  const networkConfig: Record<
+    number,
+    { uri: string | undefined; chainId: number }
+  > = {
+    1: { uri: process.env.MAINNET_URI, chainId: 1 },
+    10: { uri: process.env.OPTIMISM_URI, chainId: 10 },
+    11155111: { uri: process.env.SEPOLIA_URI, chainId: 11155111 },
+  };
+
+  try {
+    const provider = new JsonRpcProvider(networkConfig[chainId].uri);
+
+    const iface = new Interface([signature]);
+    const functionName = signature.split("(")[0].split(" ").pop();
+
+    const data = iface.encodeFunctionData(functionName!, params);
+
+    const result = await provider.call({
+      to: contractAddress,
+      data: data,
+    });
+
+    // Decode the result
+    const decoded = iface.decodeFunctionResult(functionName!, result);
+
+    return res.status(200).json({
+      success: true,
+      result: (decoded.length === 1 ? decoded[0] : decoded).toString(),
+      raw: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      error: "Failed to call contract",
+      details: error.message,
+    });
+  }
+}

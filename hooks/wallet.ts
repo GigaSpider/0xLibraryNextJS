@@ -1,125 +1,87 @@
-import { useWalletStore } from "./store/walletStore";
-import { Contract, formatEther } from "ethers";
+import { useWalletStore, NetworkObject } from "./store/walletStore";
 import { useEffect, useState } from "react";
 
 export function useWalletHook() {
-  const { wallet, networks, update_balance, update_price } = useWalletStore();
-  const [timeUntilUpdate, setTimeUntilUpdate] = useState(30); // Initialize to 30 seconds
-
-  const priceFeed = new Contract(
-    ETH_USD_PRICE_ADDRESS,
-    aggregatorV3InterfaceABI,
-    networks[0].provider,
-  );
+  const { wallet, update_balance, update_price } = useWalletStore();
+  const [timeUntilUpdate, setTimeUntilUpdate] = useState(30);
 
   useEffect(() => {
     if (!wallet) return;
-    const address = wallet.wallet.address;
 
+    const address = wallet.wallet.address;
     console.log("checkpoint, starting wallet hook");
 
-    fetchData();
+    let isMounted = true; // Prevent updates after unmount
 
     async function fetchPrice() {
-      await priceFeed.latestRoundData().then((data) => {
-        const usdEth = data[1];
-        console.log({ usdEth });
-        update_price(usdEth);
-      });
+      if (!isMounted) return;
+      try {
+        const response = await fetch("/api/GetPrice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const result = await response.json();
+        if (result.usdEth && isMounted) {
+          update_price(BigInt(result.usdEth));
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     async function fetchBalances() {
-      networks.forEach(async (network) => {
-        try {
-          const balance = await network.provider.getBalance(address);
-          const name = network.network_name;
-          console.log({ name, balance });
-          if (balance != network.balance) {
-            update_balance(network, balance);
-          }
-        } catch (error) {
-          console.log(
-            "Error fetching balances for network",
-            network.network_name,
-          );
+      if (!isMounted) return;
+      try {
+        const response = await fetch("/api/GetBalances", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address }),
+        });
+        if (!response.ok || !isMounted) return;
+
+        const result = await response.json();
+        if (result.balances && isMounted) {
+          result.balances.forEach((object: NetworkObject) => {
+            update_balance(object, object.balance);
+          });
         }
-      });
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     async function fetchData() {
+      if (!isMounted) return;
       console.log("refreshing data every 30 seconds:");
       await fetchPrice();
       await fetchBalances();
-      setTimeUntilUpdate(30); // Reset countdown after fetch
+      if (isMounted) setTimeUntilUpdate(30);
     }
 
+    fetchData(); // Initial fetch
     const dataInterval = setInterval(fetchData, 30000);
-
-    // Countdown timer interval
     const countdownInterval = setInterval(() => {
-      setTimeUntilUpdate((prev) => {
-        if (prev <= 1) return 0; // Prevent negative countdown
-        return prev - 1;
-      });
+      if (!isMounted) return;
+      setTimeUntilUpdate((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
     return () => {
+      isMounted = false;
       clearInterval(dataInterval);
       clearInterval(countdownInterval);
     };
-  }, [wallet, update_balance, networks, update_price]);
+  }, [wallet?.wallet?.address]); // Only depend on address, not the whole objects
 
   return { timeUntilUpdate };
 }
 
-const ETH_USD_PRICE_ADDRESS = "0x5147eA642CAEF7BD9c1265AadcA78f997AbB9649";
+// rework the ethereum rpc calls and hide the api keys behind api routes with rate limiting. check
 
-const aggregatorV3InterfaceABI = [
-  {
-    inputs: [],
-    name: "decimals",
-    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "description",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
-    name: "getRoundData",
-    outputs: [
-      { internalType: "uint80", name: "roundId", type: "uint80" },
-      { internalType: "int256", name: "answer", type: "int256" },
-      { internalType: "uint256", name: "startedAt", type: "uint256" },
-      { internalType: "uint256", name: "updatedAt", type: "uint256" },
-      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "latestRoundData",
-    outputs: [
-      { internalType: "uint80", name: "roundId", type: "uint80" },
-      { internalType: "int256", name: "answer", type: "int256" },
-      { internalType: "uint256", name: "startedAt", type: "uint256" },
-      { internalType: "uint256", name: "updatedAt", type: "uint256" },
-      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "version",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-];
+// Create a new encryption tool for asymetric encryption of monero addresses, make the necessary changes to the oracle server to accomodate it
+
+// Add an information subpanel in the contract execution panel which displays live data
+// about the smart contract
+
+// Make the wallet actions production ready
+
+// Do all of that and create an advertising plan

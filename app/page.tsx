@@ -41,13 +41,13 @@ export default function Home() {
             <Staging />
           </div>
         </ResizablePanel>
-        <ResizableHandle className="border-x border-cyan-500" />
+        <ResizableHandle className="border-x" />
         <ResizablePanel className="h-full flex flex-col">
           <div className="h-full">
             <Inputs />
           </div>
         </ResizablePanel>
-        <ResizableHandle className="border-x border-cyan-500" />
+        <ResizableHandle className="border-x" />
         <ResizablePanel className="h-full flex flex-col">
           <div className="h-full">
             <Outputs />

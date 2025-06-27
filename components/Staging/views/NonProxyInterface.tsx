@@ -1,36 +1,33 @@
 import { useContractStore } from "@/hooks/store/contractStore";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { Contract, Wallet } from "ethers";
-// import { useInitializeContract } from "@/hooks/initializeContract";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function NonProxyInterface() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT, INITIALIZED_CONTRACT } =
     useContractStore();
-  // const offchain_software = SELECTED_CONTRACT?.offchain_software;
-  const { networks, wallet } = useWalletStore();
+  const [network, setNetwork] = useState("");
+  const { wallet } = useWalletStore();
 
   async function handleInitialization() {
-    let network_index;
-    switch (SELECTED_CONTRACT?.network) {
-      case "Mainnet":
-        network_index = 0;
+    switch (SELECTED_CONTRACT?.chainId) {
+      case 1:
+        setNetwork("main net");
         break;
-      case "Optimism":
-        network_index = 1;
+      case 10:
+        setNetwork("optimism");
         break;
-      case "Sepolia":
-        network_index = 2;
+      case 11155111:
+        setNetwork("sepolia test net");
         break;
       default:
-        network_index = 0;
+        setNetwork("unknown");
         break;
     }
 
-    const walletObject = new Wallet(
-      wallet!.private_key,
-      networks[network_index].provider,
-    );
+    const walletObject = new Wallet(wallet!.private_key);
 
     const initialized = new Contract(
       SELECTED_CONTRACT!.address,
@@ -42,26 +39,43 @@ export default function NonProxyInterface() {
   }
 
   return (
-    <div className="text-gray-500">
-      {" "}
-      {}
+    <ScrollArea className="text-gray-400 h-full">
       <div>{SELECTED_CONTRACT?.name}</div>
       <br />
-      <div>Address: {SELECTED_CONTRACT?.address}</div>
+      <div>
+        Address:{" "}
+        <span className="text-green-400">{SELECTED_CONTRACT?.address}</span>
+      </div>
       <br />
       <div>Description: {SELECTED_CONTRACT?.description}</div>
       <br />
-      <div>{SELECTED_CONTRACT?.instructions}</div>
+      <div>
+        {SELECTED_CONTRACT?.instructions.split("\n").map((line, index) => (
+          <p key={index} style={{ margin: "8px 0" }}>
+            {line}
+          </p>
+        ))}
+      </div>
       <br />
-      <div>Deposits and withdraws with {SELECTED_CONTRACT?.network} wallet</div>
+      <div>Deposits and withdraws with {network} wallet</div>
       <br />
       {INITIALIZED_CONTRACT ? (
         <div className="text-green-500">
-          Contract Signed, awaiting user actions
+          Contract Initialized, awaiting user actions
         </div>
       ) : (
-        <Button onClick={() => handleInitialization()}>Agree and Sign</Button>
+        <Button onClick={() => handleInitialization()}>
+          Initialize Contract
+        </Button>
       )}
-    </div>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+    </ScrollArea>
   );
 }

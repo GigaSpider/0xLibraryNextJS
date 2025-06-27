@@ -21,27 +21,10 @@ export function useEventListener() {
   }, [events]);
 
   useEffect(() => {
-    if (!INITIALIZED_CONTRACT) return;
-
-    let index;
-    switch (SELECTED_CONTRACT?.network) {
-      case "Mainnet":
-        index = 0;
-        break;
-      case "Optimism":
-        index = 1;
-        break;
-      case "Arbitrum":
-        index = 2;
-        break;
-      default:
-        index = 0;
-        break;
-    }
-
-    const provider = networks![index].provider;
+    if (!INITIALIZED_CONTRACT || !SELECTED_CONTRACT || !wallet) return;
 
     const contract = INITIALIZED_CONTRACT;
+    const chainId = SELECTED_CONTRACT.chainId;
 
     const fragments: EventFragment[] = [];
     contract.interface.forEachEvent((event) => {
@@ -58,26 +41,37 @@ export function useEventListener() {
     );
 
     async function fetchEvents() {
-      console.log("scanning for new events every 10 seconds");
+      console.log(
+        `scanning for new events every 10 seconds on chain ${chainId}`,
+      );
 
-      const block_height = await provider.getBlockNumber();
-      console.log(`Current block: ${block_height}`);
-
-      contract.interface.forEachEvent(async (event) => {
+      for (const event of fragments) {
         console.log(`Checking for event: ${event.name}`);
 
         try {
-          // Use a bigger block range to find historical events
-          const fromBlock = block_height - 1000; // Look back 1000 blocks
-          const toBlock = block_height;
-
-          const recent_events = await contract.queryFilter(
+          const eventTopicHash = contract.interface.getEvent(
             event.name,
-            fromBlock,
-            toBlock,
-          );
+          )!.topicHash;
 
-          // If we got events, log details of the first one
+          const response = await fetch("/api/GetEvents", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contractAddress: SELECTED_CONTRACT!.address,
+              eventTopicHash: eventTopicHash,
+              chainId: chainId,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const recent_events = data.events || [];
+
           if (recent_events.length > 0) {
             console.log(
               `Found ${recent_events.length} events for ${event.name}`,
@@ -86,10 +80,10 @@ export function useEventListener() {
             const existing_events = eventsRef.current.get(event) || [];
 
             const new_events = recent_events.filter(
-              (recent_event) =>
+              (recent_event: any) =>
                 !existing_events.some(
                   (existing_event) =>
-                    existing_event.transactionHash ==
+                    existing_event.transactionHash ===
                     recent_event.transactionHash,
                 ),
             );
@@ -105,14 +99,14 @@ export function useEventListener() {
           } else {
             console.log("no events found");
           }
-
-          // Rest of your code...
         } catch (error) {
           console.error(`Error querying ${event.name} events:`, error);
         }
-      });
+      }
     }
 
+    // Fetch immediately, then every 10 seconds
+    fetchEvents();
     const interval = setInterval(fetchEvents, 10000);
 
     return () => {

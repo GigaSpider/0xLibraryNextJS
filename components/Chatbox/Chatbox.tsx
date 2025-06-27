@@ -6,7 +6,6 @@ import Messages from "./Messages";
 
 import { Channel } from "@/hooks/store/chatStore";
 import React, { useState } from "react";
-import { Separator } from "@/components/ui/separator";
 
 import {
   ResizableHandle,
@@ -25,12 +24,6 @@ export default function Chatbox() {
       {isOpen && (
         <>
           <Rnd
-            default={{
-              width: 500,
-              height: 800,
-              x: -500,
-              y: -800,
-            }}
             size={{ width: size.width, height: size.height }}
             position={position}
             enableResizing={{
@@ -44,8 +37,6 @@ export default function Chatbox() {
               topLeft: true,
             }}
             disableDragging={true}
-            minWidth={200}
-            minHeight={200}
             onResize={(e, direction, ref, delta, position) => {
               setSize({
                 width: parseInt(ref.style.width),
@@ -56,9 +47,19 @@ export default function Chatbox() {
             onDrag={(e, d) => {
               setPosition({ x: d.x, y: d.y });
             }}
+            style={{
+              visibility: isOpen ? "visible" : "hidden",
+              zIndex: 1000,
+              border: "2px solid red", // Light gray border for top and right
+              borderRight: "none", // Remove left border
+              borderBottom: "none", // Remove bottom border
+              borderTopLeftRadius: "16px", // Round top-right corner
+              background: "#ffffff", // Clean white background
+              overflow: "hidden", // Ensure content respects rounded corners
+            }}
           >
-            <div className="flex flex-col h-full w-full border border-gray-700-500 bg-black relative">
-              <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-white/30" />
+            <div className="flex flex-col h-full w-full bg-black relative">
+              <div className="absolute top-0 left-0 w-3 h-3" />
               <div className="relative h-10">
                 <Button
                   onClick={() => setIsOpen(false)}
@@ -67,14 +68,10 @@ export default function Chatbox() {
                 >
                   Hide Trollbox
                 </Button>
-                <Separator className="absolute bottom-0 w-full" />
               </div>
 
               <div className="flex-1 overflow-hidden">
-                <ResizablePanelGroup
-                  direction="horizontal"
-                  className="h-full border"
-                >
+                <ResizablePanelGroup direction="horizontal" className="h-full">
                   <ResizablePanel defaultSize={20} minSize={20}>
                     <div>
                       <Button
@@ -139,7 +136,7 @@ export default function Chatbox() {
       <Button
         onClick={() => setIsOpen(true)}
         variant="outline"
-        className="text-gray-500 border-gray-500 transition-colors no-underline"
+        className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black"
       >
         💬 Trollbox
       </Button>

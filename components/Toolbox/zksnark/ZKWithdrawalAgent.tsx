@@ -9,11 +9,11 @@ import {
   FormItem,
   FormControl,
 } from "@/components/ui/form";
+import { CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
-// import { Toast } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -78,7 +78,11 @@ export default function ZKWithdrawalAgent() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full m-2">
+      <CardTitle className="text-green-400">
+        Zero-Knowledge Succint Non-interactive Arguement of Knowledge —
+        Withdrawal Agent
+      </CardTitle>
       <br />
       <Form {...RelayForm}>
         <form
