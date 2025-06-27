@@ -167,8 +167,8 @@ export default function ToolBox() {
 
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        variant="outline"
-        className="text-xs hover:bg-cyan-400 hover:text-black text-cyan-400 border-cyan-400 transition-colors no-underline"
+        variant="secondary"
+        // className="text-xs hover:bg-cyan-400 hover:text-black text-cyan-400 border-cyan-400 transition-colors no-underline"
       >
         Encryption Tools 🛠
       </Button>

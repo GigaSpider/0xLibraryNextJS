@@ -46,8 +46,8 @@ export default function Library() {
     <Drawer>
       <DrawerTrigger>
         <Button
-          variant="outline"
-          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-black bg-black"
+          variant="default"
+          // className="border-red-500 text-red-500 hover:bg-red-500 hover:text-black bg-black"
         >
           📝 Contract Library 📚
         </Button>

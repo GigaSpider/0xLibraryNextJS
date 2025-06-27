@@ -135,8 +135,8 @@ export default function Chatbox() {
 
       <Button
         onClick={() => setIsOpen(true)}
-        variant="outline"
-        className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black"
+        variant="secondary"
+        // className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black"
       >
         💬 Trollbox
       </Button>

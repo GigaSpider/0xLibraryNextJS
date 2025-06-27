@@ -207,8 +207,8 @@ WARNING: Do not share your private keys with anybody or someone could steal your
       <DropdownMenu>
         <DropdownMenuTrigger>
           <Button
-            variant="outline"
-            className="text-violet-400 border-violet-400 bg-black hover:text-black hover:bg-violet-400"
+            variant="secondary"
+            // className="text-violet-400 border-violet-400 bg-black hover:text-black hover:bg-violet-400"
           >
             Wallet Actions ⚡️
           </Button>
