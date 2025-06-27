@@ -4,6 +4,8 @@ import { Contract, Wallet } from "ethers";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { CopyIcon } from "lucide-react";
 
 export default function NonProxyInterface() {
   const { SELECTED_CONTRACT, set_INITIALIZED_CONTRACT, INITIALIZED_CONTRACT } =
@@ -42,9 +44,21 @@ export default function NonProxyInterface() {
     <ScrollArea className="text-gray-400 h-full">
       <div>{SELECTED_CONTRACT?.name}</div>
       <br />
-      <div>
+      <div className="flex gap-2">
         Address:{" "}
-        <span className="text-green-400">{SELECTED_CONTRACT?.address}</span>
+        <span className="text-violet-400">{SELECTED_CONTRACT?.address}</span>
+        <Separator orientation="vertical" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-6 px-2 text-xs"
+          onClick={() => {
+            navigator.clipboard.writeText(SELECTED_CONTRACT!.address);
+          }}
+        >
+          <CopyIcon className="h-3 w-3 mr-1" />
+          Copy
+        </Button>
       </div>
       <br />
       <div>Description: {SELECTED_CONTRACT?.description}</div>

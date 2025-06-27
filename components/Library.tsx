@@ -46,13 +46,13 @@ export default function Library() {
     <Drawer>
       <DrawerTrigger>
         <Button
-          variant="default"
-          // className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black bg-black"
+          variant="outline"
+          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-black bg-black"
         >
           📝 Contract Library 📚
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-black">
+      <DrawerContent className="bg-black border-red-500">
         <div className="mx-auto w-full">
           <DrawerHeader className="justify-center ">
             <DrawerTitle>Contract Library</DrawerTitle>

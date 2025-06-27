@@ -50,7 +50,7 @@ export default function Chatbox() {
             style={{
               visibility: isOpen ? "visible" : "hidden",
               zIndex: 1000,
-              border: "2px solid red", // Light gray border for top and right
+              border: "2px solid orange", // Light gray border for top and right
               borderRight: "none", // Remove left border
               borderBottom: "none", // Remove bottom border
               borderTopLeftRadius: "16px", // Round top-right corner
@@ -136,7 +136,7 @@ export default function Chatbox() {
       <Button
         onClick={() => setIsOpen(true)}
         variant="outline"
-        className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-black"
+        className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black"
       >
         💬 Trollbox
       </Button>

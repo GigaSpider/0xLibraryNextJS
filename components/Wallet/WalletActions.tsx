@@ -56,16 +56,8 @@ const connectSchema = z.object({
 });
 
 export default function Wallet() {
-  const {
-    remove_network,
-    reset_networks,
-    wallet,
-    set_wallet,
-    new_wallet,
-    delete_wallet,
-    stored_wallets,
-    networks,
-  } = useWalletStore();
+  const { wallet, set_wallet, new_wallet, delete_wallet, stored_wallets } =
+    useWalletStore();
   useWalletHook();
   const { toast } = useToast();
 
@@ -216,15 +208,15 @@ WARNING: Do not share your private keys with anybody or someone could steal your
         <DropdownMenuTrigger>
           <Button
             variant="outline"
-            className="text-cyan-500 border-cyan-500 hover:text-black hover:bg-cyan-500"
+            className="text-violet-400 border-violet-400 bg-black hover:text-black hover:bg-violet-400"
           >
             Wallet Actions ⚡️
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="border-cyan-500 background bg-black">
+        <DropdownMenuContent className="border-violet-400 background bg-black">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Manage Wallets</DropdownMenuLabel>
-            <DropdownMenuSub>
+            {/* <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 Blockchain Settings
               </DropdownMenuSubTrigger>
@@ -306,7 +298,7 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                   </DropdownMenuSub>
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
-            </DropdownMenuSub>
+            </DropdownMenuSub> */}
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 View Stored Wallets
@@ -318,7 +310,7 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                       stored_wallets.map((walletObj, index) => (
                         <DropdownMenuSub key={index}>
                           <DropdownMenuSubTrigger>
-                            <span className="text-cyan-500">
+                            <span className="text-violet-400">
                               {walletObj.wallet.address || "Unnamed Wallet"}
                             </span>
                           </DropdownMenuSubTrigger>
