@@ -57,7 +57,9 @@ export const useWalletStore = create<WalletStore>()(
               (w) => w.wallet.address === wallet.wallet.address,
             )
           ) {
-            return {};
+            return {
+              wallet: wallet,
+            };
           }
           return {
             wallet: wallet,

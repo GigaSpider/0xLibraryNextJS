@@ -54,6 +54,7 @@
     "react-hook-form": "^7.54.2",
     "react-resizable-panels": "^2.1.7",
     "react-rnd": "^10.4.14",
+    "recharts": "^3.0.2",
     "snarkjs": "^0.7.5",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",

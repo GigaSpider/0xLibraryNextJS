@@ -52,7 +52,7 @@ export default function Library() {
           📝 Contract Library 📚
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-black border-red-500">
+      <DrawerContent className="bg-black border-violet-400">
         <div className="mx-auto w-full">
           <DrawerHeader className="justify-center ">
             <DrawerTitle>Contract Library</DrawerTitle>

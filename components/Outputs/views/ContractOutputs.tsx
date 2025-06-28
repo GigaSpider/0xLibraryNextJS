@@ -17,11 +17,11 @@ export default function ContractOutputs() {
       direction="vertical"
       className="text-gray-500 h-full min-h-[400px]"
     >
-      <ResizablePanel defaultSize={30} className="w-full min-h-[200px]">
+      <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
         <ContractData />
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={70} className="w-full min-h-[200px]">
+      <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
         <br />
         <div>Function outputs:</div>
         {outputs ? (

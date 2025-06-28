@@ -1,3 +1,176 @@
+// components/Outputs/views/ContractData.tsx
+import React, { useState, useEffect, useCallback } from "react";
+import { useContractStore } from "@/hooks/store/contractStore";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+interface BalanceDataPoint {
+  blockNumber: number;
+  balance: string;
+  timestamp: number;
+}
+
+interface ApiResponse {
+  data: BalanceDataPoint[];
+}
+
 export default function ContractData() {
-  return <div>Statistics</div>;
+  const [balanceData, setBalanceData] = useState<BalanceDataPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentBalance, setCurrentBalance] = useState<string>("0");
+
+  const { SELECTED_CONTRACT } = useContractStore();
+
+  const fetchBalanceData = useCallback(async () => {
+    try {
+      setError(null);
+      const response = await fetch("/api/GetContractData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chainId: SELECTED_CONTRACT?.chainId,
+          contract_address: SELECTED_CONTRACT?.address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch balance data");
+      }
+
+      const result: ApiResponse = await response.json();
+      setBalanceData(result.data);
+
+      // Set current balance to the latest data point
+      if (result.data.length > 0) {
+        setCurrentBalance(result.data[result.data.length - 1].balance);
+      }
+
+      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initial fetch
+    fetchBalanceData();
+
+    // Set up interval to fetch every 30 seconds
+    const interval = setInterval(fetchBalanceData, 30000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [fetchBalanceData]);
+
+  // const formatXAxisLabel = (timestamp: number) => {
+  //   return new Date(timestamp).toLocaleDateString("en-US", {
+  //     month: "short",
+  //     day: "numeric",
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   });
+  // };
+
+  const formatTooltipLabel = (timestamp: number) => {
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const formatBalance = (balance: string) => {
+    const num = parseFloat(balance);
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(2)}K`;
+    }
+    return num.toFixed(4);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4">
+        <h2 className="text-xl font-bold mb-4">Contract Statistics</h2>
+        <div className="animate-pulse">Loading contract data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <h2 className="text-xs font-bold mb-4">Contract Statistics</h2>
+        <div className="text-red-500">Error: {error}</div>
+        <button
+          onClick={fetchBalanceData}
+          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xs font-bold mb-4">Contract Statistics</h2>
+
+      <div className="mb-6">
+        <div className="text-xs font-semibold">
+          Current Balance: {formatBalance(currentBalance)} ETH
+        </div>
+        <div className="text-xs text-gray-500">
+          Last updated:{" "}
+          {balanceData.length > 0
+            ? new Date(
+                balanceData[balanceData.length - 1].timestamp,
+              ).toLocaleString()
+            : "N/A"}
+        </div>
+      </div>
+
+      <div className="mb-6">
+        {/* <h3 className="text-xs font-semibold mb-2">
+          Balance History (48 Hours)
+        </h3> */}
+        <div style={{ width: "100%", height: 400 }}>
+          <ResponsiveContainer>
+            <LineChart data={balanceData}>
+              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+              <XAxis dataKey="timestamp" />
+              <YAxis />
+              <Tooltip
+                labelFormatter={formatTooltipLabel}
+                formatter={(value: string) => [
+                  `${parseFloat(value).toFixed(6)} ETH`,
+                  "Balance",
+                ]}
+              />
+              <Line
+                type="monotone"
+                dataKey="balance"
+                stroke="#2563eb"
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div>
+        <div className="text-sm text-gray-500">
+          Data points: {balanceData.length} | Auto-refresh: Every 30 seconds
+        </div>
+      </div>
+    </div>
+  );
 }

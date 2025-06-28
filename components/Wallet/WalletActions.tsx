@@ -1,9 +1,4 @@
-import {
-  Wallet as Wállet,
-  JsonRpcProvider,
-  isAddress,
-  isHexString,
-} from "ethers";
+import { Wallet as Wállet, isAddress, isHexString, parseEther } from "ethers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +32,8 @@ import { Label } from "@/components/ui/label";
 import { useWalletStore } from "@/hooks/store/walletStore";
 import { useWalletHook } from "@/hooks/wallet";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export enum Network {
   Mainnet = "Mainnet",
@@ -56,6 +53,7 @@ const connectSchema = z.object({
 });
 
 export default function Wallet() {
+  const [isSendLoading, setIsSendLoading] = useState(false);
   const { wallet, set_wallet, new_wallet, delete_wallet, stored_wallets } =
     useWalletStore();
   useWalletHook();
@@ -78,54 +76,101 @@ export default function Wallet() {
   });
 
   const onSendSubmit = async (data: z.infer<typeof sendSchema>) => {
+    setIsSendLoading(true);
     console.log("Send Ethereum data:", data);
-    // Add your send Ethereum logic here
+
     if (wallet && isAddress(data.destination)) {
-      let provider;
+      let chainId;
       switch (data.network) {
         case "Main":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_MAINNET_URI!);
+          chainId = 1;
           break;
         case "Optimism":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_OPTIMISM_URI!);
-          break;
-        case "Arbitrum":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_ARBITRUM_URI!);
+          chainId = 10;
           break;
         case "Sepolia":
-          provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_SEPOLIA_URI!);
+          chainId = 11155111;
           break;
         default:
           console.log("error, network out of bounds");
+          setIsSendLoading(false);
           return;
       }
 
-      const connected_wallet = new Wállet(wallet.private_key, provider);
-
       try {
-        const tx_response = await connected_wallet.sendTransaction({
+        let nonce;
+        try {
+          const response = await fetch("/api/GetNonce", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              address: wallet.wallet.address,
+              chainId: chainId,
+            }),
+          });
+          const result = await response.json();
+          nonce = result.nonce;
+        } catch (error) {
+          console.log("error getting nonce from api", { error });
+          setIsSendLoading(false);
+          return;
+        }
+
+        // Create transaction object
+        const transaction = {
           to: data.destination,
-          value: data.amount,
+          value: parseEther(data.amount.toString()), // Convert to wei
+          gasLimit: 21000, // Standard ETH transfer gas limit
+          nonce: nonce,
+          chainId: chainId,
+        };
+
+        // Sign the transaction
+        const signedTransaction =
+          await wallet.wallet.signTransaction(transaction);
+
+        // Send signature to API route
+        const response = await fetch("/api/SendEthereum", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            signedTransaction,
+            chainId: chainId,
+          }),
         });
-        const tx_hash = tx_response.hash;
-        console.log(tx_hash);
-        toast({
-          title: "send success",
-          description: `tx hash: ${tx_hash} | sent using the ${data.network} network`,
-          duration: 30000,
-        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          console.log(result.txHash);
+          toast({
+            title: "Send success",
+            description: `tx hash: ${result.txHash} | sent using the ${data.network} network`,
+            duration: 30000,
+          });
+          setIsSendLoading(false);
+        } else {
+          setIsSendLoading(false);
+          throw new Error(result.error || "Transaction failed");
+        }
       } catch (error) {
         console.log(error);
+        setIsSendLoading(false);
         toast({
-          title: "send error",
+          title: "Send error",
           description: `${error}`,
           variant: "destructive",
         });
       }
     } else {
       console.log("error, invalid form data");
+      setIsSendLoading(false);
       toast({
-        title: "send error",
+        title: "Send error",
         description: "not an ethereum address",
         variant: "destructive",
       });
@@ -502,7 +547,13 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                           <div className="flex flex-col gap-2">
                             <Label>Send</Label>
                             <Button type="submit" variant="outline">
-                              Send
+                              {isSendLoading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                </>
+                              ) : (
+                                <>Send</>
+                              )}
                             </Button>
                           </div>
                         </div>
