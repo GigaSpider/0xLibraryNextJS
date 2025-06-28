@@ -398,6 +398,23 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                                   </Button>
                                 </DropdownMenuSubContent>
                               </DropdownMenuSub>
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                  Copy
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        walletObj.wallet.address,
+                                      );
+                                    }}
+                                  >
+                                    Confirm Copy
+                                  </Button>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
                             </DropdownMenuSubContent>
                           </DropdownMenuPortal>
                         </DropdownMenuSub>
@@ -438,13 +455,32 @@ WARNING: Do not share your private keys with anybody or someone could steal your
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Show Private Key</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {wallet?.private_key}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    {wallet?.private_key}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(wallet!.private_key);
+                        toast({
+                          title: "Copied to clipboard",
+                          description: "private key copied",
+                        });
+                      }}
+                    >
+                      Copy Private Key
+                    </Button>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Create New Wallet</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <Button
+                  variant="ghost"
                   onClick={() => {
                     new_wallet();
                     toast({
