@@ -13,6 +13,8 @@ import { CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CopyIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import * as z from "zod";
 
 interface ECDSA {
@@ -37,6 +39,8 @@ export default function ECDSAEncrypt() {
     address: "",
   });
   const [encryptedMessage, setEncryptedMessage] = useState("");
+
+  const { toast } = useToast();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -95,11 +99,64 @@ export default function ECDSAEncrypt() {
       {identity.address && (
         <div className="mt-4 p-4">
           <div className="text-xs break-all">
-            <strong>Private Key:</strong> {identity.privateKey} <br />
+            <div className="flex mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(identity.privateKey);
+                  toast({
+                    description: "Private key copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+              >
+                <CopyIcon className="h-3 w-3 mr-1" />
+                copy
+              </Button>
+              <strong>Private Key:</strong> {identity.privateKey}
+            </div>{" "}
             <br />
-            <strong>Public Key:</strong> {identity.publicKey} <br />
             <br />
-            <strong>Address:</strong> {identity.address}
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(identity.publicKey);
+                  toast({
+                    description: "Pub key copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+              >
+                <CopyIcon className="h-3 w-3 mr-1" />
+                copy
+              </Button>
+              <strong>Public Key:</strong> {identity.publicKey}
+            </div>{" "}
+            <br />
+            <br />
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(identity.address);
+                  toast({
+                    description: "Address copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+              >
+                <CopyIcon className="h-3 w-3 mr-1" />
+                copy
+              </Button>
+              <strong>Address:</strong> {identity.address}
+            </div>
           </div>
         </div>
       )}

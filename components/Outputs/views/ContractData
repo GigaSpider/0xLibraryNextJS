@@ -60,7 +60,7 @@ export default function ContractData() {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
-  }, []);
+  });
 
   useEffect(() => {
     // Initial fetch

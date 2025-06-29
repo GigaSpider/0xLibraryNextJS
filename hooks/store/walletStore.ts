@@ -60,11 +60,11 @@ export const useWalletStore = create<WalletStore>()(
             return {
               wallet: wallet,
             };
-          }
-          return {
-            wallet: wallet,
-            stored_wallets: [...state.stored_wallets, wallet],
-          };
+          } else
+            return {
+              wallet: wallet,
+              stored_wallets: [...state.stored_wallets, wallet],
+            };
         });
       },
       new_wallet: () => {

@@ -20,13 +20,13 @@ export default async function handler(
     let provider;
     switch (chainId) {
       case 1:
-        provider = new JsonRpcProvider(process.env.MAINNET_RPC_URL);
+        provider = new JsonRpcProvider(process.env.MAINNET_URI);
         break;
       case 10:
-        provider = new JsonRpcProvider(process.env.OPTIMISM_RPC_URL);
+        provider = new JsonRpcProvider(process.env.OPTIMISM_URI);
         break;
       case 11155111:
-        provider = new JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
+        provider = new JsonRpcProvider(process.env.SEPOLIA_URI);
         break;
       default:
         return res.status(400).json({ error: "Invalid network" });

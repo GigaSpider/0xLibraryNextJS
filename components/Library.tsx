@@ -82,7 +82,7 @@ export default function Library() {
                 >
                   <TableCell className="font-medium">{contract.name}</TableCell>
                   <TableCell>{contract.fee}%</TableCell>
-                  <TableCell className="text-green-400">
+                  <TableCell className="text-violet-400">
                     {contract.address}
                   </TableCell>
                   <TableCell>{contract.engineer}</TableCell>

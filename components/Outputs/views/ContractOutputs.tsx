@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/resizable";
 import { Interface } from "ethers";
 
-import ContractData from "./ContractData";
+// import ContractData from "./ContractData";
 
 export default function ContractOutputs() {
   const { outputs, SELECTED_CONTRACT } = useContractStore();
@@ -18,7 +18,7 @@ export default function ContractOutputs() {
       className="text-gray-500 h-full min-h-[400px]"
     >
       <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
-        <ContractData />
+        {/* <ContractData /> */}
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">

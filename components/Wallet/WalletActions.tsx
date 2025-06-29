@@ -1,4 +1,10 @@
-import { Wallet as Wállet, isAddress, isHexString, parseEther } from "ethers";
+import {
+  Wallet as EthersWallet,
+  isAddress,
+  isHexString,
+  parseEther,
+  parseUnits,
+} from "ethers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -122,14 +128,18 @@ export default function Wallet() {
         const transaction = {
           to: data.destination,
           value: parseEther(data.amount.toString()), // Convert to wei
-          gasLimit: 21000, // Standard ETH transfer gas limit
+          // value: data.amount.toString(),
+          gasLimit: 40000, // Standard ETH transfer gas limit
+          maxFeePerGas: parseUnits("2", "gwei"),
+          maxPriorityFeePerGas: parseUnits("1", "gwei"),
           nonce: nonce,
           chainId: chainId,
         };
 
         // Sign the transaction
+        const wallet_from_private_key = new EthersWallet(wallet.private_key);
         const signedTransaction =
-          await wallet.wallet.signTransaction(transaction);
+          await wallet_from_private_key.signTransaction(transaction);
 
         // Send signature to API route
         const response = await fetch("/api/SendEthereum", {
@@ -138,7 +148,7 @@ export default function Wallet() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            signedTransaction,
+            signedTransaction: signedTransaction,
             chainId: chainId,
           }),
         });
@@ -183,7 +193,7 @@ export default function Wallet() {
       if (isHexString(data.key)) {
         console.log("Connecting to private key:", data);
         console.log(data.key);
-        const wallet: Wállet = new Wállet(data.key);
+        const wallet: EthersWallet = new EthersWallet(data.key);
         const private_key = data.key;
         const wallet_object = {
           wallet,

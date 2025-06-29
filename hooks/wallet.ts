@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 
 export function useWalletHook() {
   const { wallet, update_balance, update_price } = useWalletStore();
-  const address = wallet?.wallet.address;
+
   const [timeUntilUpdate, setTimeUntilUpdate] = useState(30);
 
   useEffect(() => {
     if (!wallet) return;
+
+    const address = wallet?.wallet.address;
 
     console.log("checkpoint, starting wallet hook");
 
@@ -70,7 +72,7 @@ export function useWalletHook() {
       clearInterval(dataInterval);
       clearInterval(countdownInterval);
     };
-  }, [address]); // Only depend on address, not the whole objects
+  }, [wallet?.wallet.address]); // Only depend on address, not the whole objects
 
   return { timeUntilUpdate };
 }
