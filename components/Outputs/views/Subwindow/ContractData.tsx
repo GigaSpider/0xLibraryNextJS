@@ -1,3 +1,3 @@
 export default function ContractData() {
-  return "nigger";
+  return "wip";
 }
