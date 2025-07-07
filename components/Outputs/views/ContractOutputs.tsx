@@ -4,9 +4,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Interface } from "ethers";
 
-// import ContractData from "./ContractData";
+import ContractData from "./Subwindow/ContractData";
+import ContractInteractions from "./Subwindow/ContractInteractions";
 
 export default function ContractOutputs() {
   const { outputs, SELECTED_CONTRACT } = useContractStore();
@@ -17,10 +19,6 @@ export default function ContractOutputs() {
       direction="vertical"
       className="text-gray-500 h-full min-h-[400px]"
     >
-      <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
-        {/* <ContractData /> */}
-      </ResizablePanel>
-      <ResizableHandle withHandle />
       <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
         <br />
         <div>Function outputs:</div>
@@ -70,6 +68,21 @@ export default function ContractOutputs() {
         ) : (
           <></>
         )}
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel defaultSize={50} className="w-full min-h-[200px]">
+        <Tabs defaultValue="interactions">
+          <TabsList>
+            <TabsTrigger value="data">Contract Data</TabsTrigger>
+            <TabsTrigger value="interactions">Recent Interactions</TabsTrigger>
+          </TabsList>
+          <TabsContent value="data">
+            <ContractData />
+          </TabsContent>
+          <TabsContent value="interactions">
+            <ContractInteractions />
+          </TabsContent>
+        </Tabs>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

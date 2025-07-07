@@ -12,6 +12,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import ECDSAEncrypt from "./ECDSA/ECDSAEncrypt";
+import ECDSADecrypt from "./ECDSA/ECDSADecrypt";
 
 const ZKSecretGenerator = lazy(
   () => import("@/components/Toolbox/zksnark/ZKSecretGenerator"),
@@ -21,12 +23,6 @@ const ZKProofGenerator = lazy(
 );
 const ZKWithdrawalAgent = lazy(
   () => import("@/components/Toolbox/zksnark/ZKWithdrawalAgent"),
-);
-const ECDSAEncrypt = lazy(
-  () => import("@/components/Toolbox/ECDSA/ECDSAEncrypt"),
-);
-const ECDSADecrypt = lazy(
-  () => import("@/components/Toolbox/ECDSA/ECDSADecrypt"),
 );
 
 export default function ToolBox() {

@@ -8,7 +8,8 @@ import Footer from "@/components/Footer/Footer";
 
 export const metadata: Metadata = {
   title: "0xLibrary",
-  description: "Ethereum Smart Contract Library",
+  description:
+    "The world's most powerful and lightweight blockchain application",
 };
 
 export default function RootLayout({

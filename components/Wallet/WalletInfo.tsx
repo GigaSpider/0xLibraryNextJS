@@ -51,7 +51,7 @@ export default function WalletInfo() {
       <div>
         {wallet ? (
           <div>
-            <span className="text-violet-400">{wallet.wallet.address}</span>
+            <span className="text-rose-600">{wallet.wallet.address}</span>
           </div>
         ) : (
           "Load or create new wallet using Wallet Actions"
@@ -61,7 +61,7 @@ export default function WalletInfo() {
       <div>${(Number(price) / 1e8).toFixed(2)}/eth</div>
       <Separator orientation="vertical" className="h-6 border-l-2" />
       <Popover>
-        <PopoverTrigger>
+        <PopoverTrigger asChild>
           <Button
             variant="outline"
             className="text-yellow-400 transition-colors no-underline border-yellow-500  hover:bg-yellow-500 hover:text-black"

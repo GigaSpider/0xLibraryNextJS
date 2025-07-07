@@ -1,3 +1,5 @@
+"use client";
+
 import { createIdentity, encryptWithPublicKey, cipher } from "eth-crypto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,12 +71,6 @@ export default function ECDSAEncrypt() {
     const compressed = cipher.stringify(encrypted);
 
     setEncryptedMessage(compressed);
-
-    // Example of what you might do:
-    // 1. Validate the public keys
-    // 2. Encrypt the message using ECDSA
-    // 3. Display the encrypted result
-    // 4. Handle any errors
   }
 
   return (

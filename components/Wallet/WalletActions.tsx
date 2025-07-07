@@ -260,7 +260,7 @@ WARNING: Do not share your private keys with anybody or someone could steal your
   return (
     <div>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="secondary"
             // className="text-violet-400 border-violet-400 bg-black hover:text-black hover:bg-violet-400"

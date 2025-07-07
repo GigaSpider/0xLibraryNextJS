@@ -8,27 +8,10 @@ import {
 import Staging from "@/components/Staging";
 import Inputs from "@/components/Inputs";
 import Outputs from "@/components/Outputs";
+import { useWebsocketConnection } from "@/hooks/websocket";
 
 export default function Home() {
-  // const { MASTER_ADDRESS, ETH_XMR_ADDRESS, XMR_ETH_ADDRESS } = useSwapStore();
-  // const { provider } = useMetaMask();
-  console.log("testing");
-  console.log("Contract Address:", process.env.CONTRACT_ADDRESS);
-  console.log("Public Address:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
-
-  // return (
-  //   <div className="min-h-screen">
-  //     <div
-  //       className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-6 h-screen mx-auto max-w-[90%]
-
-  // "
-  //     >
-  //       <Staging />
-  //       <Inputs />
-  //       <Outputs />
-  //     </div>
-  //   </div>
-  // );
+  useWebsocketConnection();
 
   return (
     <div className="h-full w-full pt-[85px] flex flex-col">
