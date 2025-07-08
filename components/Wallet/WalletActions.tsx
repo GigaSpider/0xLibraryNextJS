@@ -268,7 +268,7 @@ WARNING: Do not share your private keys with anybody or someone could steal your
             Wallet Actions ⌄
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="border-blue-500 background bg-black">
+        <DropdownMenuContent className="border-gray-900 background bg-black">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Manage Wallets</DropdownMenuLabel>
             {/* <DropdownMenuSub>

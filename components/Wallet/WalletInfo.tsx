@@ -69,7 +69,7 @@ export default function WalletInfo() {
             ⌄ Balances
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full bg-black border border-yellow-400">
+        <PopoverContent className="w-full bg-black border border-gray-900">
           {wallet ? (
             <div>
               <Table className="text-gray-500">
