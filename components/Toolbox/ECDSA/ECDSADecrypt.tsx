@@ -45,7 +45,7 @@ export default function ECDSADecrypt() {
 
   return (
     <div className="m-2">
-      <CardTitle className="text-green-400">
+      <CardTitle className="text-blue-500">
         Elliptic Curve Digital Signature Algorithm Decryption Tool
       </CardTitle>
       <br />

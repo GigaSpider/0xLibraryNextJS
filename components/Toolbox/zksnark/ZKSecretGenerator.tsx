@@ -103,7 +103,7 @@ Instructions:
 
   return (
     <div className="flex flex-col h-full m-2">
-      <CardTitle className="text-green-400">
+      <CardTitle className="text-blue-500">
         Zero-Knowledge Succint Non-interactive Arguement of Knowledge — Key
         Generation Tool
       </CardTitle>

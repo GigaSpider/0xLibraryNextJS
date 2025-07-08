@@ -51,7 +51,7 @@ export default function WalletInfo() {
       <div>
         {wallet ? (
           <div>
-            <span className="text-rose-600">{wallet.wallet.address}</span>
+            <span className="text-gray-4\500">{wallet.wallet.address}</span>
           </div>
         ) : (
           "Load or create new wallet using Wallet Actions"
@@ -63,10 +63,10 @@ export default function WalletInfo() {
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
-            className="text-yellow-400 transition-colors no-underline border-yellow-500  hover:bg-yellow-500 hover:text-black"
+            variant="ghost"
+            className="text-gray-600 transition-colors no-underline hover:bg-black hover:text-yellow-500"
           >
-            💰 Balances
+            ⌄ Balances
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full bg-black border border-yellow-400">

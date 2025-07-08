@@ -50,7 +50,6 @@ export default function Chatbox() {
             style={{
               visibility: isOpen ? "visible" : "hidden",
               zIndex: 1000,
-              border: "2px solid orange", // Light gray border for top and right
               borderRight: "none", // Remove left border
               borderBottom: "none", // Remove bottom border
               borderTopLeftRadius: "16px", // Round top-right corner
@@ -79,7 +78,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.MAIN)}
                       >
                         {channel === Channel.MAIN ? (
-                          <span className="text-green-400">#main</span>
+                          <span className="text-rose-600">#main</span>
                         ) : (
                           <>#main</>
                         )}
@@ -91,7 +90,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.BUSINESS)}
                       >
                         {channel === Channel.BUSINESS ? (
-                          <span className="text-green-400">#business</span>
+                          <span className="text-rose-600">#business</span>
                         ) : (
                           <>#business</>
                         )}
@@ -103,7 +102,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.POLITICS)}
                       >
                         {channel === Channel.POLITICS ? (
-                          <span className="text-green-400">#politics</span>
+                          <span className="text-rose-600">#politics</span>
                         ) : (
                           <>#politics</>
                         )}
@@ -115,7 +114,7 @@ export default function Chatbox() {
                         onClick={() => setChannel(Channel.CRYPTOCURRENCY)}
                       >
                         {channel === Channel.CRYPTOCURRENCY ? (
-                          <span className="text-green-400">#crypto</span>
+                          <span className="text-rose-600">#crypto</span>
                         ) : (
                           <>#crypto</>
                         )}
@@ -135,10 +134,10 @@ export default function Chatbox() {
 
       <Button
         onClick={() => setIsOpen(true)}
-        variant="secondary"
-        // className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black"
+        variant="ghost"
+        className="hover:text-rose-600 hover:bg-black text-gray-600"
       >
-        💬 Trollbox
+        ^ Trollbox
       </Button>
     </div>
   );

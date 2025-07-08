@@ -262,13 +262,13 @@ WARNING: Do not share your private keys with anybody or someone could steal your
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="secondary"
-            // className="text-violet-400 border-violet-400 bg-black hover:text-black hover:bg-violet-400"
+            variant="ghost"
+            className="text-gray-600 bg-black hover:text-blue-500 hover:bg-black"
           >
-            Wallet Actions ⚡️
+            Wallet Actions ⌄
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="border-violet-400 background bg-black">
+        <DropdownMenuContent className="border-blue-500 background bg-black">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Manage Wallets</DropdownMenuLabel>
             {/* <DropdownMenuSub>

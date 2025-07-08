@@ -45,8 +45,7 @@ export default function NonProxyInterface() {
       <div>{SELECTED_CONTRACT?.name}</div>
       <br />
       <div className="flex gap-2">
-        Address:{" "}
-        <span className="text-violet-400">{SELECTED_CONTRACT?.address}</span>
+        Address: <span>{SELECTED_CONTRACT?.address}</span>
         <Separator orientation="vertical" />
         <Button
           variant="outline"

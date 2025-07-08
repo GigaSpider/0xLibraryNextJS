@@ -46,10 +46,10 @@ export default function Library() {
     <Drawer>
       <DrawerTrigger asChild>
         <Button
-          variant="default"
-          // className="border-red-500 text-red-500 hover:bg-red-500 hover:text-black bg-black"
+          variant="ghost"
+          className=" text-gray-600 hover:bg-black0 hover:text-blue-500 bg-black"
         >
-          📝 Contract Library 📚
+          ^ Contract Library ^
         </Button>
       </DrawerTrigger>
       <DrawerContent className="bg-black border-black">
@@ -82,7 +82,7 @@ export default function Library() {
                 >
                   <TableCell className="font-medium">{contract.name}</TableCell>
                   <TableCell>{contract.fee}%</TableCell>
-                  <TableCell className="text-rose-700">
+                  <TableCell className="text-blue-500">
                     {contract.address}
                   </TableCell>
                   <TableCell>{contract.engineer}</TableCell>

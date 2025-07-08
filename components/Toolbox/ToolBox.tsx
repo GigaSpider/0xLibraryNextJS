@@ -63,7 +63,6 @@ export default function ToolBox() {
         style={{
           visibility: isOpen ? "visible" : "hidden",
           zIndex: 1000,
-          border: "2px solid cyan", // Light gray border for top and right
           borderLeft: "none", // Remove left border
           borderBottom: "none", // Remove bottom border
           borderTopRightRadius: "16px", // Round top-right corner
@@ -91,7 +90,7 @@ export default function ToolBox() {
                       variant="ghost"
                       onClick={() => setToolState(tool.name)}
                     >
-                      <span className="text-green-400">{tool.description}</span>
+                      <span className="text-blue-500">{tool.description}</span>
                     </Button>
                   </div>
                 ))}
@@ -163,10 +162,10 @@ export default function ToolBox() {
 
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        variant="secondary"
-        // className="text-xs hover:bg-cyan-400 hover:text-black text-cyan-400 border-cyan-400 transition-colors no-underline"
+        variant="ghost"
+        className="text-xs hover:bg-black hover:text-blue-500 text-gray-600 transition-colors no-underline"
       >
-        Encryption Tools 🛠
+        Encryption Tools ^
       </Button>
     </div>
   );
