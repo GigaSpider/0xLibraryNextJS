@@ -88,7 +88,7 @@ export default function Messages({ channel }: { channel: Channel }) {
         {filtered_messages!.map((msg) => (
           <div key={`${msg.timestamp}`} className="p-2">
             <strong className="text-rose-600 text-xs">{msg.author}</strong>{" "}
-            <span className="text-white text-xs">{msg.text}</span>
+            <span className="text-gray-500 text-xs">{msg.text}</span>
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -106,7 +106,9 @@ export default function Messages({ channel }: { channel: Channel }) {
           placeholder="Type message..."
           className="flex-1"
         />
-        <Button onClick={handleSend}>Send</Button>
+        <Button variant="secondary" onClick={handleSend}>
+          Send
+        </Button>
       </div>
     </div>
   );
