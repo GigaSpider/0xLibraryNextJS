@@ -87,8 +87,8 @@ export default function Messages({ channel }: { channel: Channel }) {
       <ScrollArea className="flex-1 overflow-y-auto">
         {filtered_messages!.map((msg) => (
           <div key={`${msg.timestamp}`} className="p-2">
-            <strong className="text-rose-600 text-xs">{msg.author}</strong>{" "}
-            <span className="text-gray-600 text-xs">{msg.text}</span>
+            <strong className="text-gray-600 text-xs">{msg.author}</strong>{" "}
+            <span className="text-rose-600 text-xs">{msg.text}</span>
           </div>
         ))}
         <div ref={messagesEndRef} />
