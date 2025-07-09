@@ -19,10 +19,10 @@ export function useWebsocketConnection() {
     }),
   );
 
-  useEffect(() => {
-    const public_key = wallet?.public_key;
-    socket.emit("wallet", { public_key });
-  }, [wallet]);
+  // useEffect(() => {
+  //   const public_key = wallet?.public_key;
+  //   socket.emit("wallet", { public_key });
+  // }, [wallet]);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -46,9 +46,9 @@ export function useWebsocketConnection() {
       set_status(Status.disconnected);
     });
 
-    socket.on("data1", (...args) => {});
+    // socket.on("data1", (...args) => {});
 
-    socket.on("data2", (...args) => {});
+    // socket.on("data2", (...args) => {});
 
     return () => {
       socket.disconnect();
