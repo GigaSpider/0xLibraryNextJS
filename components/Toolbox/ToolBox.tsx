@@ -66,6 +66,7 @@ export default function ToolBox() {
           borderLeft: "none", // Remove left border
           borderBottom: "none", // Remove bottom border
           borderTopRightRadius: "16px", // Round top-right corner
+          background: "#ffffff", // Clean white background
           overflow: "hidden", // Ensure content respects rounded corners
         }}
       >
