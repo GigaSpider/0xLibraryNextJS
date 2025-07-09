@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Wallet } from "ethers";
+import EthCrypto from "eth-crypto";
 
 export interface WalletObject {
   wallet: Wallet;
   private_key: string;
+  public_key: string;
 }
 
 export interface NetworkObject {
@@ -32,7 +34,7 @@ interface WalletStore {
   price: bigint | null;
   networks: NetworkObject[];
   stored_wallets: WalletObject[];
-  set_wallet: (wallet: WalletObject) => void;
+  set_wallet: (private_key: string) => void;
   new_wallet: () => void;
   update_balance: (network: NetworkObject, balance: string) => void;
   update_price: (price: bigint) => void;
@@ -50,31 +52,40 @@ export const useWalletStore = create<WalletStore>()(
       wallet: null,
       stored_wallets: [],
       networks: default_networks,
-      set_wallet: (wallet: WalletObject) => {
+      set_wallet: (private_key: string) => {
         set((state) => {
+          const wallet = new Wallet(private_key);
+          const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+
+          const walletObject: WalletObject = {
+            wallet,
+            private_key,
+            public_key,
+          };
+
           if (
             state.stored_wallets.some(
-              (w) => w.wallet.address === wallet.wallet.address,
+              (w) => w.wallet.address === wallet.address,
             )
           ) {
             return {
-              wallet: wallet,
+              ...state,
+              wallet: walletObject,
             };
-          } else
-            return {
-              wallet: wallet,
-              stored_wallets: [...state.stored_wallets, wallet],
-            };
+          }
+
+          return {
+            ...state,
+            wallet: walletObject,
+            stored_wallets: [...state.stored_wallets, walletObject],
+          };
         });
       },
       new_wallet: () => {
-        const private_key = Wallet.createRandom().privateKey;
-        const wallet = new Wallet(private_key);
-        const wallet_object: WalletObject = {
-          wallet,
-          private_key,
-        };
-        get().set_wallet(wallet_object);
+        const wallet = Wallet.createRandom();
+        const private_key = wallet.privateKey;
+
+        get().set_wallet(private_key);
       },
       delete_wallet: (walletObj: WalletObject) => {
         set((state) => {
@@ -88,12 +99,12 @@ export const useWalletStore = create<WalletStore>()(
             const nextWallet = updatedWallets[0] || null;
             return {
               stored_wallets: updatedWallets,
-              wallet: nextWallet, // Keep as WalletObject | null
+              wallet: nextWallet,
               private_key: nextWallet ? nextWallet.private_key : null,
             };
           }
           return {
-            stored_wallets: updatedWallets, // Only update stored_wallets, leave wallet unchanged
+            stored_wallets: updatedWallets,
           };
         });
       },

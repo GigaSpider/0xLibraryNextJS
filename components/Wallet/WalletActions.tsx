@@ -193,13 +193,7 @@ export default function Wallet() {
       if (isHexString(data.key)) {
         console.log("Connecting to private key:", data);
         console.log(data.key);
-        const wallet: EthersWallet = new EthersWallet(data.key);
-        const private_key = data.key;
-        const wallet_object = {
-          wallet,
-          private_key,
-        };
-        set_wallet(wallet_object);
+        set_wallet(data.key);
         toast({
           title: "success",
           description: `client wallet set to private key: ${data.key}`,
@@ -381,12 +375,20 @@ WARNING: Do not share your private keys with anybody or someone could steal your
                               </DropdownMenuSub>
                               <DropdownMenuSub>
                                 <DropdownMenuSubTrigger>
+                                  Show ECDSA Public Key
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  {walletObj.public_key}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
                                   Use Wallet
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent>
                                   <Button
                                     onClick={() => {
-                                      set_wallet(walletObj);
+                                      set_wallet(walletObj.private_key);
                                     }}
                                   >
                                     Confirm Change

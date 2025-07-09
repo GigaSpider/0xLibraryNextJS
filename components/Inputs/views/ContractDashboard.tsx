@@ -118,7 +118,7 @@ function DynamicForm({
           data.ethAmount && {
             value: parseEther(data.ethAmount as string),
           }),
-        chainId: 11155111,
+        chainId: contract.chainId,
         gasLimit: 3000000,
         maxFeePerGas: parseUnits("2", "gwei"),
         maxPriorityFeePerGas: parseUnits("1", "gwei"),
